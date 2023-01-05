@@ -8,15 +8,15 @@ import jax.numpy as jnp
 # from verify_ncbf.toof.scripts.utils.quadcopter_hjr_utils import make_hj_setup_quadcopter_vertical, tabularize_vector_to_scalar_mapping, \
 #     quadcopter_cbf_from_refine_cbf
 # from verify_ncbf.toof.src.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
-# from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.active_set_post_filter import RemoveWhereUnchanged, RemoveWhereUnchangedOrOscillating
-# from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.active_set_pre_filter import FilterWhereFarFromZeroLevelset, NoFilter
-# from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.break_criteria_checker import BreakCriteriaChecker, MaxIterations, \
+# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.active_set_post_filter import RemoveWhereUnchanged, RemoveWhereUnchangedOrOscillating
+# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.active_set_pre_filter import FilterWhereFarFromZeroLevelset, NoFilter
+# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.break_criteria_checker import BreakCriteriaChecker, MaxIterations, \
 #     PostFilteredActiveSetEmpty
-# from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.local_hjr_solver import LocalHjrSolver
-# from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.local_hjr_stepper import ClassicLocalHjrStepper, OnlyDecreaseLocalHjrStepper
-# from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.neighbor_expander import SignedDistanceNeighbors
-# from verify_ncbf.toof.src.reachability.reachability_utils.hj_setup import HjSetup
-# from verify_ncbf.toof.src.reachability.reachability_utils.value_postprocessors import ReachAvoid
+# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.local_hjr_solver import LocalHjrSolver
+# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.local_hjr_stepper import ClassicLocalHjrStepper, OnlyDecreaseLocalHjrStepper
+# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.neighbor_expander import SignedDistanceNeighbors
+# from verify_ncbf.toof.src.refining.reachability_utils.hj_setup import HjSetup
+# from verify_ncbf.toof.src.refining.reachability_utils.value_postprocessors import ReachAvoid
 # from verify_ncbf.toof.src.utils.drawing.drawing_utils import ArraySlice2D
 # from verify_ncbf.toof.src.utils.files.file_path import generate_unique_filename
 # from verify_ncbf.toof.src.utils.math.signed_distance import compute_signed_distance
