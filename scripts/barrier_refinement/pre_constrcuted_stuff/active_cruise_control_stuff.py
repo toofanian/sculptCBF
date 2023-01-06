@@ -5,7 +5,8 @@ import numpy as np
 import jax.numpy as jnp
 import skfmm
 
-from refineNCBF.dynamic_systems.implementations.active_cruise_control import default_active_cruise_control_params, ActiveCruiseControlJAX
+from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControlJAX, \
+    simplified_active_cruise_control_params
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import NotBiggerator
@@ -14,25 +15,24 @@ from refineNCBF.utils.sets import compute_signed_distance
 
 
 def acc_set_up_standard_dynamics_and_grid():
-    active_cruise_control_params = default_active_cruise_control_params
-    active_cruise_control_params.friction_coefficients = (0., 0., 0.)
-    active_cruise_control_params.target_velocity = 0.
 
-    active_cruise_control_hj = HJControlAffineDynamics.from_control_affine_dynamics(
-        control_affine_dynamic_system=ActiveCruiseControlJAX.from_params(active_cruise_control_params),
-        control_mode=ActorModes.MAX,
-        disturbance_mode=ActorModes.MIN,
-    )
-
-    grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
-        domain=hj_reachability.sets.Box(
-            [0, -20, 20],
-            [1e3, 20, 80]
+    hj_setup = HjSetup.from_parts(
+        dynamics=HJControlAffineDynamics.from_control_affine_dynamics(
+            control_affine_dynamic_system=ActiveCruiseControlJAX.from_params(simplified_active_cruise_control_params),
+            control_mode=ActorModes.MAX,
+            disturbance_mode=ActorModes.MIN,
         ),
-        shape=(5, 51, 51)
+        grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
+            domain=hj_reachability.sets.Box(
+                [0, -20, 20],
+                [1e3, 20, 80]
+            ),
+            shape=(5, 51, 51)
+        )
     )
 
-    return HjSetup.from_parts(dynamics=active_cruise_control_hj, grid=grid)
+
+    return hj_setup
 
 
 class SignedDistanceFunctions(IntEnum):

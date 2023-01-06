@@ -25,6 +25,7 @@ class BreakCriteriaChecker(ABC, Callable):
     def __call__(self, data: LocalUpdateResult) -> bool:
         check_results = (criterion(data) for criterion in self._break_criteria)
         if any(check_results):
+            print(f'break criteria met, stopping at iteration {len(data)}')
             return True
 
 

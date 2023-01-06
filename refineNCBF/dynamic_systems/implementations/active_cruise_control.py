@@ -6,6 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from refineNCBF.dynamic_systems.dynamic_systems import ControlAffineDynamicSystem
+from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
 from refineNCBF.utils.types import VectorBatch, MatrixBatch
 
 
@@ -25,7 +26,18 @@ default_active_cruise_control_params = ActiveCruiseControlParams(
     friction_coefficients=(0.1, 5.0, 0.25),
     mass=1650.,
     gravity=9.81,
-    target_velocity=14.,
+    target_velocity=14,
+    drag_coefficient=0.3,
+    th=1.8,
+    min_acceleration=-4855.95,
+    max_acceleration=4855.95
+)
+
+simplified_active_cruise_control_params = ActiveCruiseControlParams(
+    friction_coefficients=(0, 0, 0),
+    mass=1650.,
+    gravity=9.81,
+    target_velocity=0.,
     drag_coefficient=0.3,
     th=1.8,
     min_acceleration=-4855.95,

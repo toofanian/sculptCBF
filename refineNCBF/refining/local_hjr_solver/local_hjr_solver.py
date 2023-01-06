@@ -39,6 +39,7 @@ class LocalHjrSolver(Callable):
     _active_set_post_filter: ActiveSetPostFilter
     _break_criteria_checker: BreakCriteriaChecker
 
+    _verbose: bool = False
     @classmethod
     def from_parts(
             cls,
@@ -51,6 +52,7 @@ class LocalHjrSolver(Callable):
             local_hjr_stepper: LocalHjrStepper,
             active_set_post_filter: ActiveSetPostFilter,
             break_criteria_checker: BreakCriteriaChecker,
+            verbose: bool = False,
     ):
         return cls(
             hj_setup=hj_setup,
@@ -62,6 +64,7 @@ class LocalHjrSolver(Callable):
             local_hjr_stepper=local_hjr_stepper,
             active_set_post_filter=active_set_post_filter,
             break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
         )
 
     @classmethod
@@ -71,13 +74,11 @@ class LocalHjrSolver(Callable):
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
-
             neighbor_distance: float = 1.0,
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
             value_change_rtol: float = 1e-3,
             max_iterations: int = 100,
-
             verbose: bool = False,
     ):
         active_set_pre_filter = NoFilter.from_parts(
@@ -112,6 +113,7 @@ class LocalHjrSolver(Callable):
             local_hjr_stepper=local_hjr_stepper,
             active_set_post_filter=active_set_post_filter,
             break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
         )
 
     @classmethod
@@ -121,14 +123,12 @@ class LocalHjrSolver(Callable):
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
-
             boundary_distance: float = 1.0,
             neighbor_distance: float = 1.0,
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
             value_change_rtol: float = 1e-3,
             max_iterations: int = 100,
-
             verbose: bool = False,
     ):
         active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
@@ -164,6 +164,7 @@ class LocalHjrSolver(Callable):
             local_hjr_stepper=local_hjr_stepper,
             active_set_post_filter=active_set_post_filter,
             break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
         )
 
     @classmethod
@@ -173,14 +174,12 @@ class LocalHjrSolver(Callable):
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
-
             boundary_distance: float = 1.0,
             neighbor_distance: float = 1.0,
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
             value_change_rtol: float = 1e-3,
             max_iterations: int = 100,
-
             verbose: bool = False,
     ):
         active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
@@ -216,6 +215,7 @@ class LocalHjrSolver(Callable):
             local_hjr_stepper=local_hjr_stepper,
             active_set_post_filter=active_set_post_filter,
             break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
         )
 
     def __call__(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
@@ -243,6 +243,8 @@ class LocalHjrSolver(Callable):
         active_set_expanded = self._neighbor_expander(
             result, active_set_pre_filtered
         )
+        if self._verbose:
+            print(f'computing hamiltonian over {active_set_expanded.sum()} points')
         values_next = self._local_hjr_stepper(
             result, active_set_pre_filtered, active_set_expanded
         )

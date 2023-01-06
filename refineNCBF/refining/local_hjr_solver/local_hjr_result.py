@@ -202,10 +202,7 @@ class LocalUpdateResult:
                 levels=[0, 0.5], colors=['b'], alpha=.2
             )
 
-            if i == 0:
-                values = self.initial_values
-            else:
-                values = self.iterations[i - 1].computed_values
+            values = self.initial_values if i == 0 else self.iterations[i - 1].computed_values
             ax.contour(
                 self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
                 self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2],
@@ -263,8 +260,8 @@ class LocalUpdateResult:
         proxies_for_labels = [
             plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.5),
             plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.5),
-            plt.Rectangle((0, 0), 1, 1, fc='w', ec='r', alpha=1),
             plt.Rectangle((0, 0), 1, 1, fc='w', ec='b', alpha=1),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='r', alpha=1),
             plt.Rectangle((0, 0), 1, 1, fc='y', ec='y', alpha=.2),
             plt.Rectangle((0, 0), 1, 1, fc='g', ec='g', alpha=.4),
         ]
@@ -285,22 +282,29 @@ class LocalUpdateResult:
             x1, x2, reference_slice.get_sliced_array(final_values).T,
             cmap='Blues', edgecolor='none', alpha=.5
         )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(final_values).T,
+            levels=[0], colors=['b']
+        )
+
         ax.plot_surface(
             x1, x2, reference_slice.get_sliced_array(truth).T,
             cmap='Reds', edgecolor='none', alpha=.5
-        )
-        ax.plot_surface(
-            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
-            cmap='Greys', edgecolor='none', alpha=.5
-        )
-        ax.contour3D(
-            x1, x2, reference_slice.get_sliced_array(final_values).T,
-            levels=[0], colors=['k']
         )
         ax.contour3D(
             x1, x2, reference_slice.get_sliced_array(truth).T,
             levels=[0], colors=['r'], linestyles=['--']
         )
+
+        ax.plot_surface(
+            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
+            cmap='Greys', edgecolor='none', alpha=.5
+        )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
+            levels=[0], colors=['k'], linestyles=['--']
+        )
+
         ax.contourf3D(
             x1, x2, ~reference_slice.get_sliced_array(~jnp.isclose(truth, final_values, atol=.5) & total_active_mask).T,
             levels=[0, .5], colors=['y'], alpha=.2
