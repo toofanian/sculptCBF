@@ -1,28 +1,23 @@
+import os
 import warnings
 
 import hj_reachability
 import jax.numpy as jnp
 
-# from verify_ncbf.toof.scripts.utils.acc_hjr_utils import acc_set_up_standard_dynamics_and_grid
-# from verify_ncbf.toof.scripts.utils.acc_signed_distance_functions import get_saved_signed_distance_function, SignedDistanceFunctions
-# from verify_ncbf.toof.scripts.utils.quadcopter_hjr_utils import make_hj_setup_quadcopter_vertical, tabularize_vector_to_scalar_mapping, \
-#     quadcopter_cbf_from_refine_cbf
-# from verify_ncbf.toof.src.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
-# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.active_set_post_filter import RemoveWhereUnchanged, RemoveWhereUnchangedOrOscillating
-# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.active_set_pre_filter import FilterWhereFarFromZeroLevelset, NoFilter
-# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.break_criteria_checker import BreakCriteriaChecker, MaxIterations, \
-#     PostFilteredActiveSetEmpty
-# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.local_hjr_solver import LocalHjrSolver
-# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.local_hjr_stepper import ClassicLocalHjrStepper, OnlyDecreaseLocalHjrStepper
-# from verify_ncbf.toof.src.refining.oop_refactor_for_local_update.neighbor_expander import SignedDistanceNeighbors
-# from verify_ncbf.toof.src.refining.reachability_utils.hj_setup import HjSetup
-# from verify_ncbf.toof.src.refining.reachability_utils.value_postprocessors import ReachAvoid
-# from verify_ncbf.toof.src.utils.drawing.drawing_utils import ArraySlice2D
-# from verify_ncbf.toof.src.utils.files.file_path import generate_unique_filename
-# from verify_ncbf.toof.src.utils.math.signed_distance import compute_signed_distance
-
-
-
+from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
+from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
+from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
+from refineNCBF.refining.local_hjr_solver.active_set_post_filter import RemoveWhereUnchanged, RemoveWhereUnchangedOrOscillating
+from refineNCBF.refining.local_hjr_solver.active_set_pre_filter import NoFilter, FilterWhereFarFromZeroLevelset
+from refineNCBF.refining.local_hjr_solver.break_criteria_checker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
+from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
+from refineNCBF.refining.local_hjr_solver.local_hjr_stepper import OnlyDecreaseLocalHjrStepper, ClassicLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.neighbor_expander import SignedDistanceNeighbors
+from refineNCBF.utils.files import generate_unique_filename, visuals_data_directory
+from refineNCBF.utils.sets import compute_signed_distance
+from refineNCBF.utils.visuals import ArraySlice2D
+from scripts.barrier_refinement.pre_constrcuted_stuff.active_cruise_control_stuff import acc_set_up_standard_dynamics_and_grid, get_saved_signed_distance_function, SignedDistanceFunctions
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import tabularize_vector_to_scalar_mapping, quadcopter_cbf_from_refine_cbf
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -151,12 +146,19 @@ def demo_local_hjr_solver_quadcopter_vertical_classic(verbose: bool = False, sav
             free_dim_2=2
         )
 
-        result.create_gif(
-            reference_slice=ref_index,
-            verbose=verbose,
-            save_path=f'verify_ncbf/toof/data/{generate_unique_filename("demo_quadcopter_vertical_avoid_hjr_local", "gif")}' if save_gif else None
-
-        )
+        if save_gif:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose,
+                save_path=os.path.join(
+                    visuals_data_directory,
+                    f'{generate_unique_filename("demo_local_hjr_solver_quadcopter_vertical_classic", "gif")}')
+            )
+        else:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose
+            )
 
         result.plot_value_function_against_truth(
             reference_slice=ref_index,
@@ -167,7 +169,16 @@ def demo_local_hjr_solver_quadcopter_vertical_classic(verbose: bool = False, sav
 
 
 def demo_local_hjr_solver_custom_on_quadcopter_vertical(verbose: bool = False, save_gif: bool = False):
-    hj_setup = make_hj_setup_quadcopter_vertical()
+    hj_setup = HjSetup.from_parts(
+        dynamics=quadcopter_vertical_jax_hj,
+        grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
+            domain=hj_reachability.sets.Box(
+                [0, -8, -jnp.pi, -10],
+                [10, 8, jnp.pi, 10]
+            ),
+            shape=(21, 21, 21, 21)
+        )
+    )
 
     avoid_set = (
             (hj_setup.grid.states[..., 0] < 1)
@@ -220,12 +231,20 @@ def demo_local_hjr_solver_custom_on_quadcopter_vertical(verbose: bool = False, s
             free_dim_2=2
         )
 
-        result.create_gif(
-            reference_slice=ref_index,
-            verbose=verbose,
-            save_path=f'verify_ncbf/toof/data/{generate_unique_filename("demo_quadcopter_vertical_avoid_hjr_local", "gif")}' if save_gif else None
-
-        )
+        if save_gif:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose,
+                save_path=os.path.join(
+                    visuals_data_directory,
+                    f'{generate_unique_filename("demo_quadcopter_vertical_avoid_hjr_local", "gif")}'
+                )
+            )
+        else:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose
+            )
 
         result.plot_value_function_against_truth(
             reference_slice=ref_index,
@@ -235,7 +254,7 @@ def demo_local_hjr_solver_custom_on_quadcopter_vertical(verbose: bool = False, s
     return result
 
 
-def demo_local_hjr_solver_custom_on_active_cruise_control(verbose: bool = False):
+def demo_local_hjr_solver_custom_on_active_cruise_control(verbose: bool = False, save_gif=False):
     hj_setup = acc_set_up_standard_dynamics_and_grid()
 
     terminal_values = get_saved_signed_distance_function(
@@ -284,10 +303,20 @@ def demo_local_hjr_solver_custom_on_active_cruise_control(verbose: bool = False)
             free_dim_2=2
         )
 
-        result.create_gif(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
+        if save_gif:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose,
+                save_path=os.path.join(
+                    visuals_data_directory,
+                    f'{generate_unique_filename("demo_local_hjr_solver_custom_on_active_cruise_control", "gif")}'
+                )
+            )
+        else:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose
+            )
 
         result.plot_value_function_against_truth(
             reference_slice=ref_index,
@@ -335,10 +364,20 @@ def demo_local_hjr_solver_only_decrease_on_active_cruise_control(verbose: bool =
             free_dim_2=2
         )
 
-        result.create_gif(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
+        if save_gif:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose,
+                save_path=os.path.join(
+                    visuals_data_directory,
+                    f'{generate_unique_filename("demo_local_hjr_solver_only_decrease_on_active_cruise_control", "gif")}'
+                )
+            )
+        else:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose
+            )
 
         result.plot_value_function_against_truth(
             reference_slice=ref_index,
@@ -381,11 +420,20 @@ def demo_local_hjr_solver_classic_on_active_cruise_control(verbose: bool = False
             free_dim_2=2
         )
 
-        result.create_gif(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
-
+        if save_gif:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose,
+                save_path=os.path.join(
+                    visuals_data_directory,
+                    f'{generate_unique_filename("demo_local_hjr_solver_classic_on_active_cruise_control", "gif")}'
+                )
+            )
+        else:
+            result.create_gif(
+                reference_slice=ref_index,
+                verbose=verbose
+            )
         result.plot_value_function_against_truth(
             reference_slice=ref_index,
             verbose=verbose
@@ -395,7 +443,7 @@ def demo_local_hjr_solver_classic_on_active_cruise_control(verbose: bool = False
 
 
 if __name__ == '__main__':
-    demo_local_hjr_solver_custom_on_active_cruise_control(verbose=True)
+    demo_local_hjr_solver_custom_on_active_cruise_control(verbose=True, save_gif=True)
     # demo_local_hjr_solver_classic_on_active_cruise_control(verbose=True)
     # demo_local_hjr_solver_custom_on_quadcopter_vertical(verbose=True, save_gif=True)
     # demo_local_hjr_solver_only_decrease_on_active_cruise_control(verbose=True, save_gif=True)

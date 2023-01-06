@@ -4,10 +4,10 @@ from typing import Callable
 import attr
 import hj_reachability
 
-from verify_ncbf.toof.src.reachability.reachability_utils.hj_setup import HjSetup
-from verify_ncbf.toof.src.reachability.reachability_utils.local_utils import hjr_step_local
-from verify_ncbf.toof.src.reachability.reachability_utils.results import LocalUpdateResult
-from verify_ncbf.toof.src.utils.typing.types import ArrayNd, MaskNd
+from refineNCBF.refining.hj_reachability_interface.hj_local_step import hjr_step_local
+from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
+from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
+from refineNCBF.utils.types import MaskNd, ArrayNd
 
 
 @attr.s(auto_attribs=True)

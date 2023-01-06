@@ -4,8 +4,8 @@ from typing import Callable
 import attr
 from jax import numpy as jnp
 
-from verify_ncbf.toof.src.reachability.reachability_utils.results import LocalUpdateResult
-from verify_ncbf.toof.src.utils.typing.types import MaskNd, ArrayNd
+from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
+from refineNCBF.utils.types import MaskNd, ArrayNd
 
 
 @attr.s(auto_attribs=True)

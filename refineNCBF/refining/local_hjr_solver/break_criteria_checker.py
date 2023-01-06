@@ -4,7 +4,7 @@ from typing import List, Callable
 import attr
 import jax.numpy as jnp
 
-from verify_ncbf.toof.src.reachability.reachability_utils.results import LocalUpdateResult
+from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
 
 
 @attr.s(auto_attribs=True)

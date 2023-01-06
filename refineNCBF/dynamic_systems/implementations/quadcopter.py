@@ -5,9 +5,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from verify_ncbf.toof.src.dynamic_systems.dynamic_systems import ControlAffineDynamicSystem
-from verify_ncbf.toof.src.dynamic_systems.hj_dynamics import HJControlAffineDynamics, ActorModes
-from verify_ncbf.toof.src.utils.typing.types import VectorBatch, MatrixBatch
+from refineNCBF.dynamic_systems.dynamic_systems import ControlAffineDynamicSystem
+from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
+from refineNCBF.utils.types import VectorBatch, MatrixBatch
 
 
 @attr.dataclass

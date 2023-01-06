@@ -3,19 +3,14 @@ from typing import Callable
 import attr
 import hj_reachability
 
-from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.active_set_post_filter import ActiveSetPostFilter, \
-    RemoveWhereUnchanged
-from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.active_set_pre_filter import ActiveSetPreFilter, \
-    NoFilter, FilterWhereFarFromZeroLevelset
-from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.break_criteria_checker import BreakCriteriaChecker, \
-    MaxIterations, PostFilteredActiveSetEmpty
-from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.local_hjr_stepper import LocalHjrStepper, \
-    ClassicLocalHjrStepper, OnlyDecreaseLocalHjrStepper
-from verify_ncbf.toof.src.reachability.oop_refactor_for_local_update.neighbor_expander import NeighborExpander, \
-    SignedDistanceNeighbors
-from verify_ncbf.toof.src.reachability.reachability_utils.hj_setup import HjSetup
-from verify_ncbf.toof.src.reachability.reachability_utils.results import LocalUpdateResult, LocalUpdateResultIteration
-from verify_ncbf.toof.src.utils.typing.types import MaskNd, ArrayNd
+from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
+from refineNCBF.refining.local_hjr_solver.active_set_post_filter import ActiveSetPostFilter, RemoveWhereUnchanged
+from refineNCBF.refining.local_hjr_solver.active_set_pre_filter import ActiveSetPreFilter, NoFilter, FilterWhereFarFromZeroLevelset
+from refineNCBF.refining.local_hjr_solver.break_criteria_checker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
+from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult, LocalUpdateResultIteration
+from refineNCBF.refining.local_hjr_solver.local_hjr_stepper import LocalHjrStepper, ClassicLocalHjrStepper, OnlyDecreaseLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.neighbor_expander import NeighborExpander, SignedDistanceNeighbors
+from refineNCBF.utils.types import MaskNd, ArrayNd
 
 
 @attr.s(auto_attribs=True)

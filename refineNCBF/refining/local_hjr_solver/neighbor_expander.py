@@ -3,9 +3,9 @@ from typing import Callable
 
 import attr
 
-from verify_ncbf.toof.src.reachability.reachability_utils.results import LocalUpdateResult
-from verify_ncbf.toof.src.utils.carving.masks import expand_mask_by_signed_distance
-from verify_ncbf.toof.src.utils.typing.types import MaskNd
+from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
+from refineNCBF.utils.sets import expand_mask_by_signed_distance
+from refineNCBF.utils.types import MaskNd
 
 
 @attr.s(auto_attribs=True)
