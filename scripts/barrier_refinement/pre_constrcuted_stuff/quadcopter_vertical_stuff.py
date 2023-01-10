@@ -9,6 +9,7 @@ from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 
 import jax.numpy as jnp
 
+from refineNCBF.training.dnn_models.standardizer import Standardizer
 from refineNCBF.utils.types import VectorBatch, ScalarBatch, ArrayNd
 
 
@@ -39,6 +40,7 @@ def tabularize_vector_to_scalar_mapping(
 
 def tabularize_dnn(
         dnn: Callable[[VectorBatch], ScalarBatch],
+        standardizer: Standardizer,
         grid: hj_reachability.Grid
 ) -> ArrayNd:
-    return jnp.array(dnn(torch.from_numpy(np.array(grid.states.reshape((-1, grid.states.shape[-1]))))).detach().numpy().reshape(grid.shape))
+    return jnp.array(dnn((torch.FloatTensor(standardizer.standardize(np.array(grid.states.reshape((-1, grid.states.shape[-1]))))))).detach().numpy().reshape(grid.shape))

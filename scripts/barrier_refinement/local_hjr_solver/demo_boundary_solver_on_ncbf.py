@@ -11,11 +11,10 @@ import jax.numpy as jnp
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
-from refineNCBF.utils.sets import compute_signed_distance
+from refineNCBF.utils.sets import compute_signed_distance, map_cells_to_grid
 from refineNCBF.utils.visuals import ArraySlice2D
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import tabularize_vector_to_scalar_mapping, quadcopter_cbf_from_refine_cbf, \
-    tabularize_dnn
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import tabularize_dnn
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -26,15 +25,16 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose: bool = False,
         dynamics=quadcopter_vertical_jax_hj,
         grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
             domain=hj_reachability.sets.Box(
-                [0, -8, -jnp.pi, -10],
-                [10, 8, jnp.pi, 10]
+                [4, -2, -1, -1],
+                [10, 2, 1, 2.5]
             ),
-            shape=(21, 21, 21, 21)
+            shape=(31, 31, 31, 31)
         )
     )
 
-    dnn_values_over_grid = tabularize_dnn(
+    dnn_values_over_grid = -tabularize_dnn(
         dnn=load_quadcopter_cbf(),
+        standardizer=load_standardizer(),
         grid=hj_setup.grid
     )
 
@@ -61,8 +61,14 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose: bool = False,
     )
 
     # define initial values and initial active set to solve on
-    initial_values = dnn_values_over_grid
-    active_set = jnp.ones_like(hj_setup.grid.states[..., 0], dtype=bool)
+    initial_values = terminal_values.copy()
+    active_set = map_cells_to_grid(
+        cell_centerpoints=load_uncertified_states(),
+        cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+        grid=hj_setup.grid,
+        verbose=True,
+        save_array=True
+    )
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)
@@ -72,7 +78,7 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose: bool = False,
         ref_index = ArraySlice2D.from_reference_index(
             reference_index=(
                 jnp.array(hj_setup.grid.states.shape[0]) // 2,
-                jnp.array(hj_setup.grid.states.shape[1]) // 4,
+                jnp.array(9),
                 jnp.array(hj_setup.grid.states.shape[2]) // 2,
                 jnp.array(hj_setup.grid.states.shape[3]) // 2,
             ),
