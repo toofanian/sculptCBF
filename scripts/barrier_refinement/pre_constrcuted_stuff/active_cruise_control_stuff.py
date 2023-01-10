@@ -44,16 +44,16 @@ class SignedDistanceFunctions(IntEnum):
     X3_DISTANCE_5LEVELSET = 5
 
 
-def get_saved_signed_distance_function(signed_distance_function: SignedDistanceFunctions):
+def get_saved_signed_distance_function(signed_distance_function: SignedDistanceFunctions, hj_setup: HjSetup):
+
+
     match signed_distance_function:
         case SignedDistanceFunctions.X3_DISTANCE:
-            hj_setup = acc_set_up_standard_dynamics_and_grid()
             grid_np = np.array(hj_setup.grid.states)
             where_boundary = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = -skfmm.distance(~where_boundary) + skfmm.distance(where_boundary)
 
         case SignedDistanceFunctions.X3_DISTANCE_KERNEL:
-            hj_setup = acc_set_up_standard_dynamics_and_grid()
             grid_np = np.array(hj_setup.grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)
@@ -73,7 +73,6 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             signed_distance_to_boundary = compute_signed_distance(where_boundary)
 
         case SignedDistanceFunctions.X3_DISTANCE_KERNEL_CUT_50dist:
-            hj_setup = acc_set_up_standard_dynamics_and_grid()
             grid_np = np.array(hj_setup.grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)
@@ -93,7 +92,6 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             signed_distance_to_boundary = compute_signed_distance(where_boundary)
 
         case SignedDistanceFunctions.X3_DISTANCE_KERNEL_CUT_55dist:
-            hj_setup = acc_set_up_standard_dynamics_and_grid()
             grid_np = np.array(hj_setup.grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)

@@ -13,20 +13,34 @@ class BreakCriterion(ABC, Callable):
     def __call__(self, data: LocalUpdateResult) -> bool:
         ...
 
+    @abstractmethod
+    def get_descriptor(self) -> str:
+        ...
+
 
 @attr.s(auto_attribs=True)
 class BreakCriteriaChecker(ABC, Callable):
     _break_criteria: List[BreakCriterion]
 
+    _verbose: bool
+
     @classmethod
-    def from_criteria(cls, break_criteria: List[BreakCriterion]):
-        return cls(break_criteria=break_criteria)
+    def from_criteria(cls, break_criteria: List[BreakCriterion], verbose: bool = False):
+        return cls(break_criteria=break_criteria, verbose=verbose)
 
     def __call__(self, data: LocalUpdateResult) -> bool:
-        check_results = (criterion(data) for criterion in self._break_criteria)
-        if any(check_results):
-            print(f'break criteria met, stopping at iteration {len(data)}')
-            return True
+        break_reasons = self._get_break_reasons(data)
+        criterion_met = len(break_reasons) > 0
+
+        if criterion_met:
+            if self._verbose:
+                print(f"Breaking because of: {break_reasons}")
+
+        return criterion_met
+
+    def _get_break_reasons(self, data):
+        break_reasons = [criterion.get_descriptor() for criterion in self._break_criteria if criterion(data)]
+        return break_reasons
 
 
 @attr.s(auto_attribs=True)
@@ -40,6 +54,9 @@ class MaxIterations(BreakCriterion):
     def __call__(self, data: LocalUpdateResult) -> bool:
         return len(data) >= self._max_iterations
 
+    def get_descriptor(self) -> str:
+        return f'criterion of maximum {self._max_iterations} iterations has been met'
+
 
 @attr.s(auto_attribs=True)
 class PostFilteredActiveSetEmpty(BreakCriterion):
@@ -49,3 +66,6 @@ class PostFilteredActiveSetEmpty(BreakCriterion):
 
     def __call__(self, data: LocalUpdateResult) -> bool:
         return jnp.count_nonzero(data.get_recent_active_set()) == 0
+
+    def get_descriptor(self) -> str:
+        return f'criterion of empty post-filtered active set has been met'

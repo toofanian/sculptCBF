@@ -316,12 +316,64 @@ class LocalUpdateResult:
         )
         ax.contourf3D(
             x1, x2, ~reference_slice.get_sliced_array(jnp.isclose(truth, final_values, atol=.5) & total_active_mask).T,
-            levels=[0, .5], colors=['g'], alpha=.2
+            levels=[0, .01], colors=['g'], alpha=.2
         )
         ax.contour3D(
             x1, x2, ~reference_slice.get_sliced_array(jnp.isclose(truth, final_values, atol=.5) & total_active_mask).T,
             levels=[0], colors=['g'], alpha=1
         )
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+
+        if verbose:
+            plt.show()
+
+        return fig, ax
+
+    def plot_value_function(
+            self,
+            reference_slice: ArraySlice2D,
+            verbose: bool = False,
+            save_path: Optional[FilePathRelative] = None
+    ):
+        if save_path is not None:
+            raise NotImplementedError('saving not implemented yet')
+
+        final_values = self.get_recent_values()
+
+        total_active_mask = self.get_total_active_mask()
+
+        x1, x2 = np.meshgrid(
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2]
+        )
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.5),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='b', alpha=1),
+        ]
+
+        legend_for_labels = [
+            'result',
+            'result viability kernel',
+        ]
+
+        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
+        ax.set(title='value function against truth')
+
+        ax.plot_surface(
+            x1, x2, reference_slice.get_sliced_array(final_values).T,
+            cmap='Blues', edgecolor='none', alpha=.5
+        )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(final_values).T,
+            levels=[0], colors=['b']
+        )
+
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
+            levels=[0], colors=['k'], linestyles=['--']
+        )
+
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
 
         if verbose:

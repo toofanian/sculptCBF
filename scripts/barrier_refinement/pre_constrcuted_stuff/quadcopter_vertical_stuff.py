@@ -1,6 +1,8 @@
 from typing import Callable
 
 import hj_reachability
+import numpy as np
+import torch
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
@@ -33,3 +35,10 @@ def tabularize_vector_to_scalar_mapping(
         grid: hj_reachability.Grid
 ) -> ArrayNd:
     return mapping(grid.states.reshape((-1, grid.states.shape[-1]))).reshape(grid.shape)
+
+
+def tabularize_dnn(
+        dnn: Callable[[VectorBatch], ScalarBatch],
+        grid: hj_reachability.Grid
+) -> ArrayNd:
+    return jnp.array(dnn(torch.from_numpy(np.array(grid.states.reshape((-1, grid.states.shape[-1]))))).detach().numpy().reshape(grid.shape))

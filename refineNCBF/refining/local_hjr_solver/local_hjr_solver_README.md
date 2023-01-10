@@ -35,7 +35,7 @@ artifacts that occur in the classic algorithm, which prevented convergence detec
     - remove unchanged values from active set
     - repeat until active set is empty
         
-## ONLY ACTIVE NEAR ZERO LEVELSET
+## Boundary Solver
 emulates the algorithm from somil & bajcsy, but with added active set filtering. the 
 active set is filtered before each iteration to only include values near the zero
 levelset. this is a like a hacky/forced version of only decrease, but has the benefit

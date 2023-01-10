@@ -16,7 +16,7 @@ from refineNCBF.utils.types import MaskNd, ArrayNd
 @attr.s(auto_attribs=True)
 class LocalHjrSolver(Callable):
     """
-    works within the framework:
+    works within this framework:
 
     - takes an active set and initial computed_values
     - loop:
@@ -40,183 +40,6 @@ class LocalHjrSolver(Callable):
     _break_criteria_checker: BreakCriteriaChecker
 
     _verbose: bool = False
-    @classmethod
-    def from_parts(
-            cls,
-            hj_setup: HjSetup,
-            solver_settings: hj_reachability.SolverSettings,
-            avoid_set: MaskNd,
-            reach_set: MaskNd,
-            active_set_pre_filter: ActiveSetPreFilter,
-            neighbor_expander: NeighborExpander,
-            local_hjr_stepper: LocalHjrStepper,
-            active_set_post_filter: ActiveSetPostFilter,
-            break_criteria_checker: BreakCriteriaChecker,
-            verbose: bool = False,
-    ):
-        return cls(
-            hj_setup=hj_setup,
-            solver_settings=solver_settings,
-            avoid_set=avoid_set,
-            reach_set=reach_set,
-            active_set_pre_filter=active_set_pre_filter,
-            neighbor_expander=neighbor_expander,
-            local_hjr_stepper=local_hjr_stepper,
-            active_set_post_filter=active_set_post_filter,
-            break_criteria_checker=break_criteria_checker,
-            verbose=verbose,
-        )
-
-    @classmethod
-    def as_classic_solver(
-            cls,
-            hj_setup: HjSetup,
-            solver_settings: hj_reachability.SolverSettings,
-            avoid_set: MaskNd,
-            reach_set: MaskNd,
-            neighbor_distance: float = 1.0,
-            solver_timestep: float = -0.1,
-            value_change_atol: float = 1e-3,
-            value_change_rtol: float = 1e-3,
-            max_iterations: int = 100,
-            verbose: bool = False,
-    ):
-        active_set_pre_filter = NoFilter.from_parts(
-        )
-        neighbor_expander = SignedDistanceNeighbors.from_parts(
-            distance=neighbor_distance
-        )
-        local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
-            hj_setup=hj_setup,
-            solver_settings=solver_settings,
-            time_step=solver_timestep,
-            verbose=verbose
-        )
-        active_set_post_filter = RemoveWhereUnchanged.from_parts(
-            atol=value_change_atol,
-            rtol=value_change_rtol,
-        )
-        break_criteria_checker = BreakCriteriaChecker.from_criteria(
-            [
-                MaxIterations.from_parts(max_iterations=max_iterations),
-                PostFilteredActiveSetEmpty.from_parts(),
-            ]
-        )
-
-        return cls(
-            hj_setup=hj_setup,
-            solver_settings=solver_settings,
-            avoid_set=avoid_set,
-            reach_set=reach_set,
-            active_set_pre_filter=active_set_pre_filter,
-            neighbor_expander=neighbor_expander,
-            local_hjr_stepper=local_hjr_stepper,
-            active_set_post_filter=active_set_post_filter,
-            break_criteria_checker=break_criteria_checker,
-            verbose=verbose,
-        )
-
-    @classmethod
-    def as_boundary_solver(
-            cls,
-            hj_setup: HjSetup,
-            solver_settings: hj_reachability.SolverSettings,
-            avoid_set: MaskNd,
-            reach_set: MaskNd,
-            boundary_distance: float = 1.0,
-            neighbor_distance: float = 1.0,
-            solver_timestep: float = -0.1,
-            value_change_atol: float = 1e-3,
-            value_change_rtol: float = 1e-3,
-            max_iterations: int = 100,
-            verbose: bool = False,
-    ):
-        active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
-            distance=boundary_distance
-        )
-        neighbor_expander = SignedDistanceNeighbors.from_parts(
-            distance=neighbor_distance
-        )
-        local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
-            hj_setup=hj_setup,
-            solver_settings=solver_settings,
-            time_step=solver_timestep,
-            verbose=verbose
-        )
-        active_set_post_filter = RemoveWhereUnchanged.from_parts(
-            atol=value_change_atol,
-            rtol=value_change_rtol,
-        )
-        break_criteria_checker = BreakCriteriaChecker.from_criteria(
-            [
-                MaxIterations.from_parts(max_iterations=max_iterations),
-                PostFilteredActiveSetEmpty.from_parts(),
-            ]
-        )
-
-        return cls(
-            hj_setup=hj_setup,
-            solver_settings=solver_settings,
-            avoid_set=avoid_set,
-            reach_set=reach_set,
-            active_set_pre_filter=active_set_pre_filter,
-            neighbor_expander=neighbor_expander,
-            local_hjr_stepper=local_hjr_stepper,
-            active_set_post_filter=active_set_post_filter,
-            break_criteria_checker=break_criteria_checker,
-            verbose=verbose,
-        )
-
-    @classmethod
-    def as_boundary_solver_with_only_decrease(
-            cls,
-            hj_setup: HjSetup,
-            solver_settings: hj_reachability.SolverSettings,
-            avoid_set: MaskNd,
-            reach_set: MaskNd,
-            boundary_distance: float = 1.0,
-            neighbor_distance: float = 1.0,
-            solver_timestep: float = -0.1,
-            value_change_atol: float = 1e-3,
-            value_change_rtol: float = 1e-3,
-            max_iterations: int = 100,
-            verbose: bool = False,
-    ):
-        active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
-            distance=boundary_distance
-        )
-        neighbor_expander = SignedDistanceNeighbors.from_parts(
-            distance=neighbor_distance
-        )
-        local_hjr_stepper = OnlyDecreaseLocalHjrStepper.from_parts(
-            hj_setup=hj_setup,
-            solver_settings=solver_settings,
-            time_step=solver_timestep,
-            verbose=verbose
-        )
-        active_set_post_filter = RemoveWhereUnchanged.from_parts(
-            atol=value_change_atol,
-            rtol=value_change_rtol,
-        )
-        break_criteria_checker = BreakCriteriaChecker.from_criteria(
-            [
-                MaxIterations.from_parts(max_iterations=max_iterations),
-                PostFilteredActiveSetEmpty.from_parts(),
-            ]
-        )
-
-        return cls(
-            hj_setup=hj_setup,
-            solver_settings=solver_settings,
-            avoid_set=avoid_set,
-            reach_set=reach_set,
-            active_set_pre_filter=active_set_pre_filter,
-            neighbor_expander=neighbor_expander,
-            local_hjr_stepper=local_hjr_stepper,
-            active_set_post_filter=active_set_post_filter,
-            break_criteria_checker=break_criteria_checker,
-            verbose=verbose,
-        )
 
     def __call__(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
         local_update_result = self._initialize_local_result(active_set, initial_values)
@@ -261,3 +84,265 @@ class LocalHjrSolver(Callable):
 
     def _check_for_break(self, result: LocalUpdateResult):
         return self._break_criteria_checker(result)
+
+    @classmethod
+    def from_parts(
+            cls,
+            hj_setup: HjSetup,
+            solver_settings: hj_reachability.SolverSettings,
+            avoid_set: MaskNd,
+            reach_set: MaskNd,
+            active_set_pre_filter: ActiveSetPreFilter,
+            neighbor_expander: NeighborExpander,
+            local_hjr_stepper: LocalHjrStepper,
+            active_set_post_filter: ActiveSetPostFilter,
+            break_criteria_checker: BreakCriteriaChecker,
+            verbose: bool = False,
+    ):
+        return cls(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            active_set_pre_filter=active_set_pre_filter,
+            neighbor_expander=neighbor_expander,
+            local_hjr_stepper=local_hjr_stepper,
+            active_set_post_filter=active_set_post_filter,
+            break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
+        )
+
+    @classmethod
+    def as_classic_solver(
+            cls,
+            hj_setup: HjSetup,
+            solver_settings: hj_reachability.SolverSettings,
+            avoid_set: MaskNd,
+            reach_set: MaskNd,
+            neighbor_distance: float = 1.0,
+            solver_timestep: float = -0.1,
+            value_change_atol: float = 1e-3,
+            value_change_rtol: float = 1e-3,
+            max_iterations: int = 100,
+            verbose: bool = False,
+    ):
+        """
+        NOTE: see readme for more details, info here may be inaccurate.
+
+        classic solver with no pre-filtering, "signed distance" neighbors, "classic" local hjr stepper, and "no change" post-filtering.
+        with appropriate initialization, should return the same values as vanilla/global hjr for regions connected by value to the initial active set.
+        """
+        active_set_pre_filter = NoFilter.from_parts(
+        )
+        neighbor_expander = SignedDistanceNeighbors.from_parts(
+            distance=neighbor_distance
+        )
+        local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            time_step=solver_timestep,
+            verbose=verbose
+        )
+        active_set_post_filter = RemoveWhereUnchanged.from_parts(
+            atol=value_change_atol,
+            rtol=value_change_rtol,
+        )
+        break_criteria_checker = BreakCriteriaChecker.from_criteria(
+            [
+                MaxIterations.from_parts(max_iterations=max_iterations),
+                PostFilteredActiveSetEmpty.from_parts(),
+            ],
+            verbose=verbose
+        )
+
+        return cls(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            active_set_pre_filter=active_set_pre_filter,
+            neighbor_expander=neighbor_expander,
+            local_hjr_stepper=local_hjr_stepper,
+            active_set_post_filter=active_set_post_filter,
+            break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
+        )
+
+    @classmethod
+    def as_only_decrease(
+            cls,
+            hj_setup: HjSetup,
+            solver_settings: hj_reachability.SolverSettings,
+            avoid_set: MaskNd,
+            reach_set: MaskNd,
+
+            boundary_distance: float = 1.0,
+            neighbor_distance: float = 1.0,
+            solver_timestep: float = -0.1,
+            value_change_atol: float = 1e-3,
+            value_change_rtol: float = 1e-3,
+            max_iterations: int = 100,
+
+            verbose: bool = False,
+    ):
+        """
+        NOTE: see readme for more details, info here may be inaccurate.
+
+        classic solver with no pre-filtering, signed distance neighbors, only decrease local hjr stepper, and no change post-filtering.
+        with appropriate initialization, should return the same zero levelset as vanilla/global hjr for regions connected by value to the initial active set.
+        values should be conservative (low) generally.
+        """
+        active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
+            distance=boundary_distance
+        )
+        neighbor_expander = SignedDistanceNeighbors.from_parts(
+            distance=neighbor_distance
+        )
+        local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            time_step=solver_timestep,
+            verbose=verbose
+        )
+        active_set_post_filter = RemoveWhereUnchanged.from_parts(
+            atol=value_change_atol,
+            rtol=value_change_rtol,
+        )
+        break_criteria_checker = BreakCriteriaChecker.from_criteria(
+            [
+                MaxIterations.from_parts(max_iterations=max_iterations),
+                PostFilteredActiveSetEmpty.from_parts(),
+            ],
+            verbose=verbose
+        )
+
+        return cls(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            active_set_pre_filter=active_set_pre_filter,
+            neighbor_expander=neighbor_expander,
+            local_hjr_stepper=local_hjr_stepper,
+            active_set_post_filter=active_set_post_filter,
+            break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
+        )
+
+    @classmethod
+    def as_boundary_solver(
+            cls,
+            hj_setup: HjSetup,
+            solver_settings: hj_reachability.SolverSettings,
+            avoid_set: MaskNd,
+            reach_set: MaskNd,
+
+            boundary_distance: float = 1.0,
+            neighbor_distance: float = 1.0,
+            solver_timestep: float = -0.1,
+            value_change_atol: float = 1e-3,
+            value_change_rtol: float = 1e-3,
+            max_iterations: int = 100,
+
+            verbose: bool = False,
+    ):
+        """
+        NOTE: see readme for more details, info here may be inaccurate.
+
+        classic solver with "boundary" pre-filtering, "signed distance" neighbors, "classic" local hjr stepper, and "no change" post-filtering.
+        """
+        active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
+            distance=boundary_distance
+        )
+        neighbor_expander = SignedDistanceNeighbors.from_parts(
+            distance=neighbor_distance
+        )
+        local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            time_step=solver_timestep,
+            verbose=verbose
+        )
+        active_set_post_filter = RemoveWhereUnchanged.from_parts(
+            atol=value_change_atol,
+            rtol=value_change_rtol,
+        )
+        break_criteria_checker = BreakCriteriaChecker.from_criteria(
+            [
+                MaxIterations.from_parts(max_iterations=max_iterations),
+                PostFilteredActiveSetEmpty.from_parts(),
+            ],
+            verbose=verbose
+        )
+
+        return cls(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            active_set_pre_filter=active_set_pre_filter,
+            neighbor_expander=neighbor_expander,
+            local_hjr_stepper=local_hjr_stepper,
+            active_set_post_filter=active_set_post_filter,
+            break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
+        )
+
+    @classmethod
+    def as_boundary_solver_with_only_decrease(
+            cls,
+            hj_setup: HjSetup,
+            solver_settings: hj_reachability.SolverSettings,
+            avoid_set: MaskNd,
+            reach_set: MaskNd,
+
+            boundary_distance: float = 1.0,
+            neighbor_distance: float = 1.0,
+            solver_timestep: float = -0.1,
+            value_change_atol: float = 1e-3,
+            value_change_rtol: float = 1e-3,
+            max_iterations: int = 100,
+
+            verbose: bool = False,
+    ):
+        """
+        NOTE: see readme for more details, info here may be inaccurate.
+
+        classic solver with "boundary" pre-filtering, "signed distance" neighbors, "only decrease" local hjr stepper, and "no change" post-filtering.
+        """
+        active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
+            distance=boundary_distance
+        )
+        neighbor_expander = SignedDistanceNeighbors.from_parts(
+            distance=neighbor_distance
+        )
+        local_hjr_stepper = OnlyDecreaseLocalHjrStepper.from_parts(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            time_step=solver_timestep,
+            verbose=verbose
+        )
+        active_set_post_filter = RemoveWhereUnchanged.from_parts(
+            atol=value_change_atol,
+            rtol=value_change_rtol,
+        )
+        break_criteria_checker = BreakCriteriaChecker.from_criteria(
+            [
+                MaxIterations.from_parts(max_iterations=max_iterations),
+                PostFilteredActiveSetEmpty.from_parts(),
+            ],
+            verbose=verbose
+        )
+
+        return cls(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            active_set_pre_filter=active_set_pre_filter,
+            neighbor_expander=neighbor_expander,
+            local_hjr_stepper=local_hjr_stepper,
+            active_set_post_filter=active_set_post_filter,
+            break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
+        )

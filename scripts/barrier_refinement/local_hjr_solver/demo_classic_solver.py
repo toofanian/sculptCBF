@@ -22,7 +22,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use("TkAgg")
 
 
-def demo_local_hjr_solver_classic_on_active_cruise_control(verbose: bool = False, save_gif: bool = False):
+def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False, save_gif: bool = False):
     hj_setup = HjSetup.from_parts(
         dynamics=HJControlAffineDynamics.from_control_affine_dynamics(
             control_affine_dynamic_system=ActiveCruiseControlJAX.from_params(simplified_active_cruise_control_params),
@@ -34,11 +34,14 @@ def demo_local_hjr_solver_classic_on_active_cruise_control(verbose: bool = False
                 [0, -20, 20],
                 [1e3, 20, 80]
             ),
-            shape=(5, 51, 51)
+            shape=(5, 31, 31)
         )
     )
 
-    avoid_set = get_saved_signed_distance_function(signed_distance_function=SignedDistanceFunctions.X3_DISTANCE_KERNEL_CUT_55dist) < 0
+    avoid_set = get_saved_signed_distance_function(
+        signed_distance_function=SignedDistanceFunctions.X3_DISTANCE_KERNEL_CUT_55dist,
+        hj_setup=hj_setup
+    ) < 0
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
     terminal_values = compute_signed_distance(~avoid_set)
@@ -54,11 +57,13 @@ def demo_local_hjr_solver_classic_on_active_cruise_control(verbose: bool = False
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
-        max_iterations=1000,
+        max_iterations=300,
+        value_change_atol=1e-5,
+        value_change_rtol=1e-5,
         verbose=verbose
     )
 
-    initial_values = terminal_values.copy()
+    initial_values = terminal_values.copy() + 5
     active_set = jnp.ones_like(avoid_set, dtype=bool) & (hj_setup.grid.states[..., 1] < -2.5) & (hj_setup.grid.states[..., 2] > 47.5)
 
     result = solver(active_set=active_set, initial_values=initial_values)
@@ -84,6 +89,12 @@ def demo_local_hjr_solver_classic_on_active_cruise_control(verbose: bool = False
                 reference_slice=ref_index,
                 verbose=verbose
             )
+
+        result.plot_value_function(
+            reference_slice=ref_index,
+            verbose=verbose
+        )
+
         result.plot_value_function_against_truth(
             reference_slice=ref_index,
             verbose=verbose
@@ -92,7 +103,7 @@ def demo_local_hjr_solver_classic_on_active_cruise_control(verbose: bool = False
     return result
 
 
-def demo_local_hjr_solver_quadcopter_vertical_classic(verbose: bool = False, save_gif: bool = False):
+def demo_local_hjr_classic_solver_on_quadcopter_vertical(verbose: bool = False, save_gif: bool = False):
     # set up dynamics and grid
     hj_setup = HjSetup.from_parts(
         dynamics=quadcopter_vertical_jax_hj,
@@ -136,7 +147,7 @@ def demo_local_hjr_solver_quadcopter_vertical_classic(verbose: bool = False, sav
         mapping=quadcopter_cbf_from_refine_cbf,
         grid=hj_setup.grid
     )
-    active_set = jnp.ones_like(hj_setup.grid.states, dtype=bool)
+    active_set = jnp.ones_like(hj_setup.grid.states[..., 0], dtype=bool)
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)
@@ -168,14 +179,19 @@ def demo_local_hjr_solver_quadcopter_vertical_classic(verbose: bool = False, sav
                 verbose=verbose
             )
 
-        result.plot_value_function_against_truth(
+        result.plot_value_function(
             reference_slice=ref_index,
             verbose=verbose
+        )
+
+        result.plot_value_function_against_truth(
+            reference_slice=ref_index,
+            verbose=verbose,
         )
 
     return result
 
 
 if __name__ == '__main__':
-    demo_local_hjr_solver_quadcopter_vertical_classic(verbose=True, save_gif=False)
-    # demo_local_hjr_solver_classic_on_active_cruise_control(verbose=True, save_gif=False)
+    # demo_local_hjr_classic_solver_on_quadcopter_vertical(verbose=True, save_gif=True)
+    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False)
