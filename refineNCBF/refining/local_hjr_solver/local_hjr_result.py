@@ -1,6 +1,9 @@
+import json
+import pickle
 from typing import List, Optional
 
 import attr
+import dill
 import hj_reachability
 import numpy as np
 from jax import numpy as jnp
@@ -69,6 +72,19 @@ class LocalUpdateResult:
 
     def add_iteration(self, iteration: LocalUpdateResultIteration):
         self.iterations.append(iteration)
+
+    def save(self, file_path: FilePathRelative):
+        full_path = construct_full_path(file_path)
+        check_if_file_exists(full_path)
+        with open(full_path, "wb") as f:
+            dill.dump(self, f)
+
+    @classmethod
+    def load(cls, file_path: FilePathRelative) -> "LocalUpdateResult":
+        full_path = construct_full_path(file_path)
+        with open(full_path, "rb") as f:
+            cls = dill.load(f)
+        return cls
 
     def get_recent_active_set(self) -> MaskNd:
         return self.seed_set if len(self.iterations) == 0 else self.iterations[-1].active_set_post_filtered

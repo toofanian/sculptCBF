@@ -12,5 +12,5 @@ class HjSetup:
             cls,
             dynamics: hj_reachability.Dynamics,
             grid: hj_reachability.Grid,
-    ):
+    ) -> 'HjSetup':
         return cls(dynamics=dynamics, grid=grid)

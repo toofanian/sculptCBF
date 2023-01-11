@@ -21,3 +21,7 @@ def generate_unique_filename(header: str, extension: str) -> str:
     import datetime
     now = datetime.datetime.now()
     return f'{header}-{now.strftime("%Y%m%d_%H%M%S")}.{extension}'
+
+
+def remove_file(file_path: FilePathRelative) -> None:
+    os.remove(construct_full_path(relative_path=file_path))
