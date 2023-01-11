@@ -20,7 +20,7 @@ from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose: bool = False, save_gif: bool = False):
+def demo_local_hjr_boundary_solver_on_quadcopter_vertical_cbf(verbose: bool = False, save_gif: bool = False):
     # set up dynamics and grid
     hj_setup = HjSetup.from_parts(
         dynamics=quadcopter_vertical_jax_hj,
@@ -59,18 +59,19 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose: bool = False,
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=3
+        max_iterations=50
     )
 
     # define initial values and initial active set to solve on
     initial_values = terminal_values.copy()
-    active_set = map_cells_to_grid(
-        cell_centerpoints=load_uncertified_states(),
-        cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
-        grid=hj_setup.grid,
-        verbose=True,
-        save_array=True
-    )
+    # active_set = map_cells_to_grid(
+    #     cell_centerpoints=load_uncertified_states(),
+    #     cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+    #     grid=hj_setup.grid,
+    #     verbose=True,
+    #     save_array=True
+    # )
+    active_set = load_uncertified_mask()
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)

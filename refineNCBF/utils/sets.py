@@ -73,6 +73,6 @@ def map_cells_to_grid(
         bool_grid = bool_grid | grid_within_cell
 
     if save_array:
-        np.save(construct_full_path(generate_unique_filename('data/trained_NCBFs/uncertified_grid', 'npy')), bool_grid)
+        np.save(construct_full_path(generate_unique_filename('data/trained_NCBFs/quad4d_boundary/uncertified_grid', 'npy')), bool_grid)
 
     return bool_grid
