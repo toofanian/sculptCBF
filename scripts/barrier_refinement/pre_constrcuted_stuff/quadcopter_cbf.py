@@ -1,14 +1,16 @@
 # Barrier
 import json
-from typing import List, Tuple
 
 import numpy as np
+import jax.numpy as jnp
 import torch
 
+from refineNCBF.training.dnn_models import standardizer
 from refineNCBF.training.dnn_models.cbf import Cbf
 from refineNCBF.utils.files import construct_full_path
 from refineNCBF.training.dnn_models.standardizer import Standardizer
-from refineNCBF.utils.types import Vector, VectorBatch
+from refineNCBF.utils.sets import get_mask_boundary_on_both_sides_by_signed_distance
+from refineNCBF.utils.types import VectorBatch, MaskNd
 
 
 def load_quadcopter_cbf() -> Cbf:
@@ -33,7 +35,10 @@ def load_uncertified_states():
     uncertified_states = quad4d_result_dict['uns']
     violated_states = quad4d_result_dict['vio']
     total_states = uncertified_states + violated_states
-    return tuple(map(tuple, total_states))
+
+    standardizer = load_standardizer()
+    total_states_destandardized = standardizer.destandardize(total_states)
+    return tuple(map(tuple, total_states_destandardized))
 
 
 def load_uncertified_states_np() -> VectorBatch:
@@ -44,3 +49,12 @@ def load_uncertified_states_np() -> VectorBatch:
     total_states = uncertified_states + violated_states
     total_states = np.array(total_states)
     return total_states
+
+
+def load_uncertified_mask() -> MaskNd:
+    return jnp.load(construct_full_path('data/trained_NCBFs/uncertified_grid-20230110_175429.npy'))
+
+
+if __name__ == '__main__':
+    uncertified_mask = load_uncertified_mask()
+    print(f'fraction uncertified: {jnp.count_nonzero(uncertified_mask) / uncertified_mask.size}')

@@ -13,7 +13,8 @@ from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, map_cells_to_grid
 from refineNCBF.utils.visuals import ArraySlice2D
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states, \
+    load_uncertified_mask
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import tabularize_dnn
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -57,7 +58,8 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose: bool = False,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
-        verbose=verbose
+        verbose=verbose,
+        max_iterations=3
     )
 
     # define initial values and initial active set to solve on
@@ -99,11 +101,11 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose: bool = False,
                 reference_slice=ref_index,
                 verbose=verbose
             )
-
-        result.plot_value_function_against_truth(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
+        #
+        # result.plot_value_function_against_truth(
+        #     reference_slice=ref_index,
+        #     verbose=verbose
+        # )
 
     return result
 
