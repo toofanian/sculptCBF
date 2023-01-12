@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import torch
 
 from refineNCBF.training.dnn_models.cbf import Cbf
-from refineNCBF.utils.files import construct_full_path
+from refineNCBF.utils.files import construct_full_path, FilePathRelative
 from refineNCBF.training.dnn_models.standardizer import Standardizer
 from refineNCBF.utils.types import VectorBatch, MaskNd
 
@@ -45,14 +45,11 @@ def load_uncertified_states_np() -> VectorBatch:
     uncertified_states = quad4d_result_dict['uns']
     violated_states = quad4d_result_dict['vio']
     total_states = uncertified_states + violated_states
-    total_states = np.array(total_states)
-    return total_states
+
+    standardizer = load_standardizer()
+    total_states_destandardized = standardizer.destandardize(np.array(total_states))
+    return total_states_destandardized
 
 
-def load_uncertified_mask() -> MaskNd:
-    return jnp.load(construct_full_path('data/trained_NCBFs/quad4d_boundary/uncertified_grid-20230110_224724.npy'))
-
-
-if __name__ == '__main__':
-    uncertified_mask = load_uncertified_mask()
-    print(f'fraction uncertified: {jnp.count_nonzero(uncertified_mask) / uncertified_mask.size}')
+def load_uncertified_mask(path: FilePathRelative) -> MaskNd:
+    return jnp.load(construct_full_path(path))

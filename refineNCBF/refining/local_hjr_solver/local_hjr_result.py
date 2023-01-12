@@ -1,5 +1,3 @@
-import json
-import pickle
 from typing import List, Optional
 
 import attr
@@ -17,6 +15,8 @@ from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D
 
+import matplotlib
+matplotlib.use('TkAgg')
 
 @attr.dataclass
 class LocalUpdateResultIteration:
@@ -227,6 +227,8 @@ class LocalUpdateResult:
             )
 
             ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+
+            return ax
 
         fig, ax = plt.subplots(figsize=(9, 7))
         anim = animation.FuncAnimation(fig, animate, frames=len(self), interval=100)
