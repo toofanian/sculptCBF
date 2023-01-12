@@ -128,7 +128,7 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
     )
 
     # define reach and avoid targets
-    avoid_set = (dnn_values_over_grid < 0) | (dnn_values_over_grid > 2)
+    avoid_set = (dnn_values_over_grid < 0)
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
     # create solver settings for backwards reachable tube
