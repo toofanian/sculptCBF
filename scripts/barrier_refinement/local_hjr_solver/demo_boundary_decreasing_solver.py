@@ -3,6 +3,7 @@ import warnings
 
 import hj_reachability
 import matplotlib
+from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
@@ -12,10 +13,9 @@ import jax.numpy as jnp
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
-from refineNCBF.utils.sets import compute_signed_distance, map_cells_to_grid, map_cells_to_grid_using_mod, map_cells_to_grid_using_mod_parallel
+from refineNCBF.utils.sets import compute_signed_distance, map_cells_to_grid_using_mod_parallel
 from refineNCBF.utils.visuals import ArraySlice2D
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_uncertified_mask, load_quadcopter_cbf, load_standardizer, \
-    load_uncertified_states, load_uncertified_states_np
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states_np
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import tabularize_vector_to_scalar_mapping, quadcopter_cbf_from_refine_cbf, \
     tabularize_dnn
 
@@ -117,7 +117,7 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
                 [4, -3.3, -1.5, -1],
                 [10.5, 2.5, 1.5, 3]
             ),
-            shape=(25, 25, 25, 25)
+            shape=(25, 25, 25, 25)  # (31, 25, 41, 25)
         )
     )
 
@@ -147,7 +147,7 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=25
+        max_iterations=1000,
     )
 
     # define initial values and initial active set to solve on
@@ -192,6 +192,8 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
                 reference_slice=ref_index,
                 verbose=verbose
             )
+
+        plt.pause(0)
 
     return result
 

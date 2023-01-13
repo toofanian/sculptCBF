@@ -1,3 +1,4 @@
+import warnings
 from typing import List, Optional
 
 import attr
@@ -17,6 +18,8 @@ from refineNCBF.utils.visuals import ArraySlice2D
 
 import matplotlib
 matplotlib.use('TkAgg')
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 @attr.dataclass
 class LocalUpdateResultIteration:
@@ -342,6 +345,8 @@ class LocalUpdateResult:
         )
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
 
+        print(f'total inaccurate states: {np.count_nonzero(~jnp.isclose(truth, final_values, atol=.5) & total_active_mask)}')
+
         if verbose:
             plt.show()
 
@@ -395,6 +400,6 @@ class LocalUpdateResult:
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
 
         if verbose:
-            plt.show()
+            plt.show(block=False)
 
         return fig, ax
