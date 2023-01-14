@@ -21,6 +21,7 @@ matplotlib.use('TkAgg')
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+
 @attr.dataclass
 class LocalUpdateResultIteration:
     active_set_pre_filtered: MaskNd
