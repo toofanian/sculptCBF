@@ -2,6 +2,7 @@ import os
 import warnings
 
 import hj_reachability
+from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
@@ -13,9 +14,10 @@ from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_mask
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, \
+    load_uncertified_states
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import quadcopter_cbf_from_refine_cbf
-from refineNCBF.utils.tables import tabularize_vector_to_scalar_mapping, tabularize_dnn
+from refineNCBF.utils.tables import tabularize_vector_to_scalar_mapping, tabularize_dnn, flag_states_on_grid
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -104,16 +106,16 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose: bool = False,
     return result
 
 
-def demo_local_hjr_boundary_solver_on_quadcopter_vertical_cbf(verbose: bool = False, save_gif: bool = False):
+def demo_local_hjr_decrease_solver_on_quadcopter_vertical_ncbf(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
     # set up dynamics and grid
     hj_setup = HjSetup.from_parts(
         dynamics=quadcopter_vertical_jax_hj,
         grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
             domain=hj_reachability.sets.Box(
-                [4, -2, -1, -1],
-                [10, 2, 1, 2.5]
+                [4, -3.3, -1.5, -1],
+                [10.5, 2.5, 1.5, 3]
             ),
-            shape=(31, 31, 31, 31)
+            shape=(25, 25, 25, 25)  # (31, 25, 41, 25)
         )
     )
 
@@ -124,7 +126,7 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical_cbf(verbose: bool = Fa
     )
 
     # define reach and avoid targets
-    avoid_set = dnn_values_over_grid < 0
+    avoid_set = (dnn_values_over_grid < 0)
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
     # create solver settings for backwards reachable tube
@@ -137,28 +139,30 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical_cbf(verbose: bool = Fa
     )
 
     # load into solver
-    solver = LocalHjrSolver.as_boundary_solver(
+    solver = LocalHjrSolver.as_only_decrease(
         hj_setup=hj_setup,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=50
+        max_iterations=1000,
     )
 
     # define initial values and initial active set to solve on
     initial_values = terminal_values.copy()
-    # active_set = map_cells_to_grid(
-    #     cell_centerpoints=load_uncertified_states(),
-    #     cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
-    #     grid=hj_setup.grid,
-    #     verbose=True,
-    #     save_array=True
-    # )
-    active_set = load_uncertified_mask()
+    active_set = flag_states_on_grid(
+        cell_centerpoints=load_uncertified_states(),
+        cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+        grid=hj_setup.grid,
+        verbose=True,
+        save_array=False
+    )
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)
+
+    if save_result:
+        result.save(generate_unique_filename('data/local_update_results/demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf', 'dill'))
 
     # visualize
     if verbose:
@@ -179,7 +183,7 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical_cbf(verbose: bool = Fa
                 verbose=verbose,
                 save_path=os.path.join(
                     visuals_data_directory,
-                    f'{generate_unique_filename("demo_local_hjr_solver_quadcopter_vertical_classic", "gif")}')
+                    f'{generate_unique_filename("demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf", "gif")}')
             )
         else:
             result.create_gif(
@@ -187,8 +191,10 @@ def demo_local_hjr_boundary_solver_on_quadcopter_vertical_cbf(verbose: bool = Fa
                 verbose=verbose
             )
 
+        plt.pause(0)
+
     return result
 
 
 if __name__ == '__main__':
-    demo_local_hjr_boundary_solver_on_quadcopter_vertical(verbose=True, save_gif=True)
+    demo_local_hjr_decrease_solver_on_quadcopter_vertical_ncbf(verbose=True, save_gif=True)

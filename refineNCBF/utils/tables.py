@@ -28,7 +28,7 @@ def tabularize_dnn(
     return jnp.array(dnn((torch.FloatTensor(standardizer.standardize(np.array(grid.states.reshape((-1, grid.states.shape[-1]))))))).detach().numpy().reshape(grid.shape))
 
 
-def map_cells_to_grid_using_mod_parallel(
+def flag_states_on_grid(
         cell_centerpoints: VectorBatch,
         cell_halfwidths: Tuple[float, ...],
         grid: hj_reachability.Grid,
@@ -49,7 +49,7 @@ def map_cells_to_grid_using_mod_parallel(
     overlap_indices = np.stack([lower_index, upper_index], axis=-1).astype(int)
 
     bool_grid = np.zeros_like(grid.states[..., 0], dtype=bool)
-    for overlap_index in tqdm(overlap_indices, disable=not verbose, desc='mapping uncertified cells to grid'):
+    for overlap_index in tqdm(overlap_indices, disable=not verbose, desc='flagging states on grid'):
         index_slice = tuple([np.s_[overlap_index[dim][0]:overlap_index[dim][1]+1] for dim in range(dims)])
         bool_grid[index_slice] = True
 

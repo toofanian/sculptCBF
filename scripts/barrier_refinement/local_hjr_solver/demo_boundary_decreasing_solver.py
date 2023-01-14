@@ -17,7 +17,7 @@ from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import quadcopter_cbf_from_refine_cbf
-from refineNCBF.utils.tables import tabularize_vector_to_scalar_mapping, tabularize_dnn, map_cells_to_grid_using_mod_parallel
+from refineNCBF.utils.tables import tabularize_vector_to_scalar_mapping, tabularize_dnn, flag_states_on_grid
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -152,7 +152,7 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
 
     # define initial values and initial active set to solve on
     initial_values = terminal_values.copy()
-    active_set = map_cells_to_grid_using_mod_parallel(
+    active_set = flag_states_on_grid(
         cell_centerpoints=load_uncertified_states(),
         cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
         grid=hj_setup.grid,
