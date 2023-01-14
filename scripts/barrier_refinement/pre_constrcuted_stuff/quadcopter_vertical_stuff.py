@@ -1,16 +1,11 @@
-from typing import Callable
-
 import hj_reachability
-import numpy as np
-import torch
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 
 import jax.numpy as jnp
 
-from refineNCBF.training.dnn_models.standardizer import Standardizer
-from refineNCBF.utils.types import VectorBatch, ScalarBatch, ArrayNd
+from refineNCBF.utils.types import VectorBatch, ScalarBatch
 
 
 def make_hj_setup_quadcopter_vertical() -> HjSetup:
@@ -31,16 +26,3 @@ def quadcopter_cbf_from_refine_cbf(state: VectorBatch) -> ScalarBatch:
                  + scaling[2] * (state[..., 2]) ** 2 + scaling[3] * (state[..., 3]) ** 2)
 
 
-def tabularize_vector_to_scalar_mapping(
-        mapping: Callable[[VectorBatch], ScalarBatch],
-        grid: hj_reachability.Grid
-) -> ArrayNd:
-    return mapping(grid.states.reshape((-1, grid.states.shape[-1]))).reshape(grid.shape)
-
-
-def tabularize_dnn(
-        dnn: Callable[[VectorBatch], ScalarBatch],
-        standardizer: Standardizer,
-        grid: hj_reachability.Grid
-) -> ArrayNd:
-    return jnp.array(dnn((torch.FloatTensor(standardizer.standardize(np.array(grid.states.reshape((-1, grid.states.shape[-1]))))))).detach().numpy().reshape(grid.shape))

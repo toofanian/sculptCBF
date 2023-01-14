@@ -14,8 +14,8 @@ from refineNCBF.utils.files import visuals_data_directory, generate_unique_filen
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_mask
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import tabularize_vector_to_scalar_mapping, quadcopter_cbf_from_refine_cbf, \
-    tabularize_dnn
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import quadcopter_cbf_from_refine_cbf
+from refineNCBF.utils.tables import tabularize_vector_to_scalar_mapping, tabularize_dnn
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 

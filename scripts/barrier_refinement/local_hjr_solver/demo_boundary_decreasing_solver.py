@@ -13,11 +13,11 @@ import jax.numpy as jnp
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
-from refineNCBF.utils.sets import compute_signed_distance, map_cells_to_grid_using_mod_parallel
+from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states_np
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import tabularize_vector_to_scalar_mapping, quadcopter_cbf_from_refine_cbf, \
-    tabularize_dnn
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import quadcopter_cbf_from_refine_cbf
+from refineNCBF.utils.tables import tabularize_vector_to_scalar_mapping, tabularize_dnn, map_cells_to_grid_using_mod_parallel
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -153,7 +153,7 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
     # define initial values and initial active set to solve on
     initial_values = terminal_values.copy()
     active_set = map_cells_to_grid_using_mod_parallel(
-        cell_centerpoints=load_uncertified_states_np(),
+        cell_centerpoints=load_uncertified_states(),
         cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
         grid=hj_setup.grid,
         verbose=True,
