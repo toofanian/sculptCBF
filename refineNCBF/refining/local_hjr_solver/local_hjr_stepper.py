@@ -30,10 +30,11 @@ class ClassicLocalHjrStepper(LocalHjrStepper):
         return cls(hj_setup=hj_setup, solver_settings=solver_settings, time_step=time_step, verbose=verbose)
 
     def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
-        values = hjr_step_local(
+        values = hj_reachability.step(
             solver_settings=self._solver_settings,
-            hj_setup=self._hj_setup,
-            start_time=0,
+            dynamics=self._hj_setup.dynamics,
+            grid=self._hj_setup.grid,
+            time=0,
             values=data.get_recent_values(),
             target_time=self._time_step,
             active_set=active_set_expanded,
@@ -55,10 +56,11 @@ class OnlyDecreaseLocalHjrStepper(LocalHjrStepper):
         return cls(hj_setup=hj_setup, solver_settings=solver_settings, time_step=time_step, verbose=verbose)
 
     def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
-        values_next = hjr_step_local(
+        values_next = hj_reachability.step(
             solver_settings=self._solver_settings,
-            hj_setup=self._hj_setup,
-            start_time=0,
+            dynamics=self._hj_setup.dynamics,
+            grid=self._hj_setup.grid,
+            time=0,
             values=data.get_recent_values(),
             target_time=self._time_step,
             active_set=active_set_expanded,
