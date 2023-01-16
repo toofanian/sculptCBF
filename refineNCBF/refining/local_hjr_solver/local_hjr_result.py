@@ -9,8 +9,8 @@ from jax import numpy as jnp
 from matplotlib import pyplot as plt, animation
 
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
+from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.refining.hj_reachability_interface.hj_vanilla_step import hjr_solve_vanilla
 from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_full_path
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
@@ -263,7 +263,7 @@ class LocalUpdateResult:
             value_postprocessor=ReachAvoid.from_array(terminal_values, self.reach_set)
         )
 
-        truth = hjr_solve_vanilla(
+        truth = hj_step(
             hj_setup=self.hj_setup,
             solver_settings=solver_settings,
             initial_values=terminal_values,

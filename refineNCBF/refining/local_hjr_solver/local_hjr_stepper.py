@@ -4,7 +4,6 @@ from typing import Callable
 import attr
 import hj_reachability
 
-from refineNCBF.refining.hj_reachability_interface.hj_local_step import hjr_step_local
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
 from refineNCBF.utils.types import MaskNd, ArrayNd

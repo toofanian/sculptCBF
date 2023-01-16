@@ -9,8 +9,8 @@ from refineNCBF.dynamic_systems.implementations.active_cruise_control import Act
     simplified_active_cruise_control_params
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
+from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import NotBiggerator
-from refineNCBF.refining.hj_reachability_interface.hj_vanilla_step import hjr_solve_vanilla
 from refineNCBF.utils.sets import compute_signed_distance
 
 
@@ -60,7 +60,7 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             solver_settings = hj_reachability.SolverSettings(
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
-            where_boundary_values = hjr_solve_vanilla(
+            where_boundary_values = hj_step(
                 hj_setup=hj_setup,
                 solver_settings=solver_settings,
                 initial_values=signed_distance_to_boundary,
@@ -79,7 +79,7 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             solver_settings = hj_reachability.SolverSettings(
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
-            where_boundary_values = hjr_solve_vanilla(
+            where_boundary_values = hj_step(
                 hj_setup=hj_setup,
                 solver_settings=solver_settings,
                 initial_values=signed_distance_to_boundary,
@@ -98,7 +98,7 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             solver_settings = hj_reachability.SolverSettings(
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
-            where_boundary_values = hjr_solve_vanilla(
+            where_boundary_values = hj_step(
                 hj_setup=hj_setup,
                 solver_settings=solver_settings,
                 initial_values=signed_distance_to_boundary,
