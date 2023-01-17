@@ -22,7 +22,7 @@ class NoFilter(ActiveSetPreFilter):
         return cls()
 
     def __call__(self, data: LocalUpdateResult) -> MaskNd:
-        active_set_filtered = data.get_recent_active_set()
+        active_set_filtered = data.get_recent_set_input()
         return active_set_filtered
 
 
@@ -36,7 +36,7 @@ class FilterWhereFarFromZeroLevelset(ActiveSetPreFilter):
 
     def __call__(self, data: LocalUpdateResult) -> MaskNd:
         active_set_filtered = (
-                data.get_recent_active_set()
+                data.get_recent_set_input()
                 & ~
                 (
                         shrink_mask_by_signed_distance(data.get_recent_values() >= 0, distance=self._distance)

@@ -1,9 +1,7 @@
 import os
-import warnings
 
 import hj_reachability
-import matplotlib
-from jax import numpy as jnp
+import jax
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
@@ -15,9 +13,6 @@ from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.tables import tabularize_dnn, flag_states_on_grid
 from refineNCBF.utils.visuals import ArraySlice2D
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states
-
-warnings.simplefilter(action='ignore', category=FutureWarning)
-matplotlib.use('TkAgg')
 
 
 def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
@@ -41,7 +36,7 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
 
     # define reach and avoid targets
     avoid_set = (dnn_values_over_grid < 0)
-    reach_set = jnp.zeros_like(avoid_set, dtype=bool)
+    reach_set = jax.numpy.zeros_like(avoid_set, dtype=bool)
 
     # create solver settings for backwards reachable tube
     terminal_values = compute_signed_distance(~avoid_set)
@@ -54,13 +49,13 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
     )
 
     # load into solver
-    solver = LocalHjrSolver.as_boundary_solver_with_only_decrease(
+    solver = LocalHjrSolver.as_decrease(
         hj_setup=hj_setup,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=50,
+        max_iterations=1000,
     )
 
     # define initial values and initial active set to solve on
@@ -83,10 +78,10 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
     if verbose:
         ref_index = ArraySlice2D.from_reference_index(
             reference_index=(
-                jnp.array(hj_setup.grid.states.shape[0]) // 2,
-                jnp.array(9),
-                jnp.array(hj_setup.grid.states.shape[2]) // 2,
-                jnp.array(hj_setup.grid.states.shape[3]) // 2,
+                jax.numpy.array(hj_setup.grid.states.shape[0]) // 2,
+                jax.numpy.array(9),
+                jax.numpy.array(hj_setup.grid.states.shape[2]) // 2,
+                jax.numpy.array(hj_setup.grid.states.shape[3]) // 2,
             ),
             free_dim_1=0,
             free_dim_2=2
@@ -108,7 +103,7 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
 
         result.plot_value_function_against_truth(
             reference_slice=ref_index,
-            verbose=verbose,
+            verbose=True
         )
 
         plt.pause(0)

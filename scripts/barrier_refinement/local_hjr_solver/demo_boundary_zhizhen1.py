@@ -54,13 +54,13 @@ def demo_local_hjr_decrease_solver_on_quadcopter_vertical_ncbf(verbose: bool = F
     )
 
     # load into solver
-    solver = LocalHjrSolver.as_only_decrease(
+    solver = LocalHjrSolver.as_decrease(
         hj_setup=hj_setup,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=1000,
+        max_iterations=50,
     )
 
     # define initial values and initial active set to solve on
@@ -109,3 +109,7 @@ def demo_local_hjr_decrease_solver_on_quadcopter_vertical_ncbf(verbose: bool = F
         plt.pause(0)
 
     return result
+
+
+if __name__ == '__main__':
+    demo_local_hjr_decrease_solver_on_quadcopter_vertical_ncbf(verbose=True, save_gif=True, save_result=True)

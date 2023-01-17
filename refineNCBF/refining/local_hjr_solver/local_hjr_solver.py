@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Callable
 
@@ -12,6 +13,7 @@ from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateRes
 from refineNCBF.refining.local_hjr_solver.local_hjr_stepper import LocalHjrStepper, ClassicLocalHjrStepper, OnlyDecreaseLocalHjrStepper
 from refineNCBF.refining.local_hjr_solver.neighbor_expander import NeighborExpander, SignedDistanceNeighbors
 from refineNCBF.utils.types import MaskNd, ArrayNd
+from refineNCBF.utils.visuals import make_configured_logger
 
 
 @attr.s(auto_attribs=True)
@@ -41,6 +43,7 @@ class LocalHjrSolver(Callable):
     _break_criteria_checker: BreakCriteriaChecker
 
     _verbose: bool = False
+    _logger: logging.Logger = make_configured_logger(__name__)
 
     def __call__(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
         start_time = time.time()
@@ -49,11 +52,10 @@ class LocalHjrSolver(Callable):
             iteration = self._perform_local_update_iteration(local_update_result)
             local_update_result.add_iteration(iteration)
             if self._verbose:
-                print(f'running time is {time.time() - start_time}')
+                self._logger.info(f'iteration {len(local_update_result)} complete, \trunning duration is {(time.time() - start_time):.2f} seconds, \t\tcomputed over {local_update_result.get_recent_set_for_compute().sum()} cells')
             if self._check_for_break(local_update_result):
                 break
-        if self._verbose:
-            print(f'local update took {time.time() - start_time} seconds')
+
         return local_update_result
 
     def _initialize_local_result(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
@@ -72,8 +74,6 @@ class LocalHjrSolver(Callable):
         active_set_expanded = self._neighbor_expander(
             result, active_set_pre_filtered
         )
-        if self._verbose:
-            print(f'computing hamiltonian over {active_set_expanded.sum()} points')
         values_next = self._local_hjr_stepper(
             result, active_set_pre_filtered, active_set_expanded
         )
@@ -175,7 +175,7 @@ class LocalHjrSolver(Callable):
         )
 
     @classmethod
-    def as_only_decrease(
+    def as_decrease(
             cls,
             hj_setup: HjSetup,
             solver_settings: hj_reachability.SolverSettings,
@@ -198,13 +198,12 @@ class LocalHjrSolver(Callable):
         with appropriate initialization, should return the same zero levelset as vanilla/global hjr for regions connected by value to the initial active set.
         values should be conservative (low) generally.
         """
-        active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
-            distance=boundary_distance
+        active_set_pre_filter = NoFilter.from_parts(
         )
         neighbor_expander = SignedDistanceNeighbors.from_parts(
             distance=neighbor_distance
         )
-        local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
+        local_hjr_stepper = OnlyDecreaseLocalHjrStepper.from_parts(
             hj_setup=hj_setup,
             solver_settings=solver_settings,
             time_step=solver_timestep,

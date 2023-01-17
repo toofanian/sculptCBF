@@ -1,8 +1,10 @@
+import logging
 from typing import Tuple
 
 import attr
 import numpy as np
 
+from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.types import ArrayNd
 
 
@@ -27,3 +29,10 @@ class ArraySlice2D:
 
     def get_sliced_array(self, array: ArrayNd) -> ArrayNd:
         return np.array(array)[self.slice_index]
+
+
+def make_configured_logger(name: str) -> logging.Logger:
+    logging.basicConfig()
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    return logger

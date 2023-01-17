@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 from typing import List, Callable
 
@@ -5,6 +6,7 @@ import attr
 import jax.numpy as jnp
 
 from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
+from refineNCBF.utils.visuals import make_configured_logger
 
 
 @attr.s(auto_attribs=True)
@@ -23,6 +25,7 @@ class BreakCriteriaChecker(ABC, Callable):
     _break_criteria: List[BreakCriterion]
 
     _verbose: bool
+    _logger: logging.Logger = make_configured_logger(__name__)
 
     @classmethod
     def from_criteria(cls, break_criteria: List[BreakCriterion], verbose: bool = False):
@@ -34,7 +37,7 @@ class BreakCriteriaChecker(ABC, Callable):
 
         if criterion_met:
             if self._verbose:
-                print(f"Breaking because of: {break_reasons}")
+                self._logger.info(f"Breaking because of: {break_reasons}")
 
         return criterion_met
 
@@ -65,7 +68,7 @@ class PostFilteredActiveSetEmpty(BreakCriterion):
         return cls()
 
     def __call__(self, data: LocalUpdateResult) -> bool:
-        return jnp.count_nonzero(data.get_recent_active_set()) == 0
+        return jnp.count_nonzero(data.get_recent_set_input()) == 0
 
     def get_descriptor(self) -> str:
         return f'criterion of empty post-filtered active set has been met'

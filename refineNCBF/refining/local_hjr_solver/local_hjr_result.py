@@ -90,8 +90,14 @@ class LocalUpdateResult:
             cls = dill.load(f)
         return cls
 
-    def get_recent_active_set(self) -> MaskNd:
+    def get_recent_set_input(self) -> MaskNd:
         return self.seed_set if len(self.iterations) == 0 else self.iterations[-1].active_set_post_filtered
+
+    def get_recent_set_for_compute(self) -> MaskNd:
+        if len(self.iterations) == 0:
+            raise ValueError("No iterations have been computed yet.")
+        else:
+            return self.iterations[-1].active_set_expanded
 
     def get_total_active_count(self, up_to_iteration: int) -> int:
         return sum([
@@ -330,7 +336,7 @@ class LocalUpdateResult:
 
         ax.contourf3D(
             x1, x2, ~reference_slice.get_sliced_array(~jnp.isclose(truth, final_values, atol=.5) & total_active_mask).T,
-            levels=[0, .5], colors=['y'], alpha=.2
+            levels=[0, .01], colors=['y'], alpha=.2
         )
 
         ax.contour3D(
