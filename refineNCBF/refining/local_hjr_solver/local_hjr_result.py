@@ -259,7 +259,8 @@ class LocalUpdateResult:
         final_values = self.get_recent_values()
 
         terminal_values = compute_signed_distance(~self.avoid_set)
-        solver_settings = hj_reachability.solver.SolverSettings(
+        solver_settings = hj_reachability.solver.SolverSettings.with_accuracy(
+            accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
             value_postprocessor=ReachAvoid.from_array(terminal_values, self.reach_set)
         )
 

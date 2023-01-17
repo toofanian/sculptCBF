@@ -15,7 +15,6 @@ from refineNCBF.utils.sets import compute_signed_distance
 
 
 def acc_set_up_standard_dynamics_and_grid():
-
     hj_setup = HjSetup.from_parts(
         dynamics=HJControlAffineDynamics.from_control_affine_dynamics(
             control_affine_dynamic_system=ActiveCruiseControlJAX.from_params(simplified_active_cruise_control_params),
@@ -30,8 +29,6 @@ def acc_set_up_standard_dynamics_and_grid():
             shape=(5, 51, 51)
         )
     )
-
-
     return hj_setup
 
 
@@ -45,8 +42,6 @@ class SignedDistanceFunctions(IntEnum):
 
 
 def get_saved_signed_distance_function(signed_distance_function: SignedDistanceFunctions, hj_setup: HjSetup):
-
-
     match signed_distance_function:
         case SignedDistanceFunctions.X3_DISTANCE:
             grid_np = np.array(hj_setup.grid.states)
@@ -57,7 +52,8 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             grid_np = np.array(hj_setup.grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)
-            solver_settings = hj_reachability.SolverSettings(
+            solver_settings = hj_reachability.SolverSettings.with_accuracy(
+                accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
             where_boundary_values = hj_step(
@@ -76,7 +72,8 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             grid_np = np.array(hj_setup.grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)
-            solver_settings = hj_reachability.SolverSettings(
+            solver_settings = hj_reachability.SolverSettings.with_accuracy(
+                accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
             where_boundary_values = hj_step(
@@ -95,7 +92,8 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             grid_np = np.array(hj_setup.grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)
-            solver_settings = hj_reachability.SolverSettings(
+            solver_settings = hj_reachability.SolverSettings.with_accuracy(
+                accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
             where_boundary_values = hj_step(

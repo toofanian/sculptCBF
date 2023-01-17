@@ -2,7 +2,7 @@
 Training neural conrol barrier functions and refining them with hamilton jacobi reachability.
 
 ## Installation
-...
+hj_reachability package requires the toofanian:hj_reachability fork, email alextoofanian@gmail.com for access.
 
 ## Usage
 Example scripts and notebooks are in the `scripts` folder.

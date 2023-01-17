@@ -1,3 +1,4 @@
+import time
 from typing import Callable
 
 import attr
@@ -42,12 +43,17 @@ class LocalHjrSolver(Callable):
     _verbose: bool = False
 
     def __call__(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
+        start_time = time.time()
         local_update_result = self._initialize_local_result(active_set, initial_values)
         while True:
             iteration = self._perform_local_update_iteration(local_update_result)
             local_update_result.add_iteration(iteration)
+            if self._verbose:
+                print(f'running time is {time.time() - start_time}')
             if self._check_for_break(local_update_result):
                 break
+        if self._verbose:
+            print(f'local update took {time.time() - start_time} seconds')
         return local_update_result
 
     def _initialize_local_result(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
