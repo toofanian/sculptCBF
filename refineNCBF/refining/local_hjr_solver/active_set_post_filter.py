@@ -46,6 +46,10 @@ class RemoveWhereUnchanged(ActiveSetPostFilter):
 
 @attr.s(auto_attribs=True)
 class RemoveWhereOscillating(ActiveSetPostFilter):
+    """
+    WARNING: possibly incomplete implementation
+    # TODO remove this object?
+    """
     _history_length: int
     _std_threshold: float
 
@@ -74,6 +78,10 @@ class RemoveWhereOscillating(ActiveSetPostFilter):
 
 @attr.s(auto_attribs=True)
 class RemoveWhereUnchangedOrOscillating(ActiveSetPostFilter):
+    """
+    WARNING: possibly incomplete implementation
+    # TODO remove this object?
+    """
     _atol: float
     _rtol: float
     _history_length: int
