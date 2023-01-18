@@ -26,3 +26,14 @@ class SignedDistanceNeighbors(NeighborExpander):
     def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
         expanded_set = expand_mask_by_signed_distance(source_set, self._distance)
         return expanded_set
+
+
+@attr.s(auto_attribs=True)
+class NoNeighbors(NeighborExpander):
+
+    @classmethod
+    def from_parts(cls):
+        return cls()
+
+    def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
+        return source_set

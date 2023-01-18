@@ -45,6 +45,22 @@ class RemoveWhereUnchanged(ActiveSetPostFilter):
 
 
 @attr.s(auto_attribs=True)
+class NoPostFilter(ActiveSetPostFilter):
+    @classmethod
+    def from_parts(cls):
+        return cls()
+
+    def __call__(
+            self,
+            data: LocalUpdateResult,
+            active_set_pre_filtered: MaskNd,
+            active_set_expanded: MaskNd,
+            values_next: ArrayNd
+    ) -> MaskNd:
+        return active_set_expanded
+
+
+@attr.s(auto_attribs=True)
 class RemoveWhereOscillating(ActiveSetPostFilter):
     """
     WARNING: possibly incomplete implementation

@@ -7,10 +7,10 @@ import hj_reachability
 
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.local_hjr_solver.active_set_post_filter import ActiveSetPostFilter, RemoveWhereUnchanged
-from refineNCBF.refining.local_hjr_solver.active_set_pre_filter import ActiveSetPreFilter, NoFilter, FilterWhereFarFromZeroLevelset
+from refineNCBF.refining.local_hjr_solver.active_set_pre_filter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset
 from refineNCBF.refining.local_hjr_solver.break_criteria_checker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
 from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult, LocalUpdateResultIteration
-from refineNCBF.refining.local_hjr_solver.local_hjr_stepper import LocalHjrStepper, ClassicLocalHjrStepper, OnlyDecreaseLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.local_hjr_stepper import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
 from refineNCBF.refining.local_hjr_solver.neighbor_expander import NeighborExpander, SignedDistanceNeighbors
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger
@@ -138,7 +138,7 @@ class LocalHjrSolver(Callable):
         classic solver with no pre-filtering, "signed distance" neighbors, "classic" local hjr stepper, and "no change" post-filtering.
         with appropriate initialization, should return the same values as vanilla/global hjr for regions connected by value to the initial active set.
         """
-        active_set_pre_filter = NoFilter.from_parts(
+        active_set_pre_filter = NoPreFilter.from_parts(
         )
         neighbor_expander = SignedDistanceNeighbors.from_parts(
             distance=neighbor_distance
@@ -182,7 +182,6 @@ class LocalHjrSolver(Callable):
             avoid_set: MaskNd,
             reach_set: MaskNd,
 
-            boundary_distance: float = 1.0,
             neighbor_distance: float = 1.0,
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
@@ -198,12 +197,12 @@ class LocalHjrSolver(Callable):
         with appropriate initialization, should return the same zero levelset as vanilla/global hjr for regions connected by value to the initial active set.
         values should be conservative (low) generally.
         """
-        active_set_pre_filter = NoFilter.from_parts(
+        active_set_pre_filter = NoPreFilter.from_parts(
         )
         neighbor_expander = SignedDistanceNeighbors.from_parts(
             distance=neighbor_distance
         )
-        local_hjr_stepper = OnlyDecreaseLocalHjrStepper.from_parts(
+        local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
             hj_setup=hj_setup,
             solver_settings=solver_settings,
             time_step=solver_timestep,
@@ -256,7 +255,7 @@ class LocalHjrSolver(Callable):
 
         classic solver with "boundary" pre-filtering, "signed distance" neighbors, "classic" local hjr stepper, and "no change" post-filtering.
         """
-        active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
+        active_set_pre_filter = PreFilterWhereFarFromZeroLevelset.from_parts(
             distance=boundary_distance
         )
         neighbor_expander = SignedDistanceNeighbors.from_parts(
@@ -315,13 +314,13 @@ class LocalHjrSolver(Callable):
 
         classic solver with "boundary" pre-filtering, "signed distance" neighbors, "only decrease" local hjr stepper, and "no change" post-filtering.
         """
-        active_set_pre_filter = FilterWhereFarFromZeroLevelset.from_parts(
+        active_set_pre_filter = PreFilterWhereFarFromZeroLevelset.from_parts(
             distance=boundary_distance
         )
         neighbor_expander = SignedDistanceNeighbors.from_parts(
             distance=neighbor_distance
         )
-        local_hjr_stepper = OnlyDecreaseLocalHjrStepper.from_parts(
+        local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
             hj_setup=hj_setup,
             solver_settings=solver_settings,
             time_step=solver_timestep,

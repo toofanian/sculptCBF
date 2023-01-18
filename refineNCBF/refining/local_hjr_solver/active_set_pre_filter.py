@@ -16,7 +16,7 @@ class ActiveSetPreFilter(ABC, Callable):
 
 
 @attr.s(auto_attribs=True)
-class NoFilter(ActiveSetPreFilter):
+class NoPreFilter(ActiveSetPreFilter):
     @classmethod
     def from_parts(cls):
         return cls()
@@ -27,7 +27,7 @@ class NoFilter(ActiveSetPreFilter):
 
 
 @attr.s(auto_attribs=True)
-class FilterWhereFarFromZeroLevelset(ActiveSetPreFilter):
+class PreFilterWhereFarFromZeroLevelset(ActiveSetPreFilter):
     _distance: float
 
     @classmethod
