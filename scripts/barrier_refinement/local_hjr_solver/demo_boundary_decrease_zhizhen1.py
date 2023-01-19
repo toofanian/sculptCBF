@@ -13,7 +13,7 @@ from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
 from refineNCBF.utils.files import generate_unique_filename, visuals_data_directory
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.tables import tabularize_dnn, flag_states_on_grid
-from refineNCBF.utils.visuals import ArraySlice2D
+from refineNCBF.utils.visuals import ArraySlice2D, DimName
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -26,10 +26,10 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
         dynamics=quadcopter_vertical_jax_hj,
         grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
             domain=hj_reachability.sets.Box(
-                [4, -3.3, -1.5, -1],
-                [10.5, 2.5, 1.5, 3]
+                [4, -3, -1.5, -1],
+                [10, 2.5, 1.5, 2.7]
             ),
-            shape=(25, 25, 25, 25)  # (31, 25, 41, 25)
+            shape=(25, 25, 25, 25)
         )
     )
 
@@ -60,7 +60,7 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=50,
+        max_iterations=100,
     )
 
     # define initial values and initial active set to solve on
@@ -83,13 +83,13 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
     if verbose:
         ref_index = ArraySlice2D.from_reference_index(
             reference_index=(
-                jnp.array(hj_setup.grid.states.shape[0]) // 2,
                 jnp.array(9),
-                jnp.array(hj_setup.grid.states.shape[2]) // 2,
-                jnp.array(hj_setup.grid.states.shape[3]) // 2,
+                jnp.array(9),
+                jnp.array(9),
+                jnp.array(9),
             ),
-            free_dim_1=0,
-            free_dim_2=2
+            free_dim_1=DimName(0, 'y'),
+            free_dim_2=DimName(2, 'theta')
         )
 
         if save_gif:
@@ -105,11 +105,6 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
                 reference_slice=ref_index,
                 verbose=verbose
             )
-
-        result.plot_value_function_against_truth(
-            reference_slice=ref_index,
-            verbose=verbose,
-        )
 
         plt.pause(0)
 
