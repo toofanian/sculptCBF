@@ -40,8 +40,8 @@ def flag_states_on_grid(
     cell_lower_bounds = cell_centerpoints - cell_halfwidths
     cell_upper_bounds = cell_centerpoints + cell_halfwidths
 
-    cell_lower_bounds_in_grid_frame = cell_lower_bounds + np.array(grid.spacings).reshape((1, dims))*.5 - np.array(grid.domain.lo).reshape((1, dims))
-    cell_upper_bounds_in_grid_frame = cell_upper_bounds + np.array(grid.spacings).reshape((1, dims))*.5 - np.array(grid.domain.lo).reshape((1, dims))
+    cell_lower_bounds_in_grid_frame = cell_lower_bounds + np.array(grid.spacings).reshape((1, dims))/2 - np.array(grid.domain.lo).reshape((1, dims))
+    cell_upper_bounds_in_grid_frame = cell_upper_bounds + np.array(grid.spacings).reshape((1, dims))/2 - np.array(grid.domain.lo).reshape((1, dims))
 
     lower_index = np.maximum(cell_lower_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), 0)
     upper_index = np.minimum(cell_upper_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), grid.states.shape[0] - 1)
