@@ -159,79 +159,81 @@ class LocalUpdateResult:
         def animate(i):
             ax.clear()
 
-            ax.set(title=f"iteration: {i}, total active: {self.get_total_active_count(i)} of {self.avoid_set.size}")
+            ax.set(title=f"iteration: {i}, total active: {self.get_total_active_count(i)} of {self.avoid_set.size} \nSliced at {reference_slice.slice_string}")
+            ax.set_xlabel(reference_slice.free_dim_1.name)
+            ax.set_ylabel(reference_slice.free_dim_2.name)
 
             # always have reach and avoid set up
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.avoid_set).T,
                 levels=[0, .5], colors=['r'], alpha=.3
             )
 
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.reach_set).T,
                 levels=[0, .5], colors=['g'], alpha=.3
             )
 
             # always have seed set up
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.seed_set).T,
                 levels=[0, .5], colors=['k'], alpha=.3
             )
 
             # always have initial zero levelset up
             ax.contour(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 reference_slice.get_sliced_array(self.initial_values).T,
                 levels=[0], colors=['k'], alpha=.7
             )
 
             if self.iterations[i].solver_info is not None:
                 ax.axvline(
-                    x=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1][
-                          self.iterations[i].solver_info[0][reference_slice.free_dim_1]] - 1,
+                    x=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim][
+                          self.iterations[i].solver_info[0][reference_slice.free_dim_1.dim]] - 1,
                     color='b', linestyle='--'
                 )
                 ax.axvline(
-                    x=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1][
-                        self.iterations[i].solver_info[1][reference_slice.free_dim_1]],
+                    x=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim][
+                        self.iterations[i].solver_info[1][reference_slice.free_dim_1.dim]],
                     color='b', linestyle='--'
                 )
                 ax.axhline(
-                    y=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2][
-                          self.iterations[i].solver_info[0][reference_slice.free_dim_2]] - 1,
+                    y=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim][
+                          self.iterations[i].solver_info[0][reference_slice.free_dim_2.dim]] - 1,
                     color='b', linestyle='--'
                 )
                 ax.axhline(
-                    y=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2][
-                        self.iterations[i].solver_info[1][reference_slice.free_dim_2]],
+                    y=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim][
+                        self.iterations[i].solver_info[1][reference_slice.free_dim_2.dim]],
                     color='b', linestyle='--'
                 )
 
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.iterations[i].active_set_expanded).T,
                 levels=[0, .5], colors=['b'], alpha=.2
             )
 
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.iterations[i].active_set_post_filtered).T,
                 levels=[0, 0.5], colors=['b'], alpha=.2
             )
 
             values = self.initial_values if i == 0 else self.iterations[i - 1].computed_values
             ax.contour(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 reference_slice.get_sliced_array(values).T,
                 levels=[0], colors=['k'], linestyles=['--']
             )
@@ -282,8 +284,8 @@ class LocalUpdateResult:
         total_active_mask = self.get_total_active_mask()
 
         x1, x2 = np.meshgrid(
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2]
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
         )
 
         proxies_for_labels = [
@@ -352,7 +354,8 @@ class LocalUpdateResult:
             levels=[0], colors=['g'], alpha=1
         )
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
-
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
         print(f'total inaccurate states: {np.count_nonzero(~jnp.isclose(truth, final_values, atol=.5) & total_active_mask)}')
 
         if verbose:
@@ -371,11 +374,9 @@ class LocalUpdateResult:
 
         final_values = self.get_recent_values()
 
-        total_active_mask = self.get_total_active_mask()
-
         x1, x2 = np.meshgrid(
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1],
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2]
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
         )
 
         proxies_for_labels = [
@@ -406,6 +407,8 @@ class LocalUpdateResult:
         )
 
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
 
         if verbose:
             plt.show(block=False)
