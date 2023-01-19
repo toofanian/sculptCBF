@@ -289,21 +289,25 @@ class LocalUpdateResult:
         )
 
         proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='k', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', alpha=1),
             plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.5),
-            plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.5),
             plt.Rectangle((0, 0), 1, 1, fc='w', ec='b', alpha=1),
+            plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.5),
             plt.Rectangle((0, 0), 1, 1, fc='w', ec='r', alpha=1),
             plt.Rectangle((0, 0), 1, 1, fc='y', ec='y', alpha=.2),
-            plt.Rectangle((0, 0), 1, 1, fc='g', ec='g', alpha=.4),
+            plt.Rectangle((0, 0), 1, 1, fc='g', ec='g', alpha=.2),
         ]
 
         legend_for_labels = [
+            'initial'
+            'initial kernel'
             'result',
+            'result kernel',
             'truth',
-            'result viability kernel',
-            'truth viability kernel',
-            'inaccurate, previously active region',
-            'accurate, previously active region'
+            'truth kernel',
+            'inaccurate after compute',
+            'accurate after compute'
         ]
 
         fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
@@ -329,11 +333,11 @@ class LocalUpdateResult:
 
         ax.plot_surface(
             x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
-            cmap='Greys', edgecolor='none', alpha=.5
+            cmap='Greys', edgecolor='none', alpha=.3
         )
         ax.contour3D(
             x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
-            levels=[0], colors=['k'], linestyles=['--']
+            levels=[0], colors=['k'],
         )
 
         ax.contourf3D(
