@@ -3,11 +3,11 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
-from refineNCBF.utils.visuals import ArraySlice2D
+from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 
 def load_result_and_check_visualizations():
-    result = LocalUpdateResult.load("data/local_update_results/demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf-20230112_105928.dill")
+    result = LocalUpdateResult.load("data/local_update_results/demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf-20230118_112830.dill")
 
     print(f'{result.initial_values.size}')
     print(f'{np.count_nonzero(result.initial_values >= 0)}, {np.count_nonzero(result.get_recent_values() >= 0)}')
@@ -15,13 +15,13 @@ def load_result_and_check_visualizations():
 
     ref_index = ArraySlice2D.from_reference_index(
         reference_index=(
-            jax.numpy.array(10),
-            jax.numpy.array(result.hj_setup.grid.states.shape[1]) // 2,
-            jax.numpy.array(10),
-            jax.numpy.array(result.hj_setup.grid.states.shape[3]) // 2,
+            jax.numpy.array(9),
+            jax.numpy.array(9),
+            jax.numpy.array(9),
+            jax.numpy.array(9),
         ),
-        free_dim_1=1,
-        free_dim_2=3
+        free_dim_1=DimName(0, 'y'),
+        free_dim_2=DimName(2, 'theta')
     )
 
     result.create_gif(
@@ -33,7 +33,7 @@ def load_result_and_check_visualizations():
         reference_slice=ref_index,
         verbose=True
     )
-
+    #
     # result.plot_value_function_against_truth(
     #     reference_slice=ref_index,
     #     verbose=True
