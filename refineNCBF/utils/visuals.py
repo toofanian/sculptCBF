@@ -9,20 +9,31 @@ from refineNCBF.utils.types import ArrayNd
 
 
 @attr.dataclass
+class DimName:
+    dim: int
+    name: str
+
+
+@attr.dataclass
 class ArraySlice2D:
     slice_index: Tuple
-    free_dim_1: int
-    free_dim_2: int
+    slice_string: str
+    free_dim_1: DimName
+    free_dim_2: DimName
 
     @classmethod
-    def from_reference_index(cls, reference_index: Tuple[int, ...], free_dim_1: int, free_dim_2: int):
+    def from_reference_index(cls, reference_index: Tuple[int, ...], free_dim_1: DimName, free_dim_2: DimName):
         slice_indices = []
+        slice_string = '('
         for dim, slice_index in enumerate(reference_index):
-            if dim == free_dim_1 or dim == free_dim_2:
+            if dim == free_dim_1.dim or dim == free_dim_2.dim:
                 slice_indices.append(np.s_[:])
+                slice_string = slice_string + ':, '
             else:
-                slice_indices.append(slice_index)
-        return cls(slice_index=tuple(slice_indices), free_dim_1=free_dim_1, free_dim_2=free_dim_2)
+                slice_indices.append(int(slice_index))
+                slice_string = slice_string + f'{int(slice_index)}, '
+        slice_string = slice_string.rstrip() + ')'
+        return cls(slice_index=tuple(slice_indices), slice_string=slice_string, free_dim_1=free_dim_1, free_dim_2=free_dim_2)
 
     def __len__(self):
         return len(self.slice_index)
