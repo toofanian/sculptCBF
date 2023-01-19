@@ -20,14 +20,14 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use('TkAgg')
 
 
-def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
+def demo_local_hjr_boundary_decrease_zhizhen1(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
     # set up dynamics and grid
     hj_setup = HjSetup.from_parts(
         dynamics=quadcopter_vertical_jax_hj,
         grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
             domain=hj_reachability.sets.Box(
-                [4, -3, -1.5, -1],
-                [10, 2.5, 1.5, 2.7]
+                [4, -3.3, -1.5, -1],
+                [10.5, 2.5, 1.5, 3]
             ),
             shape=(25, 25, 25, 25)
         )
@@ -112,4 +112,4 @@ def demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose:
 
 
 if __name__ == '__main__':
-    demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose=True, save_gif=False, save_result=True)
+    demo_local_hjr_boundary_decrease_zhizhen1(verbose=True, save_gif=False, save_result=True)
