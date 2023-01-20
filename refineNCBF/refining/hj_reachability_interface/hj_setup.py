@@ -1,10 +1,12 @@
+from typing import Union
+
 import attr
 import hj_reachability
 
 
 @attr.s(auto_attribs=True, frozen=True, eq=False)
 class HjSetup:
-    dynamics: hj_reachability.Dynamics
+    dynamics: Union[hj_reachability.Dynamics, hj_reachability.ControlAndDisturbanceAffineDynamics]
     grid: hj_reachability.Grid
 
     @classmethod

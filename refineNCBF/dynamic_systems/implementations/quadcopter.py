@@ -212,7 +212,7 @@ class QuadcopterFixedPolicy(ControlAffineDynamicSystemFixedPolicy):
 
 def load_quadcopter_fixed_policy_jax_hj(
         grid: hj_reachability.Grid
-):
+) -> HJControlAffineDynamicsFixedPolicy:
     return HJControlAffineDynamicsFixedPolicy.from_parts(
         dynamics=QuadcopterFixedPolicy.from_specs_with_policy(
             params=default_quadcopter_vertical_params,
