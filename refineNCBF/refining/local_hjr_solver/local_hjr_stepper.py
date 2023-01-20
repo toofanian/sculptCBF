@@ -65,7 +65,7 @@ class DecreaseLocalHjrStepper(LocalHjrStepper):
             active_set=active_set_expanded,
             progress_bar=self._verbose
         )
-        values_decreased = values_next < data.get_recent_values()
+        values_decreased = (values_next < data.get_recent_values()) #& active_set_expanded
         values = data.get_recent_values().at[values_decreased].set(values_next[values_decreased])
         return values
 

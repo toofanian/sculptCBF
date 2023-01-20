@@ -61,6 +61,8 @@ def demo_local_hjr_boundary_decrease_zhizhen1(verbose: bool = False, save_gif: b
         reach_set=reach_set,
         verbose=verbose,
         max_iterations=100,
+        neighbor_distance=1,
+        boundary_distance=1
     )
 
     # define initial values and initial active set to solve on
@@ -98,7 +100,7 @@ def demo_local_hjr_boundary_decrease_zhizhen1(verbose: bool = False, save_gif: b
                 verbose=verbose,
                 save_path=os.path.join(
                     visuals_data_directory,
-                    f'{generate_unique_filename("demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf", "gif")}')
+                    f'{generate_unique_filename("demo_local_hjr_boundary_decrease_zhizhen1", "gif")}')
             )
         else:
             result.create_gif(

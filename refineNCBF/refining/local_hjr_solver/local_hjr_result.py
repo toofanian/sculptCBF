@@ -350,6 +350,37 @@ class LocalUpdateResult:
 
         return fig, ax
 
+    def plot_where_changed(self, reference_slice: ArraySlice2D, verbose: bool = False):
+        final_values = self.get_recent_values()
+        initial_values = self.initial_values
+
+        where_changed = ~jnp.isclose(final_values, initial_values, atol=1e-3)
+
+        x1, x2 = np.meshgrid(
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+        )
+
+        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
+        ax.set(title='where changed')
+
+        ax.contourf3D(
+            x1, x2, ~reference_slice.get_sliced_array(where_changed).T,
+            levels=[0, .9], colors=['b'], alpha=.5
+        )
+        ax.contourf3D(
+            x1, x2, ~reference_slice.get_sliced_array(self.get_total_active_mask()).T,
+            levels=[0, .9], colors=['r'], alpha=.5
+        )
+
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
+
+        if verbose:
+            plt.show(block=False)
+
+        return fig, ax
+
     def plot_value_function(
             self,
             reference_slice: ArraySlice2D,
