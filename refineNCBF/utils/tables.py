@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from refineNCBF.training.dnn_models.standardizer import Standardizer
 from refineNCBF.utils.files import construct_full_path, generate_unique_filename
-from refineNCBF.utils.types import VectorBatch, ScalarBatch, ArrayNd, MaskNd
+from refineNCBF.utils.types import VectorBatch, ScalarBatch, ArrayNd, MaskNd, Vector
 
 
 def tabularize_vector_to_scalar_mapping(
