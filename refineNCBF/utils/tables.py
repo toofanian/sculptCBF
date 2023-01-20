@@ -63,3 +63,14 @@ def flag_states_on_grid(
         np.save(construct_full_path(generate_unique_filename('data/trained_NCBFs/quad4d_boundary/uncertified_grid', 'npy')), bool_grid)
 
     return bool_grid
+
+
+def snap_state_to_grid_index(
+        state: Vector,
+        grid: hj_reachability.Grid
+) -> tuple[int, ...]:
+    dims = grid.states.shape[-1]
+    state_in_grid_frame = state + np.array(grid.spacings)/2 - np.array(grid.domain.lo)
+    grid_index = state_in_grid_frame // jnp.array(grid.spacings)
+    tuple_output = tuple(grid_index.astype(int))
+    return tuple_output
