@@ -93,3 +93,15 @@ class ControlAffineDynamicSystem(DynamicSystem, ABC):
             state: VectorBatch,
     ) -> MatrixBatch:
         ...
+
+
+@attr.s(auto_attribs=True, eq=False)
+class ControlAffineDynamicSystemFixedPolicy(ControlAffineDynamicSystem, ABC):
+
+    @abstractmethod
+    def compute_control(self, state: VectorBatch) -> VectorBatch:
+        ...
+
+    @abstractmethod
+    def compute_disturbance(self, state: VectorBatch) -> VectorBatch:
+        ...
