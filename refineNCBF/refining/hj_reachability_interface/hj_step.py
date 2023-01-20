@@ -13,6 +13,8 @@ def hj_step(
         active_set: MaskNd = None,
         progress_bar: bool = True,
 ) -> ArrayNd:
+    assert time_target < time_start
+
     return hj_reachability.step(
         solver_settings=solver_settings,
         dynamics=hj_setup.dynamics,
