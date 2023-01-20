@@ -72,6 +72,10 @@ class DecreaseLocalHjrStepper(LocalHjrStepper):
 
 @attr.s(auto_attribs=True)
 class TrashLocalHjrStepper(LocalHjrStepper):
+    """
+    used when testing hjr solver performance. computes update but returns input values, so nothing changes in the pipeline,
+    and it can be repeated identically for another iteration
+    """
     _hj_setup: HjSetup
     _solver_settings: hj_reachability.SolverSettings
     _time_step: float
