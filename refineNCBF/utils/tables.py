@@ -50,7 +50,7 @@ def flag_states_on_grid(
     cell_upper_bounds_in_grid_frame = cell_upper_bounds + np.array(grid.spacings).reshape((1, dims))/2 - np.array(grid.domain.lo).reshape((1, dims))
 
     lower_index = np.maximum(cell_lower_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), 0)
-    upper_index = np.minimum(cell_upper_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), grid.states.shape[0] - 1)
+    upper_index = np.minimum(cell_upper_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), np.array(grid.states.shape[0:-1]).reshape((1, dims))-1)
 
     overlap_indices = np.stack([lower_index, upper_index], axis=-1).astype(int)
 
