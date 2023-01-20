@@ -23,9 +23,15 @@ def tabularize_dnn(
         grid: hj_reachability.Grid,
         standardizer: Optional[Standardizer] = None,
 ) -> ArrayNd:
-    if standardizer is None:
-        raise ValueError("Standardizer must be provided, this code expects it and the one-liner is too confusing for my mouse brain to break apart. curse you copilot!")
-    return jnp.array(dnn((torch.FloatTensor(standardizer.standardize(np.array(grid.states.reshape((-1, grid.states.shape[-1]))))))).detach().numpy().reshape(grid.shape))
+    flat_states = np.array(grid.states.reshape((-1, grid.states.shape[-1])))
+    if isinstance(standardizer, Standardizer):
+        flat_states = standardizer.standardize(flat_states)
+    tensor_states = torch.FloatTensor(flat_states)
+    dnn_output = dnn(tensor_states)
+    if isinstance(dnn_output, torch.Tensor):
+        dnn_output = dnn_output.detach().numpy()
+    output = jnp.array(dnn_output.reshape((*grid.shape, dnn_output.shape[-1]))).squeeze()
+    return output
 
 
 def flag_states_on_grid(
