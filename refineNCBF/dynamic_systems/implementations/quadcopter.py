@@ -121,7 +121,7 @@ class QuadcopterVerticalJAX(QuadcopterVertical):
         return jnp.expand_dims(jnp.zeros(4), axis=-1)
 
 
-quadcopter_vertical_jax_hj = HJControlAffineDynamics.from_control_affine_dynamics(
+quadcopter_vertical_jax_hj = HJControlAffineDynamics.from_parts(
     control_affine_dynamic_system=QuadcopterVerticalJAX.from_specs(default_quadcopter_vertical_params),
     control_mode=ActorModes.MAX,
     disturbance_mode=ActorModes.MIN,

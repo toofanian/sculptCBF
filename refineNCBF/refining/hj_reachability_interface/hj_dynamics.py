@@ -22,7 +22,7 @@ class HJControlAffineDynamics(hj_reachability.ControlAndDisturbanceAffineDynamic
     disturbance_space: hj_reachability.sets.Box
 
     @classmethod
-    def from_control_affine_dynamics(
+    def from_parts(
             cls,
             control_affine_dynamic_system: ControlAffineDynamicSystem,
             control_mode: ActorModes,

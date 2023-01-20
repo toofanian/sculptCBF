@@ -14,7 +14,7 @@ from scripts.barrier_refinement.pre_constrcuted_stuff.active_cruise_control_stuf
 
 def test_save_and_load():
     hj_setup = HjSetup.from_parts(
-        dynamics=HJControlAffineDynamics.from_control_affine_dynamics(
+        dynamics=HJControlAffineDynamics.from_parts(
             control_affine_dynamic_system=ActiveCruiseControlJAX.from_params(simplified_active_cruise_control_params),
             control_mode=ActorModes.MAX,
             disturbance_mode=ActorModes.MIN,

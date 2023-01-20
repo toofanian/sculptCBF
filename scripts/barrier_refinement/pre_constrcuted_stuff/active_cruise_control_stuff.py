@@ -16,7 +16,7 @@ from refineNCBF.utils.sets import compute_signed_distance
 
 def acc_set_up_standard_dynamics_and_grid():
     hj_setup = HjSetup.from_parts(
-        dynamics=HJControlAffineDynamics.from_control_affine_dynamics(
+        dynamics=HJControlAffineDynamics.from_parts(
             control_affine_dynamic_system=ActiveCruiseControlJAX.from_params(simplified_active_cruise_control_params),
             control_mode=ActorModes.MAX,
             disturbance_mode=ActorModes.MIN,
