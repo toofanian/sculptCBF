@@ -10,7 +10,8 @@ import torch
 from refineNCBF.training.dnn_models.cbf import Cbf
 from refineNCBF.utils.files import construct_full_path
 from refineNCBF.training.dnn_models.standardizer import Standardizer
-from refineNCBF.utils.types import VectorBatch
+from refineNCBF.utils.tables import tabularize_dnn, snap_state_to_grid_index
+from refineNCBF.utils.types import VectorBatch, ArrayNd, Vector
 
 
 def load_quadcopter_cbf() -> Cbf:
