@@ -18,7 +18,7 @@ def compute_signed_distance(bool_array: MaskNd) -> ArrayNd:
     return signed_distance
 
 
-def expand_mask_by_signed_distance(mask: MaskNd, distance: float = .5) -> MaskNd:
+def expand_mask_by_signed_distance(mask: MaskNd, distance: float = 1) -> MaskNd:
     if np.count_nonzero(mask) == 0 or np.count_nonzero(~mask) == 0:
         print('mask is full, returning mask')
         return mask
@@ -27,7 +27,7 @@ def expand_mask_by_signed_distance(mask: MaskNd, distance: float = .5) -> MaskNd
     return expanded_mask
 
 
-def shrink_mask_by_signed_distance(mask: MaskNd, distance: float = .5) -> MaskNd:
+def shrink_mask_by_signed_distance(mask: MaskNd, distance: float = 1) -> MaskNd:
     if np.count_nonzero(mask) == 0 or np.count_nonzero(~mask) == 0:
         print('mask is full, returning mask')
         return mask
@@ -36,7 +36,7 @@ def shrink_mask_by_signed_distance(mask: MaskNd, distance: float = .5) -> MaskNd
     return shrunk_mask
 
 
-def get_mask_boundary_by_signed_distance(mask: MaskNd, distance: float = .5) -> MaskNd:
+def get_mask_boundary_by_signed_distance(mask: MaskNd, distance: float = 1) -> MaskNd:
     if np.count_nonzero(mask) == 0 or np.count_nonzero(~mask) == 0:
         print('mask is full, returning mask')
         return mask
@@ -45,7 +45,7 @@ def get_mask_boundary_by_signed_distance(mask: MaskNd, distance: float = .5) -> 
     return mask_boundary
 
 
-def get_mask_boundary_on_both_sides_by_signed_distance(mask: MaskNd, distance: float = .5) -> MaskNd:
+def get_mask_boundary_on_both_sides_by_signed_distance(mask: MaskNd, distance: float = 1) -> MaskNd:
     if np.count_nonzero(mask) == 0 or np.count_nonzero(~mask) == 0:
         print('mask is full, returning mask')
         return mask
