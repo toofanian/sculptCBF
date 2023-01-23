@@ -49,7 +49,7 @@ def test_no_change_where_inactive():
         time_start=0,
         time_target=-1,
         active_set=active_set,
-        progress_bar=False
+        progress_bar=False,
     )
 
     assert jax.numpy.isclose(values_next[~active_set], terminal_values[~active_set], atol=1e-3).all()
