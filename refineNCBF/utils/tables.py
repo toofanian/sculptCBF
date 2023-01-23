@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from refineNCBF.training.dnn_models.standardizer import Standardizer
 from refineNCBF.utils.files import construct_full_path, generate_unique_filename
-from refineNCBF.utils.types import VectorBatch, ScalarBatch, ArrayNd, MaskNd
+from refineNCBF.utils.types import VectorBatch, ScalarBatch, ArrayNd, MaskNd, Vector
 
 
 def tabularize_vector_to_scalar_mapping(
@@ -23,9 +23,15 @@ def tabularize_dnn(
         grid: hj_reachability.Grid,
         standardizer: Optional[Standardizer] = None,
 ) -> ArrayNd:
-    if standardizer is None:
-        raise ValueError("Standardizer must be provided, this code expects it and the one-liner is too confusing for my mouse brain to break apart. curse you copilot!")
-    return jnp.array(dnn((torch.FloatTensor(standardizer.standardize(np.array(grid.states.reshape((-1, grid.states.shape[-1]))))))).detach().numpy().reshape(grid.shape))
+    flat_states = np.array(grid.states.reshape((-1, grid.states.shape[-1])))
+    if isinstance(standardizer, Standardizer):
+        flat_states = standardizer.standardize(flat_states)
+    tensor_states = torch.FloatTensor(flat_states)
+    dnn_output = dnn(tensor_states)
+    if isinstance(dnn_output, torch.Tensor):
+        dnn_output = dnn_output.detach().numpy()
+    output = jnp.array(dnn_output.reshape((*grid.shape, dnn_output.shape[-1]))).squeeze()
+    return output
 
 
 def flag_states_on_grid(
@@ -44,7 +50,7 @@ def flag_states_on_grid(
     cell_upper_bounds_in_grid_frame = cell_upper_bounds + np.array(grid.spacings).reshape((1, dims))/2 - np.array(grid.domain.lo).reshape((1, dims))
 
     lower_index = np.maximum(cell_lower_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), 0)
-    upper_index = np.minimum(cell_upper_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), grid.states.shape[0] - 1)
+    upper_index = np.minimum(cell_upper_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), np.array(grid.states.shape[0:-1]).reshape((1, dims))-1)
 
     overlap_indices = np.stack([lower_index, upper_index], axis=-1).astype(int)
 
@@ -57,3 +63,14 @@ def flag_states_on_grid(
         np.save(construct_full_path(generate_unique_filename('data/trained_NCBFs/quad4d_boundary/uncertified_grid', 'npy')), bool_grid)
 
     return bool_grid
+
+
+def snap_state_to_grid_index(
+        state: Vector,
+        grid: hj_reachability.Grid
+) -> tuple[int, ...]:
+    dims = grid.states.shape[-1]
+    state_in_grid_frame = state + np.array(grid.spacings)/2 - np.array(grid.domain.lo)
+    grid_index = state_in_grid_frame // jnp.array(grid.spacings)
+    tuple_output = tuple(grid_index.astype(int))
+    return tuple_output

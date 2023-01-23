@@ -281,6 +281,8 @@ class LocalUpdateResult:
             progress_bar=True
         )
 
+        diff = jnp.abs(truth - self.get_recent_values())
+
         total_active_mask = self.get_total_active_mask()
 
         x1, x2 = np.meshgrid(
@@ -300,18 +302,25 @@ class LocalUpdateResult:
         ]
 
         legend_for_labels = [
-            'initial'
-            'initial kernel'
+            'initial',
+            'initial kernel',
             'result',
             'result kernel',
             'truth',
             'truth kernel',
-            'inaccurate after compute',
-            'accurate after compute'
         ]
 
         fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
         ax.set(title='value function against truth')
+
+        ax.plot_surface(
+            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
+            cmap='Greys', edgecolor='none', alpha=.3
+        )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
+            levels=[0], colors=['k'], linewidths=1, linestyles=['--']
+        )
 
         ax.plot_surface(
             x1, x2, reference_slice.get_sliced_array(final_values).T,
@@ -319,7 +328,7 @@ class LocalUpdateResult:
         )
         ax.contour3D(
             x1, x2, reference_slice.get_sliced_array(final_values).T,
-            levels=[0], colors=['b']
+            levels=[0], colors=['b'], linewidths=1
         )
 
         ax.plot_surface(
@@ -328,42 +337,47 @@ class LocalUpdateResult:
         )
         ax.contour3D(
             x1, x2, reference_slice.get_sliced_array(truth).T,
-            levels=[0], colors=['r'], linestyles=['--']
+            levels=[0], colors=['r'], linewidths=1, linestyles=['--']
         )
 
-        ax.plot_surface(
-            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
-            cmap='Greys', edgecolor='none', alpha=.3
-        )
-        ax.contour3D(
-            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
-            levels=[0], colors=['k'],
-        )
-
-        ax.contourf3D(
-            x1, x2, ~reference_slice.get_sliced_array(~jnp.isclose(truth, final_values, atol=.5) & total_active_mask).T,
-            levels=[0, .01], colors=['y'], alpha=.2
-        )
-
-        ax.contour3D(
-            x1, x2, ~reference_slice.get_sliced_array(~jnp.isclose(truth, final_values, atol=.5) & total_active_mask).T,
-            levels=[0], colors=['y'],
-        )
-        ax.contourf3D(
-            x1, x2, ~reference_slice.get_sliced_array(jnp.isclose(truth, final_values, atol=.5) & total_active_mask).T,
-            levels=[0, .01], colors=['g'], alpha=.2
-        )
-        ax.contour3D(
-            x1, x2, ~reference_slice.get_sliced_array(jnp.isclose(truth, final_values, atol=.5) & total_active_mask).T,
-            levels=[0], colors=['g'], alpha=1
-        )
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
         ax.set_xlabel(reference_slice.free_dim_1.name)
         ax.set_ylabel(reference_slice.free_dim_2.name)
-        print(f'total inaccurate states: {np.count_nonzero(~jnp.isclose(truth, final_values, atol=.5) & total_active_mask)}')
+        print(f'total inaccurate states: {np.count_nonzero(~jnp.isclose(truth, final_values, atol=.1) & total_active_mask)}')
 
         if verbose:
-            plt.show()
+            plt.show(block=False)
+
+        return fig, ax
+
+    def plot_where_changed(self, reference_slice: ArraySlice2D, verbose: bool = False):
+        final_values = self.get_recent_values()
+        initial_values = self.initial_values
+
+        where_changed = ~jnp.isclose(final_values, initial_values, atol=1e-3)
+
+        x1, x2 = np.meshgrid(
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+        )
+
+        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
+        ax.set(title='where changed')
+
+        ax.contourf3D(
+            x1, x2, ~reference_slice.get_sliced_array(where_changed).T,
+            levels=[0, .9], colors=['b'], alpha=.5
+        )
+        ax.contourf3D(
+            x1, x2, ~reference_slice.get_sliced_array(self.get_total_active_mask()).T,
+            levels=[0, .9], colors=['r'], alpha=.5
+        )
+
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
+
+        if verbose:
+            plt.show(block=False)
 
         return fig, ax
 
@@ -394,7 +408,7 @@ class LocalUpdateResult:
         ]
 
         fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
-        ax.set(title='value function against truth')
+        ax.set(title='value function')
 
         ax.plot_surface(
             x1, x2, reference_slice.get_sliced_array(final_values).T,

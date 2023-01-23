@@ -1,12 +1,17 @@
 import json
+from typing import Callable
 
+import attr
+import hj_reachability
 import numpy as np
+import stable_baselines3
 import torch
 
 from refineNCBF.training.dnn_models.cbf import Cbf
 from refineNCBF.utils.files import construct_full_path
 from refineNCBF.training.dnn_models.standardizer import Standardizer
-from refineNCBF.utils.types import VectorBatch
+from refineNCBF.utils.tables import tabularize_dnn, snap_state_to_grid_index
+from refineNCBF.utils.types import VectorBatch, ArrayNd, Vector
 
 
 def load_quadcopter_cbf() -> Cbf:
@@ -35,3 +40,38 @@ def load_uncertified_states() -> VectorBatch:
     standardizer = load_standardizer()
     total_states_destandardized = standardizer.destandardize(np.array(total_states))
     return total_states_destandardized
+
+
+@attr.s(auto_attribs=True)
+class PpoCallable(Callable):
+    ppo: stable_baselines3.PPO
+
+    def __call__(self, state):
+        return self.ppo.predict(state, deterministic=True)[0]
+
+
+def load_policy_ppo() -> PpoCallable:
+    return PpoCallable(
+        stable_baselines3.PPO.load(construct_full_path('data/trained_NCBFs/quad4d_boundary/best_model.zip'))
+    )
+
+
+@attr.s(auto_attribs=True)
+class TabularizedPPO(Callable):
+    _table: ArrayNd
+    _grid: hj_reachability.Grid
+
+    @classmethod
+    def from_dnn_and_grid(cls, dnn: Callable, grid: hj_reachability.Grid) -> 'TabularizedPPO':
+        table = tabularize_dnn(dnn, grid)
+        return cls(table, grid)
+
+    def __call__(self, state: Vector) -> Vector:
+        index = snap_state_to_grid_index(state, self._grid)
+        controls = self._table[index].reshape((self._table.shape[-1], 1))
+        return controls
+
+
+def load_tabularized_ppo(grid: hj_reachability.Grid) -> TabularizedPPO:
+    return TabularizedPPO.from_dnn_and_grid(load_policy_ppo(), grid)
+
