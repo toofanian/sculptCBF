@@ -3,44 +3,44 @@ import warnings
 
 import hj_reachability
 import matplotlib
+from jax import numpy as jnp
+from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
-
-import jax.numpy as jnp
-
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
-from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
+from refineNCBF.utils.files import generate_unique_filename, visuals_data_directory
 from refineNCBF.utils.sets import compute_signed_distance
-from refineNCBF.utils.visuals import ArraySlice2D
-from scripts.barrier_refinement.local_hjr_solver.demo_boundary_decrease_zhizhen1 import demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import quadcopter_cbf_from_refine_cbf
-from refineNCBF.utils.tables import tabularize_vector_to_scalar_mapping
+from refineNCBF.utils.tables import tabularize_dnn, flag_states_on_grid
+from refineNCBF.utils.visuals import ArraySlice2D, DimName
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use('TkAgg')
 
 
-def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = False, save_gif: bool = False):
+def demo_local_hjr_inner_boundary_decrease_zhizhen1(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
     # set up dynamics and grid
     hj_setup = HjSetup.from_parts(
         dynamics=quadcopter_vertical_jax_hj,
         grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
             domain=hj_reachability.sets.Box(
-                [0, -8, -jnp.pi, -10],
-                [10, 8, jnp.pi, 10]
+                [4, -3.3, -1.5, -1],
+                [10.5, 2.5, 1.5, 3]
             ),
-            shape=(21, 21, 21, 21)
+            shape=(25, 25, 25, 25)
         )
     )
 
-    # define reach and avoid targets
-    avoid_set = (
-            (hj_setup.grid.states[..., 0] < 1)
-            |
-            (hj_setup.grid.states[..., 0] > 9)
+    dnn_values_over_grid = -tabularize_dnn(
+        dnn=load_quadcopter_cbf(),
+        standardizer=load_standardizer(),
+        grid=hj_setup.grid
     )
+
+    # define reach and avoid targets
+    avoid_set = (dnn_values_over_grid < 0)
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
     # create solver settings for backwards reachable tube
@@ -54,36 +54,44 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
     )
 
     # load into solver
-    solver = LocalHjrSolver.as_boundary_decrease(
+    solver = LocalHjrSolver.as_inner_boundary_decrease(
         hj_setup=hj_setup,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
-        verbose=verbose
+        verbose=verbose,
+        max_iterations=100,
+        neighbor_distance=1,
+        boundary_distance=1
     )
 
     # define initial values and initial active set to solve on
-    # initial_values = tabularize_vector_to_scalar_mapping(
-    #     mapping=quadcopter_cbf_from_refine_cbf,
-    #     grid=hj_setup.grid
-    # )
     initial_values = terminal_values.copy()
-    active_set = jnp.ones_like(hj_setup.grid.states[..., 0], dtype=bool)
+    active_set = flag_states_on_grid(
+        cell_centerpoints=load_uncertified_states(),
+        cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+        grid=hj_setup.grid,
+        verbose=True,
+        save_array=False
+    )
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)
+
+    if save_result:
+        result.save(generate_unique_filename('data/local_update_results/demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf', 'dill'))
 
     # visualize
     if verbose:
         ref_index = ArraySlice2D.from_reference_index(
             reference_index=(
-                jnp.array(hj_setup.grid.states.shape[0]) // 2,
-                jnp.array(hj_setup.grid.states.shape[1]) // 4,
-                jnp.array(hj_setup.grid.states.shape[2]) // 2,
-                jnp.array(hj_setup.grid.states.shape[3]) // 2,
+                jnp.array(9),
+                jnp.array(9),
+                jnp.array(9),
+                jnp.array(9),
             ),
-            free_dim_1=0,
-            free_dim_2=2
+            free_dim_1=DimName(0, 'y'),
+            free_dim_2=DimName(2, 'theta')
         )
 
         if save_gif:
@@ -92,7 +100,7 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
                 verbose=verbose,
                 save_path=os.path.join(
                     visuals_data_directory,
-                    f'{generate_unique_filename("demo_local_hjr_solver_quadcopter_vertical_classic", "gif")}')
+                    f'{generate_unique_filename("demo_local_hjr_inner_boundary_decrease_zhizhen1", "gif")}')
             )
         else:
             result.create_gif(
@@ -100,13 +108,10 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
                 verbose=verbose
             )
 
-        result.plot_value_function_against_truth(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
+        plt.pause(0)
 
     return result
 
 
 if __name__ == '__main__':
-    demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose=True, save_gif=True, save_result=True)
+    demo_local_hjr_inner_boundary_decrease_zhizhen1(verbose=True, save_gif=False, save_result=True)

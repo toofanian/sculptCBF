@@ -35,13 +35,17 @@ class PreFilterWhereFarFromZeroLevelset(ActiveSetPreFilter):
         return cls(distance=distance)
 
     def __call__(self, data: LocalUpdateResult) -> MaskNd:
+        recent_set_input = data.get_recent_set_input()
+        where_far_exterior = shrink_mask_by_signed_distance(data.get_recent_values() >= 0, distance=self._distance)
+        where_far_interior = shrink_mask_by_signed_distance(data.get_recent_values() < 0, distance=self._distance)
+
         active_set_filtered = (
                 data.get_recent_set_input()
                 & ~
                 (
-                        shrink_mask_by_signed_distance(data.get_recent_values() >= 0, distance=self._distance)
+                        where_far_exterior
                         |
-                        shrink_mask_by_signed_distance(data.get_recent_values() < 0, distance=self._distance)
+                        where_far_interior
                 )
         )
         return active_set_filtered

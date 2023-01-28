@@ -3,8 +3,9 @@ import warnings
 
 import hj_reachability
 import matplotlib
+from matplotlib import pyplot as plt
 
-from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
+from refineNCBF.dynamic_systems.implementations.go_left import go_left_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 
 import jax.numpy as jnp
@@ -13,33 +14,28 @@ from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors impor
 from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
-from refineNCBF.utils.visuals import ArraySlice2D
-from scripts.barrier_refinement.local_hjr_solver.demo_boundary_decrease_zhizhen1 import demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_vertical_stuff import quadcopter_cbf_from_refine_cbf
-from refineNCBF.utils.tables import tabularize_vector_to_scalar_mapping
+from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D, DimName
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use('TkAgg')
 
 
-def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = False, save_gif: bool = False):
+def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
     # set up dynamics and grid
     hj_setup = HjSetup.from_parts(
-        dynamics=quadcopter_vertical_jax_hj,
+        dynamics=go_left_jax_hj,
         grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
             domain=hj_reachability.sets.Box(
-                [0, -8, -jnp.pi, -10],
-                [10, 8, jnp.pi, 10]
+                [-10],
+                [100]
             ),
-            shape=(21, 21, 21, 21)
+            shape=(110,)
         )
     )
 
     # define reach and avoid targets
     avoid_set = (
-            (hj_setup.grid.states[..., 0] < 1)
-            |
-            (hj_setup.grid.states[..., 0] > 9)
+            (hj_setup.grid.states[..., 0] < 0)
     )
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
@@ -59,31 +55,28 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
-        verbose=verbose
+        verbose=verbose,
+        solver_timestep=-1,
+        neighbor_distance=5,
+        boundary_distance=5,
+        max_iterations=100
     )
 
     # define initial values and initial active set to solve on
-    # initial_values = tabularize_vector_to_scalar_mapping(
-    #     mapping=quadcopter_cbf_from_refine_cbf,
-    #     grid=hj_setup.grid
-    # )
     initial_values = terminal_values.copy()
-    active_set = jnp.ones_like(hj_setup.grid.states[..., 0], dtype=bool)
+    active_set = jnp.zeros_like(hj_setup.grid.states[..., 0], dtype=bool).at[10].set(True)
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)
 
+    if save_result:
+        result.save(generate_unique_filename('data/local_update_results/demo_local_hjr_boundary_decrease_solver_go_left', 'dill'))
+
     # visualize
     if verbose:
-        ref_index = ArraySlice2D.from_reference_index(
-            reference_index=(
-                jnp.array(hj_setup.grid.states.shape[0]) // 2,
-                jnp.array(hj_setup.grid.states.shape[1]) // 4,
-                jnp.array(hj_setup.grid.states.shape[2]) // 2,
-                jnp.array(hj_setup.grid.states.shape[3]) // 2,
-            ),
-            free_dim_1=0,
-            free_dim_2=2
+        ref_index = ArraySlice1D.from_reference_index(
+            reference_index=(10,),
+            free_dim_1=DimName(0, 'x'),
         )
 
         if save_gif:
@@ -92,7 +85,7 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
                 verbose=verbose,
                 save_path=os.path.join(
                     visuals_data_directory,
-                    f'{generate_unique_filename("demo_local_hjr_solver_quadcopter_vertical_classic", "gif")}')
+                    f'{generate_unique_filename("demo_local_hjr_boundary_decrease_solver_go_left", "gif")}')
             )
         else:
             result.create_gif(
@@ -100,13 +93,15 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
                 verbose=verbose
             )
 
-        result.plot_value_function_against_truth(
-            reference_slice=ref_index,
-            verbose=verbose
+        result.plot_value_1d(
+            ref_index
         )
+
+
+    plt.pause(0)
 
     return result
 
 
 if __name__ == '__main__':
-    demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf(verbose=True, save_gif=True, save_result=True)
+    demo_local_hjr_boundary_decrease_solver_go_left(verbose=True, save_gif=True, save_result=True)

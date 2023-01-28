@@ -11,7 +11,7 @@ from refineNCBF.refining.local_hjr_solver.active_set_pre_filter import ActiveSet
 from refineNCBF.refining.local_hjr_solver.break_criteria_checker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
 from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult, LocalUpdateResultIteration
 from refineNCBF.refining.local_hjr_solver.local_hjr_stepper import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
-from refineNCBF.refining.local_hjr_solver.neighbor_expander import NeighborExpander, SignedDistanceNeighbors
+from refineNCBF.refining.local_hjr_solver.neighbor_expander import NeighborExpander, SignedDistanceNeighbors, InnerSignedDistanceNeighbors
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger
 
@@ -293,7 +293,7 @@ class LocalHjrSolver(Callable):
         )
 
     @classmethod
-    def as_boundary_solver_with_only_decrease(
+    def as_boundary_decrease(
             cls,
             hj_setup: HjSetup,
             solver_settings: hj_reachability.SolverSettings,
@@ -318,6 +318,65 @@ class LocalHjrSolver(Callable):
             distance=boundary_distance
         )
         neighbor_expander = SignedDistanceNeighbors.from_parts(
+            distance=neighbor_distance
+        )
+        local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            time_step=solver_timestep,
+            verbose=verbose
+        )
+        active_set_post_filter = RemoveWhereUnchanged.from_parts(
+            atol=value_change_atol,
+            rtol=value_change_rtol,
+        )
+        break_criteria_checker = BreakCriteriaChecker.from_criteria(
+            [
+                MaxIterations.from_parts(max_iterations=max_iterations),
+                PostFilteredActiveSetEmpty.from_parts(),
+            ],
+            verbose=verbose
+        )
+
+        return cls(
+            hj_setup=hj_setup,
+            solver_settings=solver_settings,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            active_set_pre_filter=active_set_pre_filter,
+            neighbor_expander=neighbor_expander,
+            local_hjr_stepper=local_hjr_stepper,
+            active_set_post_filter=active_set_post_filter,
+            break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
+        )
+
+    @classmethod
+    def as_inner_boundary_decrease(
+            cls,
+            hj_setup: HjSetup,
+            solver_settings: hj_reachability.SolverSettings,
+            avoid_set: MaskNd,
+            reach_set: MaskNd,
+
+            boundary_distance: float = .5,
+            neighbor_distance: float = .5,
+            solver_timestep: float = -0.1,
+            value_change_atol: float = 1e-3,
+            value_change_rtol: float = 1e-3,
+            max_iterations: int = 100,
+
+            verbose: bool = False,
+    ):
+        """
+        NOTE: see readme for more details, info here may be inaccurate.
+
+        classic solver with "boundary" pre-filtering, "signed distance" neighbors, "only decrease" local hjr stepper, and "no change" post-filtering.
+        """
+        active_set_pre_filter = PreFilterWhereFarFromZeroLevelset.from_parts(
+            distance=boundary_distance
+        )
+        neighbor_expander = InnerSignedDistanceNeighbors.from_parts(
             distance=neighbor_distance
         )
         local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(

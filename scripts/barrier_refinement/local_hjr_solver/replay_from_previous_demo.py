@@ -10,7 +10,7 @@ from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 
 def load_result_and_check_visualizations():
-    result = LocalUpdateResult.load("data/local_update_results/demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf-20230120_093723.dill")
+    result = LocalUpdateResult.load("data/local_update_results/demo_local_hjr_boundary_decrease_solver_on_quadcopter_vertical_ncbf-20230123_140128.dill")
 
     print(f'{result.initial_values.size}')
     print(f'{np.count_nonzero(result.initial_values >= 0)}, {np.count_nonzero(result.get_recent_values() >= 0)}')

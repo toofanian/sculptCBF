@@ -54,13 +54,13 @@ def demo_local_hjr_boundary_decrease_zhizhen1(verbose: bool = False, save_gif: b
     )
 
     # load into solver
-    solver = LocalHjrSolver.as_boundary_solver_with_only_decrease(
+    solver = LocalHjrSolver.as_boundary_decrease(
         hj_setup=hj_setup,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=100,
+        max_iterations=500,
         neighbor_distance=1,
         boundary_distance=1
     )

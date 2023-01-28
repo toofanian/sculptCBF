@@ -1,11 +1,13 @@
 import json
-from typing import Callable
+from typing import Callable, Union
 
 import attr
 import hj_reachability
 import numpy as np
 import stable_baselines3
 import torch
+
+from neural_barrier_kinematic_model.custom_gym.envs.QuadVertical.quad_vertical import Quad_Vertical_Env as QuadVerticalEnv
 
 from refineNCBF.training.dnn_models.cbf import Cbf
 from refineNCBF.utils.files import construct_full_path
@@ -43,26 +45,32 @@ def load_uncertified_states() -> VectorBatch:
 
 
 @attr.s(auto_attribs=True)
-class PpoCallable(Callable):
-    ppo: stable_baselines3.PPO
+class StableBaselinesCallable(Callable):
+    network: Union[stable_baselines3.PPO, stable_baselines3.SAC]
 
     def __call__(self, state):
-        return self.ppo.predict(state, deterministic=True)[0]
+        return self.network.predict(state, deterministic=True)[0]
 
 
-def load_policy_ppo() -> PpoCallable:
-    return PpoCallable(
+def load_policy_ppo() -> StableBaselinesCallable:
+    return StableBaselinesCallable(
         stable_baselines3.PPO.load(construct_full_path('data/trained_NCBFs/quad4d_boundary/best_model.zip'))
     )
 
 
+def load_policy_sac() -> StableBaselinesCallable:
+    return StableBaselinesCallable(
+        stable_baselines3.SAC.load(construct_full_path('data/trained_NCBFs/quad4d_boundary/best_model-2.zip'),  env=QuadVerticalEnv())
+    )
+
+
 @attr.s(auto_attribs=True)
-class TabularizedPPO(Callable):
+class TabularizedDnn(Callable):
     _table: ArrayNd
     _grid: hj_reachability.Grid
 
     @classmethod
-    def from_dnn_and_grid(cls, dnn: Callable, grid: hj_reachability.Grid) -> 'TabularizedPPO':
+    def from_dnn_and_grid(cls, dnn: Callable, grid: hj_reachability.Grid) -> 'TabularizedDnn':
         table = tabularize_dnn(dnn, grid)
         return cls(table, grid)
 
@@ -72,6 +80,9 @@ class TabularizedPPO(Callable):
         return controls
 
 
-def load_tabularized_ppo(grid: hj_reachability.Grid) -> TabularizedPPO:
-    return TabularizedPPO.from_dnn_and_grid(load_policy_ppo(), grid)
+def load_tabularized_ppo(grid: hj_reachability.Grid) -> TabularizedDnn:
+    return TabularizedDnn.from_dnn_and_grid(load_policy_ppo(), grid)
 
+
+def load_tabularized_sac(grid: hj_reachability.Grid) -> TabularizedDnn:
+    return TabularizedDnn.from_dnn_and_grid(load_policy_sac(), grid)

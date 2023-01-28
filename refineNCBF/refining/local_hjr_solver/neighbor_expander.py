@@ -29,6 +29,20 @@ class SignedDistanceNeighbors(NeighborExpander):
 
 
 @attr.s(auto_attribs=True)
+class InnerSignedDistanceNeighbors(NeighborExpander):
+    _distance: float
+
+    @classmethod
+    def from_parts(cls, distance: float):
+        return cls(distance=distance)
+
+    def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
+        inner_set = data.get_viability_kernel()
+        expanded_set = expand_mask_by_signed_distance(source_set, self._distance) & inner_set
+        return expanded_set
+
+
+@attr.s(auto_attribs=True)
 class NoNeighbors(NeighborExpander):
 
     @classmethod

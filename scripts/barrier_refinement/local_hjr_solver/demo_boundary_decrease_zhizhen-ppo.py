@@ -6,7 +6,7 @@ import matplotlib
 from jax import numpy as jnp
 from matplotlib import pyplot as plt
 
-from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj, load_quadcopter_fixed_policy_jax_hj
+from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj, load_quadcopter_ppo_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
@@ -37,7 +37,7 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
         shape=(31, 31, 31, 31)
     )
 
-    dynamics = load_quadcopter_fixed_policy_jax_hj(grid)
+    dynamics = load_quadcopter_ppo_jax_hj(grid)
 
     hj_setup = HjSetup.from_parts(
         dynamics=dynamics,
@@ -63,7 +63,7 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
     )
 
     # load into solver
-    solver = LocalHjrSolver.as_boundary_solver_with_only_decrease(
+    solver = LocalHjrSolver.as_boundary_decrease(
         hj_setup=hj_setup,
         solver_settings=solver_settings,
         avoid_set=avoid_set,

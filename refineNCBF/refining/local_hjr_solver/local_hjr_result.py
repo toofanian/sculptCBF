@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import attr
 import dill
@@ -14,7 +14,7 @@ from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors impor
 from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_full_path
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
-from refineNCBF.utils.visuals import ArraySlice2D
+from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -128,12 +128,31 @@ class LocalUpdateResult:
     def get_viability_kernel(self) -> MaskNd:
         return self.get_recent_values() >= 0
 
+    def plot_value_1d(self, ref_index: ArraySlice1D):
+        fig, ax = plt.subplots(figsize=(9, 7))
+        ax.plot(self.hj_setup.grid.coordinate_vectors[ref_index.free_dim_1.dim],
+                ref_index.get_sliced_array(self.initial_values),
+                )
+        for iteration in self.iterations:
+            ax.plot(
+                self.hj_setup.grid.coordinate_vectors[ref_index.free_dim_1.dim],
+                ref_index.get_sliced_array(iteration.computed_values)
+            )
+
+        ax.set_xlabel(f'{ref_index.free_dim_1.name}')
+        ax.set_ylabel(f'value')
+
+        plt.show(block=False)
+
     def create_gif(
             self,
-            reference_slice: ArraySlice2D,
+            reference_slice: Union[ArraySlice2D, ArraySlice1D],
             verbose: bool = True,
             save_path: Optional[FilePathRelative] = None
     ):
+        if isinstance(reference_slice, ArraySlice1D):
+            reference_slice = ArraySlice2D.from_array_slice_1d(reference_slice)
+
         proxies_for_labels = [
             plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.3),
             plt.Rectangle((0, 0), 1, 1, fc='g', ec='w', alpha=.3),
