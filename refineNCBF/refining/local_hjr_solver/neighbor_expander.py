@@ -51,3 +51,9 @@ class NoNeighbors(NeighborExpander):
 
     def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
         return source_set
+
+
+# TODO: add a neighbor expander that uses dynamics.
+#  use partial max magnitudes to determine the maximum step size from this cell in each direction.
+#  then snap to nearest grid point in each direction using snap_state_to_grid_index(), and fill in the box between the 2^N points.
+
