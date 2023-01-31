@@ -60,6 +60,7 @@ class LocalHjrSolver(Callable):
 
     def _initialize_local_result(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
         return LocalUpdateResult.from_parts(
+            local_solver=self,
             hj_setup=self._hj_setup,
             avoid_set=self._avoid_set,
             reach_set=self._reach_set,

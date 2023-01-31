@@ -50,16 +50,20 @@ class LocalUpdateResultIteration:
 
 @attr.dataclass
 class LocalUpdateResult:
+    local_solver: "LocalHjrSolver"
+
     hj_setup: HjSetup
     avoid_set: MaskNd
     reach_set: MaskNd
     seed_set: MaskNd
     initial_values: ArrayNd
+
     iterations: List[LocalUpdateResultIteration] = attr.ib(factory=list)
 
     @classmethod
     def from_parts(
             cls,
+            local_solver: "LocalHjrSolver",
             hj_setup: HjSetup,
             avoid_set: MaskNd,
             seed_set: MaskNd,
@@ -69,7 +73,7 @@ class LocalUpdateResult:
         if reach_set is None:
             reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
-        return cls(hj_setup, avoid_set, reach_set, seed_set, initial_values)
+        return cls(local_solver, hj_setup, avoid_set, reach_set, seed_set, initial_values)
 
     def __len__(self):
         return len(self.iterations)
