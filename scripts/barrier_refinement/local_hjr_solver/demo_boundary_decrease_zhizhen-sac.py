@@ -69,7 +69,7 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=100,
+        max_iterations=500,
         boundary_distance=1,
         neighbor_distance=1
     )
@@ -111,10 +111,7 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
                 verbose=verbose
             )
 
-        result.plot_where_changed(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
+        result.plot_value_function_against_truth(reference_slice=ref_index, verbose=verbose)
 
         plt.pause(0)
 

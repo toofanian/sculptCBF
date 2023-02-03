@@ -68,7 +68,7 @@ class PostFilteredActiveSetEmpty(BreakCriterion):
         return cls()
 
     def __call__(self, data: LocalUpdateResult) -> bool:
-        return jnp.count_nonzero(data.get_recent_set_input()) == 0
+        return jnp.count_nonzero(data.get_pending_seed_set()) == 0
 
     def get_descriptor(self) -> str:
         return f'criterion of empty post-filtered active set has been met'

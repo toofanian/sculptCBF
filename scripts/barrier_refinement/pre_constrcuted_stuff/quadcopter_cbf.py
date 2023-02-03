@@ -6,6 +6,7 @@ import hj_reachability
 import numpy as np
 import stable_baselines3
 import torch
+from gym import spaces
 
 from neural_barrier_kinematic_model.custom_gym.envs.QuadVertical.quad_vertical import Quad_Vertical_Env as QuadVerticalEnv
 
@@ -59,8 +60,30 @@ def load_policy_ppo() -> StableBaselinesCallable:
 
 
 def load_policy_sac() -> StableBaselinesCallable:
+    low = np.array([0., -8., -np.pi, -10.])
+    high = np.array([10., 8., np.pi, 10.])
+    observation_space = spaces.Box(
+        low=low,
+        high=high,
+        shape=(len(low),),
+        dtype=np.float64,
+    )
+
+    ac_high = np.array([20, 20])
+    action_space = spaces.Box(
+        low=-ac_high,
+        high=ac_high,
+        shape=(len(ac_high),),
+        dtype=np.float64,
+    )
+
+    custom_objects = {
+        "observation_space": observation_space,
+        "action_space": action_space,
+    }
+
     return StableBaselinesCallable(
-        stable_baselines3.SAC.load(construct_full_path('data/trained_NCBFs/quad4d_boundary/best_model-2.zip'),  env=QuadVerticalEnv())
+        stable_baselines3.SAC.load(construct_full_path('data/trained_NCBFs/quad4d_boundary/best_model-2.zip'),  custom_objects=custom_objects)
     )
 
 

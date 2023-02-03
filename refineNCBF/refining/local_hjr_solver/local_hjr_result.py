@@ -94,12 +94,22 @@ class LocalUpdateResult:
             cls = dill.load(f)
         return cls
 
-    def get_recent_set_input(self) -> MaskNd:
-        return self.seed_set if len(self.iterations) == 0 else self.iterations[-1].active_set_post_filtered
+    def get_where_certified(self) -> MaskNd:
+        if len(self) == 0:
+            return self.seed_set
+        else:
+            return jnp.zeros_like(self.seed_set, dtype=bool)
+            # return ~self.iterations[-1].active_set_post_filtered & self.iterations[-1].active_set_expanded
+
+    def get_pending_seed_set(self) -> MaskNd:
+        if len(self.iterations) == 0:
+            return self.seed_set
+        else:
+            return self.iterations[-1].active_set_post_filtered
 
     def get_recent_set_for_compute(self) -> MaskNd:
-        if len(self.iterations) == 0:
-            raise ValueError("No iterations have been computed yet.")
+        if len(self) == 0:
+            return jnp.ones_like(self.seed_set, dtype=bool)
         else:
             return self.iterations[-1].active_set_expanded
 
@@ -304,8 +314,6 @@ class LocalUpdateResult:
             progress_bar=True
         )
 
-        diff = jnp.abs(truth - self.get_recent_values())
-
         total_active_mask = self.get_total_active_mask()
 
         x1, x2 = np.meshgrid(
@@ -320,8 +328,6 @@ class LocalUpdateResult:
             plt.Rectangle((0, 0), 1, 1, fc='w', ec='b', alpha=1),
             plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.5),
             plt.Rectangle((0, 0), 1, 1, fc='w', ec='r', alpha=1),
-            plt.Rectangle((0, 0), 1, 1, fc='y', ec='y', alpha=.2),
-            plt.Rectangle((0, 0), 1, 1, fc='g', ec='g', alpha=.2),
         ]
 
         legend_for_labels = [
@@ -366,6 +372,9 @@ class LocalUpdateResult:
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
         ax.set_xlabel(reference_slice.free_dim_1.name)
         ax.set_ylabel(reference_slice.free_dim_2.name)
+        ax.set_zlabel('value')
+
+        ax.set_zlim(bottom=-10)
         print(f'total inaccurate states: {np.count_nonzero(~jnp.isclose(truth, final_values, atol=.1) & total_active_mask)}')
 
         if verbose:
