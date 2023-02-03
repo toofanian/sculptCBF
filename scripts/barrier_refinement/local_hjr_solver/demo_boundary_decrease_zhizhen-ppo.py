@@ -50,6 +50,7 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
             |
             (hj_setup.grid.states[..., 0] > 9)
     )
+
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
     # create solver settings for backwards reachable tube

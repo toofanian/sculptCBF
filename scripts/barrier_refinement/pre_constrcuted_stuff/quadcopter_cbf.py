@@ -21,20 +21,20 @@ def load_quadcopter_cbf() -> Cbf:
     device = 'cpu'
     print("loading CBF model...")
     cbf_func = Cbf(4, 256)
-    cbf_ckpt = torch.load(construct_full_path('data/trained_NCBFs/quad4d_boundary/quad4d_cbf.pth'), map_location=device)
+    cbf_ckpt = torch.load(construct_full_path('data/trained_NCBFs/sac_policy/quad4d_sac_cbf.pth'), map_location=device)
     cbf_func.load_state_dict(cbf_ckpt['model_state_dict'])
     cbf_func.to(device)
     return cbf_func
 
 
 def load_standardizer() -> Standardizer:
-    standardizer = Standardizer(fp=construct_full_path('data/trained_NCBFs/quad4d_boundary/quad_4d_standardizer.npy'))
+    standardizer = Standardizer(fp=construct_full_path('data/trained_NCBFs/sac_policy/quad4d_sac_standardizer.npy'))
     standardizer.initialize_from_file()
     return standardizer
 
 
 def load_uncertified_states() -> VectorBatch:
-    with open(construct_full_path('data/trained_NCBFs/quad4d_boundary/quad4d_boundary_cert_results.json')) as f:
+    with open(construct_full_path('data/trained_NCBFs/sac_policy/quad4d_sac_boundary_cert_results.json')) as f:
         quad4d_result_dict = json.load(f)
     uncertified_states = quad4d_result_dict['uns']
     violated_states = quad4d_result_dict['vio']
@@ -83,7 +83,7 @@ def load_policy_sac() -> StableBaselinesCallable:
     }
 
     return StableBaselinesCallable(
-        stable_baselines3.SAC.load(construct_full_path('data/trained_NCBFs/quad4d_boundary/best_model-2.zip'),  custom_objects=custom_objects)
+        stable_baselines3.SAC.load(construct_full_path('data/trained_NCBFs/sac_policy/best_model-sac.zip'),  custom_objects=custom_objects)
     )
 
 
@@ -109,3 +109,4 @@ def load_tabularized_ppo(grid: hj_reachability.Grid) -> TabularizedDnn:
 
 def load_tabularized_sac(grid: hj_reachability.Grid) -> TabularizedDnn:
     return TabularizedDnn.from_dnn_and_grid(load_policy_sac(), grid)
+

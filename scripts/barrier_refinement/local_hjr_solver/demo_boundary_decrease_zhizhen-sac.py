@@ -37,19 +37,27 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
         shape=(31, 31, 31, 31)
     )
 
-    dynamics = load_quadcopter_sac_jax_hj(grid)
+    # dynamics = load_quadcopter_sac_jax_hj(grid)
+    dynamics = quadcopter_vertical_jax_hj
 
     hj_setup = HjSetup.from_parts(
         dynamics=dynamics,
         grid=grid
     )
 
-    # define reach and avoid targets
-    avoid_set = (
-            (hj_setup.grid.states[..., 0] < 1)
-            |
-            (hj_setup.grid.states[..., 0] > 9)
+    dnn_values_over_grid = -tabularize_dnn(
+        dnn=load_quadcopter_cbf(),
+        standardizer=load_standardizer(),
+        grid=hj_setup.grid,
     )
+
+    # define reach and avoid targets
+    avoid_set = (dnn_values_over_grid < 0)
+    # avoid_set = (
+    #         (hj_setup.grid.states[..., 0] < 1)
+    #         |
+    #         (hj_setup.grid.states[..., 0] > 9)
+    # )
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
     # create solver settings for backwards reachable tube
@@ -69,14 +77,20 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=500,
+        max_iterations=5,
         boundary_distance=1,
         neighbor_distance=1
     )
 
     # define initial values and initial active set to solve on
     initial_values = terminal_values.copy()
-    active_set = jnp.ones_like(avoid_set, dtype=bool)
+    active_set = flag_states_on_grid(
+        cell_centerpoints=load_uncertified_states(),
+        cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+        grid=hj_setup.grid,
+        verbose=True,
+        save_array=False
+    )
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)
@@ -111,7 +125,7 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
                 verbose=verbose
             )
 
-        result.plot_value_function_against_truth(reference_slice=ref_index, verbose=verbose)
+        # result.plot_value_function_against_truth(reference_slice=ref_index, verbose=verbose)
 
         plt.pause(0)
 
