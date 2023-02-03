@@ -52,16 +52,14 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
         )
     )
 
-    solver = LocalHjrSolver.as_strict_boundary_update(
+    solver = LocalHjrSolver.as_boundary_decrease(
         hj_setup=hj_setup,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
         max_iterations=100,
         verbose=verbose,
-        boundary_distance=1.5,
-        value_change_atol=1e-5,
-        value_change_rtol=1e-5
+        boundary_distance=1,
     )
 
     initial_values = terminal_values.copy()
