@@ -464,3 +464,42 @@ class LocalUpdateResult:
             plt.show(block=False)
 
         return fig, ax
+
+    def plot_safe_cells(self, reference_slice: ArraySlice2D, verbose: bool = False):
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        ax.imshow(reference_slice.get_sliced_array(self.get_recent_values() >= 0).T, origin='lower')
+
+        if verbose:
+            plt.show(block=False)
+
+        return fig, ax
+
+    def plot_safe_cells_against_truth(self, reference_slice: ArraySlice2D, verbose: bool = False):
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        ax.imshow(reference_slice.get_sliced_array(self.get_recent_values() >= 0).T, origin='lower')
+
+        if verbose:
+            plt.show(block=False)
+
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        terminal_values = compute_signed_distance(~self.avoid_set)
+        solver_settings = hj_reachability.solver.SolverSettings.with_accuracy(
+            accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            value_postprocessor=ReachAvoid.from_array(terminal_values, self.reach_set)
+        )
+
+        truth = hj_step(
+            hj_setup=self.hj_setup,
+            solver_settings=solver_settings,
+            initial_values=terminal_values,
+            time_start=0.,
+            time_target=-10,
+            progress_bar=True
+        )
+
+        ax.imshow(reference_slice.get_sliced_array(truth >= 0).T, origin='lower')
+
+        plt.show(block=False)

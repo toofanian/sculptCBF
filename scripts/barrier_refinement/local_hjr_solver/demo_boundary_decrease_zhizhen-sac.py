@@ -31,14 +31,14 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
     # set up dynamics and grid
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            [0, -8, -jnp.pi, -10],
-            [10, 8, jnp.pi, 10]
+            [5, -4, -1.3, -1.5],
+            [10, 5.5, .5, 3]
         ),
         shape=(31, 31, 31, 31)
     )
 
-    # dynamics = load_quadcopter_sac_jax_hj(grid)
-    dynamics = quadcopter_vertical_jax_hj
+    dynamics = load_quadcopter_sac_jax_hj(grid)
+    # dynamics = quadcopter_vertical_jax_hj
 
     hj_setup = HjSetup.from_parts(
         dynamics=dynamics,
@@ -77,7 +77,7 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=5,
+        max_iterations=20,
         boundary_distance=1,
         neighbor_distance=1
     )

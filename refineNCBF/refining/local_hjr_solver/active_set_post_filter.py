@@ -45,6 +45,26 @@ class RemoveWhereUnchanged(ActiveSetPostFilter):
 
 
 @attr.s(auto_attribs=True)
+class RemoveWhereNonNegativeHamiltonian(ActiveSetPostFilter):
+    hamitonian_atol: float = 1e-3
+
+    @classmethod
+    def from_parts(cls, hamiltonian_atol: float = 1e-3):
+        return cls(hamiltonian_atol)
+
+    def __call__(
+            self,
+            data: LocalUpdateResult,
+            active_set_pre_filtered: MaskNd,
+            active_set_expanded: MaskNd,
+            values_next: ArrayNd
+    ) -> MaskNd:
+        hamiltonian = values_next - data.get_recent_values()
+        negative_hamiltonian = hamiltonian < -self.hamitonian_atol
+        return negative_hamiltonian & active_set_expanded
+
+
+@attr.s(auto_attribs=True)
 class NoPostFilter(ActiveSetPostFilter):
     @classmethod
     def from_parts(cls):
