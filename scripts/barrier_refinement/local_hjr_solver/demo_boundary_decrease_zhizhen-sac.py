@@ -12,16 +12,17 @@ from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
 from refineNCBF.utils.files import generate_unique_filename, visuals_data_directory
-from refineNCBF.utils.sets import compute_signed_distance
+from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.tables import tabularize_dnn, flag_states_on_grid
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, load_uncertified_states, \
+    load_certified_states
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use('TkAgg')
 
 
-def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
+def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
     """
     takes RL pol
     :param verbose:
@@ -78,19 +79,32 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=20,
+        max_iterations=3,
         boundary_distance=1,
         neighbor_distance=1
     )
 
     # define initial values and initial active set to solve on
     initial_values = terminal_values.copy()
-    active_set = flag_states_on_grid(
-        cell_centerpoints=load_uncertified_states(),
-        cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
-        grid=hj_setup.grid,
-        verbose=True,
-        save_array=False
+    active_set = (
+        get_mask_boundary_on_both_sides_by_signed_distance(~avoid_set, 1)
+        & ~
+        (flag_states_on_grid(
+            cell_centerpoints=load_certified_states(),
+            cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+            grid=hj_setup.grid,
+            verbose=True,
+            save_array=False
+        )
+            & ~
+         flag_states_on_grid(
+             cell_centerpoints=load_uncertified_states(),
+             cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+             grid=hj_setup.grid,
+             verbose=True,
+             save_array=False
+         )
+        )
     )
 
     # solve
@@ -134,4 +148,4 @@ def demo_local_hjr_boundary_decrease_zhizhen2(verbose: bool = False, save_gif: b
 
 
 if __name__ == '__main__':
-    demo_local_hjr_boundary_decrease_zhizhen2(verbose=True, save_gif=True, save_result=True)
+    demo_local_hjr_boundary_decrease_sac(verbose=True, save_gif=True, save_result=True)

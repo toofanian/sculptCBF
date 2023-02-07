@@ -44,6 +44,15 @@ def load_uncertified_states() -> VectorBatch:
     total_states_destandardized = standardizer.destandardize(np.array(total_states))
     return total_states_destandardized
 
+def load_certified_states() -> VectorBatch:
+    with open(construct_full_path('data/trained_NCBFs/sac_policy/quad4d_sac_boundary_cert_results.json')) as f:
+        quad4d_result_dict = json.load(f)
+    certified_states = quad4d_result_dict['cert']
+    standardizer = load_standardizer()
+    total_states_destandardized = standardizer.destandardize(np.array(certified_states))
+    return total_states_destandardized
+
+
 
 @attr.s(auto_attribs=True)
 class StableBaselinesCallable(Callable):
