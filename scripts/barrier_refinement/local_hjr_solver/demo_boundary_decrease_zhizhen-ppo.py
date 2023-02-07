@@ -6,7 +6,8 @@ import matplotlib
 from jax import numpy as jnp
 from matplotlib import pyplot as plt
 
-from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj, load_quadcopter_ppo_jax_hj
+from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
+from refineNCBF.dynamic_systems.implementations.quadcopter_fixed_policy import load_quadcopter_ppo_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
