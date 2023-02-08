@@ -276,7 +276,7 @@ class LocalUpdateResult:
 
         final_values = self.get_recent_values()
 
-        terminal_values = compute_signed_distance(~self.avoid_set)
+        terminal_values = self.terminal_values
         solver_settings = hj_reachability.solver.SolverSettings.with_accuracy(
             accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
             value_postprocessor=ReachAvoid.from_array(terminal_values, self.reach_set)
@@ -294,8 +294,6 @@ class LocalUpdateResult:
 
         if save_path is not None:
             np.save(construct_full_path(generate_unique_filename(save_path,'npy')), np.array(truth))
-
-        total_active_mask = self.get_total_active_mask()
 
         x1, x2 = np.meshgrid(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
@@ -354,7 +352,99 @@ class LocalUpdateResult:
         ax.set_xlabel(reference_slice.free_dim_1.name)
         ax.set_ylabel(reference_slice.free_dim_2.name)
         ax.set_zlabel('value')
+        ax.set_zlim(bottom=-10)
 
+        if verbose:
+            plt.show(block=False)
+
+        return fig, ax
+
+    def plot_result_and_hjr_avoiding_result(
+            self,
+            reference_slice: ArraySlice2D,
+            target_time: float = -10,
+            verbose: bool = False,
+            save_path: Optional[FilePathRelative] = None
+    ):
+
+        final_values = self.get_recent_values()
+
+        terminal_values = self.get_recent_values()
+        solver_settings = hj_reachability.solver.SolverSettings.with_accuracy(
+            accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            value_postprocessor=ReachAvoid.from_array(terminal_values, self.reach_set)
+        )
+
+        truth = hj_step(
+            dynamics=self.dynamics,
+            grid=self.grid,
+            solver_settings=solver_settings,
+            initial_values=terminal_values,
+            time_start=0.,
+            time_target=target_time,
+            progress_bar=True
+        )
+
+        if save_path is not None:
+            np.save(construct_full_path(generate_unique_filename(save_path,'npy')), np.array(truth))
+
+        x1, x2 = np.meshgrid(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+        )
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='k', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', alpha=1),
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.5),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='b', alpha=1),
+            plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.5),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='r', alpha=1),
+        ]
+
+        legend_for_labels = [
+            'initial',
+            'initial kernel',
+            'result',
+            'result kernel',
+            'continued globally',
+            'continued globally kernel',
+        ]
+
+        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
+        ax.set(title='result, then continued with vanilla hjr')
+
+        ax.plot_surface(
+            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
+            cmap='Greys', edgecolor='none', alpha=.3
+        )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
+            levels=[0], colors=['k'], linewidths=1, linestyles=['--']
+        )
+
+        ax.plot_surface(
+            x1, x2, reference_slice.get_sliced_array(final_values).T,
+            cmap='Blues', edgecolor='none', alpha=.5
+        )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(final_values).T,
+            levels=[0], colors=['b'], linewidths=1
+        )
+
+        ax.plot_surface(
+            x1, x2, reference_slice.get_sliced_array(truth).T,
+            cmap='Reds', edgecolor='none', alpha=.5
+        )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(truth).T,
+            levels=[0], colors=['r'], linewidths=1, linestyles=['--']
+        )
+
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
+        ax.set_zlabel('value')
         ax.set_zlim(bottom=-10)
 
         if verbose:

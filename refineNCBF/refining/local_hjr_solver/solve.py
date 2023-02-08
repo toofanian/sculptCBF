@@ -136,7 +136,7 @@ class LocalHjrSolver(Callable):
             avoid_set: MaskNd,
             reach_set: MaskNd,
             terminal_values: ArrayNd,
-            neighbor_distance: float = .5,
+            neighbor_distance: float = 1,
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
             value_change_rtol: float = 1e-3,
@@ -198,10 +198,8 @@ class LocalHjrSolver(Callable):
             reach_set: MaskNd,
             terminal_values: ArrayNd,
 
-            neighbor_distance: float = .5,
+            neighbor_distance: float = 1,
             solver_timestep: float = -0.1,
-            value_change_atol: float = 1e-3,
-            value_change_rtol: float = 1e-3,
             max_iterations: int = 100,
 
             verbose: bool = False,
@@ -225,9 +223,7 @@ class LocalHjrSolver(Callable):
             time_step=solver_timestep,
             verbose=verbose
         )
-        active_set_post_filter = RemoveWhereUnchanged.from_parts(
-            atol=value_change_atol,
-            rtol=value_change_rtol,
+        active_set_post_filter = RemoveWhereNonNegativeHamiltonian.from_parts(
         )
         break_criteria_checker = BreakCriteriaChecker.from_criteria(
             [
@@ -262,8 +258,8 @@ class LocalHjrSolver(Callable):
             reach_set: MaskNd,
             terminal_values: ArrayNd,
 
-            boundary_distance: float = .5,
-            neighbor_distance: float = .5,
+            boundary_distance: float = 1,
+            neighbor_distance: float = 1,
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
             value_change_rtol: float = 1e-3,
@@ -386,8 +382,8 @@ class LocalHjrSolver(Callable):
             reach_set: MaskNd,
             terminal_values: ArrayNd,
 
-            boundary_distance: float = .5,
-            neighbor_distance: float = .5,
+            boundary_distance: float = 1,
+            neighbor_distance: float = 1,
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
             value_change_rtol: float = 1e-3,
