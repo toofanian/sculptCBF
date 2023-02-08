@@ -51,21 +51,41 @@ class PreFilterWhereFarFromZeroLevelset(ActiveSetPreFilter):
 
 
 @attr.s(auto_attribs=True)
-class PreFilterBoundaryExceptWhereUnchanged(ActiveSetPreFilter):
-    _distance: float
+class PreFilterWhereOutsideZeroLevelset(ActiveSetPreFilter):
 
     @classmethod
-    def from_parts(cls, distance: float):
-        return cls(distance=distance)
+    def from_parts(cls):
+        return cls()
 
     def __call__(self, data: LocalUpdateResult) -> MaskNd:
-        boundary = get_mask_boundary_on_both_sides_by_signed_distance(data.get_recent_values() >= 0, distance=self._distance)
-        where_postfiltered = data.get_where_postfiltered()
+        active_set_filtered = (
+                data.get_pending_seed_set()
+                &
+                data.get_viability_kernel()
+        )
+        return active_set_filtered
+
+
+@attr.s(auto_attribs=True)
+class PreFilterWhereFarWithTrailingOuter(ActiveSetPreFilter):
+    _distance_inner: float
+    _distance_outer: float
+
+    @classmethod
+    def from_parts(cls, distance_inner: float, distance_outer: float):
+        return cls(distance_inner=distance_inner, distance_outer=distance_outer)
+
+    def __call__(self, data: LocalUpdateResult) -> MaskNd:
+        where_far_exterior = shrink_mask_by_signed_distance(data.get_recent_values() >= 0, distance=self._distance_inner)
+        where_far_interior = shrink_mask_by_signed_distance(data.get_recent_values() < 0, distance=self._distance_outer)
 
         active_set_filtered = (
-            boundary
-            & ~
-            where_postfiltered
+                data.get_pending_seed_set()
+                & ~
+                (
+                        where_far_exterior
+                        |
+                        where_far_interior
+                )
         )
-
         return active_set_filtered

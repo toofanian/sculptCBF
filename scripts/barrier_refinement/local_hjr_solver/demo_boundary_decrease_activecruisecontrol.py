@@ -13,7 +13,7 @@ from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors impor
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
-from refineNCBF.utils.visuals import ArraySlice2D, DimName
+from refineNCBF.utils.visuals import ArraySlice2D, DimName, ArraySlice1D
 from scripts.barrier_refinement.pre_constrcuted_stuff.active_cruise_control_stuff import get_saved_signed_distance_function, SignedDistanceFunctions
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -53,7 +53,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
         )
     )
 
-    solver = LocalHjrSolver.as_decrease(
+    solver = LocalHjrSolver.as_boundary_decrease_split(
         dynamics=dynamics,
         grid=grid,
         solver_settings=solver_settings,
@@ -61,6 +61,8 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=300,
+        boundary_distance_inner=1,
+        boundary_distance_outer=1,
         verbose=verbose,
     )
 
@@ -100,6 +102,14 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
             reference_slice=ref_index,
             verbose=verbose
         )
+
+        result.plot_value_1d(
+            ref_index=ArraySlice1D.from_reference_index(
+                reference_index=(3, 0, 90),
+                free_dim_1=DimName(1, 'relative velocity'),
+            ),
+        )
+
         plt.pause(0)
 
     return result
