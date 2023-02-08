@@ -20,7 +20,7 @@ def check_if_file_exists(file_path: FilePathRelative) -> bool:
 def generate_unique_filename(header: str, extension: str) -> str:
     import datetime
     now = datetime.datetime.now()
-    return f'{header}-{now.strftime("%Y%m%d_%H%M%S")}.{extension}'
+    return f'{header}_{now.strftime("%Y%m%d_%H%M%S")}.{extension}'
 
 
 def remove_file(file_path: FilePathRelative) -> None:

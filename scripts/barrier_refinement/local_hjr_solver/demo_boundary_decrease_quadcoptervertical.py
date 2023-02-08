@@ -6,12 +6,11 @@ import matplotlib
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
-from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 
 import jax.numpy as jnp
 
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
+from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
@@ -22,22 +21,21 @@ matplotlib.use('TkAgg')
 
 def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
     # set up dynamics and grid
-    hj_setup = HjSetup.from_parts(
-        dynamics=quadcopter_vertical_jax_hj,
-        grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
-            domain=hj_reachability.sets.Box(
-                [0, -8, -jnp.pi, -10],
-                [10, 8, jnp.pi, 10]
-            ),
-            shape=(25, 25, 25, 25)
-        )
+    dynamics = quadcopter_vertical_jax_hj
+
+    grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
+        domain=hj_reachability.sets.Box(
+            [0, -8, -jnp.pi, -10],
+            [10, 8, jnp.pi, 10]
+        ),
+        shape=(25, 25, 25, 25)
     )
 
     # define reach and avoid targets
     avoid_set = (
-            (hj_setup.grid.states[..., 0] < 1)
+            (grid.states[..., 0] < 1)
             |
-            (hj_setup.grid.states[..., 0] > 9)
+            (grid.states[..., 0] > 9)
     )
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
@@ -53,7 +51,8 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
 
     # load into solver
     solver = LocalHjrSolver.as_boundary_decrease(
-        hj_setup=hj_setup,
+        dynamics=dynamics,
+        grid=grid,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
@@ -79,10 +78,10 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
     if verbose:
         ref_index = ArraySlice2D.from_reference_index(
             reference_index=(
-                jnp.array(hj_setup.grid.states.shape[0]) // 2,
-                jnp.array(hj_setup.grid.states.shape[1]) // 4,
-                jnp.array(hj_setup.grid.states.shape[2]) // 2,
-                jnp.array(hj_setup.grid.states.shape[3]) // 2,
+                jnp.array(grid.states.shape[0]) // 2,
+                jnp.array(grid.states.shape[1]) // 4,
+                jnp.array(grid.states.shape[2]) // 2,
+                jnp.array(grid.states.shape[3]) // 2,
             ),
             free_dim_1=DimName(0, 'y'),
             free_dim_2=DimName(2, 'theta')

@@ -4,7 +4,7 @@ from typing import Callable
 import attr
 from jax import numpy as jnp
 
-from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
+from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.utils.types import MaskNd, ArrayNd
 
 

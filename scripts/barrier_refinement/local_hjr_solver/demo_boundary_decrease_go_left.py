@@ -6,12 +6,11 @@ import matplotlib
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.go_left import go_left_jax_hj
-from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 
 import jax.numpy as jnp
 
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
+from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D, DimName
@@ -22,20 +21,19 @@ matplotlib.use('TkAgg')
 
 def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
     # set up dynamics and grid
-    hj_setup = HjSetup.from_parts(
-        dynamics=go_left_jax_hj,
-        grid=hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
-            domain=hj_reachability.sets.Box(
-                [-10],
-                [100]
-            ),
-            shape=(110,)
-        )
+    dynamics = go_left_jax_hj
+
+    grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
+        domain=hj_reachability.sets.Box(
+            [-10],
+            [100]
+        ),
+        shape=(110,)
     )
 
     # define reach and avoid targets
     avoid_set = (
-            (hj_setup.grid.states[..., 0] < 0)
+            (grid.states[..., 0] < 0)
     )
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
@@ -51,7 +49,8 @@ def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_
 
     # load into solver
     solver = LocalHjrSolver.as_boundary_decrease(
-        hj_setup=hj_setup,
+        dynamics=dynamics,
+        grid=grid,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
@@ -64,7 +63,7 @@ def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_
 
     # define initial values and initial active set to solve on
     initial_values = terminal_values.copy()
-    active_set = jnp.zeros_like(hj_setup.grid.states[..., 0], dtype=bool).at[10].set(True)
+    active_set = jnp.zeros_like(grid.states[..., 0], dtype=bool).at[10].set(True)
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)

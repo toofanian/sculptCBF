@@ -1,0 +1,9 @@
+jax~=0.4.1
+matplotlib~=3.6.3
+numpy~=1.24.1
+attrs~=22.2.0
+gym~=0.21.0
+scikit-fmm~=2022.8.15
+setuptools~=64.0.2
+tqdm~=4.64.1
+dill~=0.3.6

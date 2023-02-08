@@ -3,7 +3,7 @@ from typing import Callable
 
 import attr
 
-from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
+from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.utils.sets import expand_mask_by_signed_distance
 from refineNCBF.utils.types import MaskNd
 

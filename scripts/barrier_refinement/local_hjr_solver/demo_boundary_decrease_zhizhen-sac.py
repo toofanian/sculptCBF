@@ -6,11 +6,9 @@ import matplotlib
 from jax import numpy as jnp
 from matplotlib import pyplot as plt
 
-from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
-from refineNCBF.dynamic_systems.implementations.quadcopter_fixed_policy import load_quadcopter_ppo_jax_hj, load_quadcopter_sac_jax_hj
-from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
+from refineNCBF.dynamic_systems.implementations.quadcopter_fixed_policy import load_quadcopter_sac_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
+from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import generate_unique_filename, visuals_data_directory
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.tables import tabularize_dnn, flag_states_on_grid
@@ -42,23 +40,18 @@ def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool =
     dynamics = load_quadcopter_sac_jax_hj(grid)
     # dynamics = quadcopter_vertical_jax_hj
 
-    hj_setup = HjSetup.from_parts(
-        dynamics=dynamics,
-        grid=grid
-    )
-
     dnn_values_over_grid = -tabularize_dnn(
         dnn=load_quadcopter_cbf(),
         standardizer=load_standardizer(),
-        grid=hj_setup.grid,
+        grid=grid,
     )
 
     # define reach and avoid targets
     # avoid_set = (dnn_values_over_grid < 0)
     avoid_set = (
-            (hj_setup.grid.states[..., 0] < 0)
+            (grid.states[..., 0] < 0)
             |
-            (hj_setup.grid.states[..., 0] > 10)
+            (grid.states[..., 0] > 10)
     )
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
@@ -74,7 +67,8 @@ def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool =
 
     # load into solver
     solver = LocalHjrSolver.as_boundary_decrease(
-        hj_setup=hj_setup,
+        dynamics=dynamics,
+        grid=grid,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
@@ -92,7 +86,7 @@ def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool =
         (flag_states_on_grid(
             cell_centerpoints=load_certified_states(),
             cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
-            grid=hj_setup.grid,
+            grid=grid,
             verbose=True,
             save_array=False
         )
@@ -100,7 +94,7 @@ def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool =
          flag_states_on_grid(
              cell_centerpoints=load_uncertified_states(),
              cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
-             grid=hj_setup.grid,
+             grid=grid,
              verbose=True,
              save_array=False
          )

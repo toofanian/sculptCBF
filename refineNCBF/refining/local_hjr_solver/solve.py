@@ -5,14 +5,12 @@ from typing import Callable
 import attr
 import hj_reachability
 
-from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
-from refineNCBF.refining.local_hjr_solver.active_set_post_filter import ActiveSetPostFilter, RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
-from refineNCBF.refining.local_hjr_solver.active_set_pre_filter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset, \
-    PreFilterBoundaryExceptWhereUnchanged
-from refineNCBF.refining.local_hjr_solver.break_criteria_checker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
-from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult, LocalUpdateResultIteration
-from refineNCBF.refining.local_hjr_solver.local_hjr_stepper import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
-from refineNCBF.refining.local_hjr_solver.neighbor_expander import NeighborExpander, SignedDistanceNeighbors, InnerSignedDistanceNeighbors, NoNeighbors
+from refineNCBF.refining.local_hjr_solver.postfilter import ActiveSetPostFilter, RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
+from refineNCBF.refining.local_hjr_solver.prefilter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset
+from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
+from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult, LocalUpdateResultIteration
+from refineNCBF.refining.local_hjr_solver.step import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, InnerSignedDistanceNeighbors, NoNeighbors
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger
 
@@ -31,10 +29,12 @@ class LocalHjrSolver(Callable):
         - checks break criteria
     """
     # problem setup
-    _hj_setup: HjSetup
+    _dynamics: hj_reachability.Dynamics
+    _grid: hj_reachability.Grid
     _solver_settings: hj_reachability.SolverSettings
     _avoid_set: MaskNd
     _reach_set: MaskNd
+    _terminal_values: ArrayNd
 
     # solver components
     _active_set_pre_filter: ActiveSetPreFilter
@@ -56,17 +56,18 @@ class LocalHjrSolver(Callable):
                 self._logger.info(f'iteration {len(local_update_result)} complete, \trunning duration is {(time.time() - start_time):.2f} seconds, \t\tcomputed over {local_update_result.get_recent_set_for_compute().sum()} of {self._avoid_set.size} cells')
             if self._check_for_break(local_update_result):
                 break
-
         return local_update_result
 
     def _initialize_local_result(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
         return LocalUpdateResult.from_parts(
             local_solver=self,
-            hj_setup=self._hj_setup,
+            dynamics=self._dynamics,
+            grid=self._grid,
             avoid_set=self._avoid_set,
             reach_set=self._reach_set,
             seed_set=active_set,
             initial_values=initial_values,
+            terminal_values=self._terminal_values
         )
 
     def _perform_local_update_iteration(self, result: LocalUpdateResult):
@@ -96,22 +97,28 @@ class LocalHjrSolver(Callable):
     @classmethod
     def from_parts(
             cls,
-            hj_setup: HjSetup,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
+            terminal_values: ArrayNd,
+
             active_set_pre_filter: ActiveSetPreFilter,
             neighbor_expander: NeighborExpander,
             local_hjr_stepper: LocalHjrStepper,
             active_set_post_filter: ActiveSetPostFilter,
             break_criteria_checker: BreakCriteriaChecker,
+
             verbose: bool = False,
     ):
         return cls(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             avoid_set=avoid_set,
             reach_set=reach_set,
+            terminal_values=terminal_values,
             active_set_pre_filter=active_set_pre_filter,
             neighbor_expander=neighbor_expander,
             local_hjr_stepper=local_hjr_stepper,
@@ -123,10 +130,12 @@ class LocalHjrSolver(Callable):
     @classmethod
     def as_classic_solver(
             cls,
-            hj_setup: HjSetup,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
+            terminal_values: ArrayNd,
             neighbor_distance: float = .5,
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
@@ -146,7 +155,8 @@ class LocalHjrSolver(Callable):
             distance=neighbor_distance
         )
         local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             time_step=solver_timestep,
             verbose=verbose
@@ -164,10 +174,12 @@ class LocalHjrSolver(Callable):
         )
 
         return cls(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             avoid_set=avoid_set,
             reach_set=reach_set,
+            terminal_values=terminal_values,
             active_set_pre_filter=active_set_pre_filter,
             neighbor_expander=neighbor_expander,
             local_hjr_stepper=local_hjr_stepper,
@@ -179,10 +191,12 @@ class LocalHjrSolver(Callable):
     @classmethod
     def as_decrease(
             cls,
-            hj_setup: HjSetup,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
+            terminal_values: ArrayNd,
 
             neighbor_distance: float = .5,
             solver_timestep: float = -0.1,
@@ -205,7 +219,8 @@ class LocalHjrSolver(Callable):
             distance=neighbor_distance
         )
         local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             time_step=solver_timestep,
             verbose=verbose
@@ -223,10 +238,12 @@ class LocalHjrSolver(Callable):
         )
 
         return cls(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             avoid_set=avoid_set,
             reach_set=reach_set,
+            terminal_values=terminal_values,
             active_set_pre_filter=active_set_pre_filter,
             neighbor_expander=neighbor_expander,
             local_hjr_stepper=local_hjr_stepper,
@@ -238,10 +255,12 @@ class LocalHjrSolver(Callable):
     @classmethod
     def as_boundary_solver(
             cls,
-            hj_setup: HjSetup,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
+            terminal_values: ArrayNd,
 
             boundary_distance: float = .5,
             neighbor_distance: float = .5,
@@ -264,7 +283,8 @@ class LocalHjrSolver(Callable):
             distance=neighbor_distance
         )
         local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             time_step=solver_timestep,
             verbose=verbose
@@ -282,10 +302,12 @@ class LocalHjrSolver(Callable):
         )
 
         return cls(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             avoid_set=avoid_set,
             reach_set=reach_set,
+            terminal_values=terminal_values,
             active_set_pre_filter=active_set_pre_filter,
             neighbor_expander=neighbor_expander,
             local_hjr_stepper=local_hjr_stepper,
@@ -297,10 +319,12 @@ class LocalHjrSolver(Callable):
     @classmethod
     def as_boundary_decrease(
             cls,
-            hj_setup: HjSetup,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
+            terminal_values: ArrayNd,
 
             boundary_distance: float = 1,
             neighbor_distance: float = 1,
@@ -321,7 +345,8 @@ class LocalHjrSolver(Callable):
             distance=neighbor_distance
         )
         local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             time_step=solver_timestep,
             verbose=verbose
@@ -337,10 +362,12 @@ class LocalHjrSolver(Callable):
         )
 
         return cls(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             avoid_set=avoid_set,
             reach_set=reach_set,
+            terminal_values=terminal_values,
             active_set_pre_filter=active_set_pre_filter,
             neighbor_expander=neighbor_expander,
             local_hjr_stepper=local_hjr_stepper,
@@ -352,10 +379,12 @@ class LocalHjrSolver(Callable):
     @classmethod
     def as_inner_boundary_decrease(
             cls,
-            hj_setup: HjSetup,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
             solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
+            terminal_values: ArrayNd,
 
             boundary_distance: float = .5,
             neighbor_distance: float = .5,
@@ -378,7 +407,8 @@ class LocalHjrSolver(Callable):
             distance=neighbor_distance
         )
         local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             time_step=solver_timestep,
             verbose=verbose
@@ -396,10 +426,12 @@ class LocalHjrSolver(Callable):
         )
 
         return cls(
-            hj_setup=hj_setup,
+            dynamics=dynamics,
+            grid=grid,
             solver_settings=solver_settings,
             avoid_set=avoid_set,
             reach_set=reach_set,
+            terminal_values=terminal_values,
             active_set_pre_filter=active_set_pre_filter,
             neighbor_expander=neighbor_expander,
             local_hjr_stepper=local_hjr_stepper,

@@ -1,11 +1,11 @@
 import hj_reachability
 
-from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.utils.types import ArrayNd, MaskNd
 
 
 def hj_step(
-        hj_setup: HjSetup,
+        dynamics: hj_reachability.Dynamics,
+        grid: hj_reachability.Grid,
         solver_settings: hj_reachability.SolverSettings,
         initial_values: ArrayNd,
         time_start: float,
@@ -17,8 +17,8 @@ def hj_step(
 
     return hj_reachability.step(
         solver_settings=solver_settings,
-        dynamics=hj_setup.dynamics,
-        grid=hj_setup.grid,
+        dynamics=dynamics,
+        grid=grid,
         time=time_start,
         values=initial_values,
         target_time=time_target,

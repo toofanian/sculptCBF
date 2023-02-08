@@ -8,7 +8,6 @@ import skfmm
 from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControlJAX, \
     simplified_active_cruise_control_params
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
-from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import NotBiggerator
 from refineNCBF.utils.sets import compute_signed_distance
@@ -41,15 +40,19 @@ class SignedDistanceFunctions(IntEnum):
     X3_DISTANCE_5LEVELSET = 5
 
 
-def get_saved_signed_distance_function(signed_distance_function: SignedDistanceFunctions, hj_setup: HjSetup):
+def get_saved_signed_distance_function(
+        signed_distance_function: SignedDistanceFunctions,
+        dynamics: HJControlAffineDynamics,
+        grid: hj_reachability.Grid
+):
     match signed_distance_function:
         case SignedDistanceFunctions.X3_DISTANCE:
-            grid_np = np.array(hj_setup.grid.states)
+            grid_np = np.array(grid.states)
             where_boundary = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = -skfmm.distance(~where_boundary) + skfmm.distance(where_boundary)
 
         case SignedDistanceFunctions.X3_DISTANCE_KERNEL:
-            grid_np = np.array(hj_setup.grid.states)
+            grid_np = np.array(grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)
             solver_settings = hj_reachability.SolverSettings.with_accuracy(
@@ -57,7 +60,8 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
             where_boundary_values = hj_step(
-                hj_setup=hj_setup,
+                dynamics=dynamics,
+                grid=grid,
                 solver_settings=solver_settings,
                 initial_values=signed_distance_to_boundary,
                 time_start=0,
@@ -69,7 +73,7 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             signed_distance_to_boundary = compute_signed_distance(where_boundary)
 
         case SignedDistanceFunctions.X3_DISTANCE_KERNEL_CUT_50dist:
-            grid_np = np.array(hj_setup.grid.states)
+            grid_np = np.array(grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)
             solver_settings = hj_reachability.SolverSettings.with_accuracy(
@@ -77,7 +81,8 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
             where_boundary_values = hj_step(
-                hj_setup=hj_setup,
+                dynamics=dynamics,
+                grid=grid,
                 solver_settings=solver_settings,
                 initial_values=signed_distance_to_boundary,
                 time_start=0,
@@ -89,7 +94,7 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
             signed_distance_to_boundary = compute_signed_distance(where_boundary)
 
         case SignedDistanceFunctions.X3_DISTANCE_KERNEL_CUT_55dist:
-            grid_np = np.array(hj_setup.grid.states)
+            grid_np = np.array(grid.states)
             boundary_for_kernel = np.logical_and(grid_np[:, :, :, 2] > 40, grid_np[:, :, :, 2] < 60)
             signed_distance_to_boundary = compute_signed_distance(boundary_for_kernel)
             solver_settings = hj_reachability.SolverSettings.with_accuracy(
@@ -97,7 +102,8 @@ def get_saved_signed_distance_function(signed_distance_function: SignedDistanceF
                 value_postprocessor=NotBiggerator(signed_distance_to_boundary, jnp.ones_like(signed_distance_to_boundary, dtype=bool)),
             )
             where_boundary_values = hj_step(
-                hj_setup=hj_setup,
+                dynamics=dynamics,
+                grid=grid,
                 solver_settings=solver_settings,
                 initial_values=signed_distance_to_boundary,
                 time_start=0,

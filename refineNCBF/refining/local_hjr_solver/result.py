@@ -8,10 +8,9 @@ import numpy as np
 from jax import numpy as jnp
 from matplotlib import pyplot as plt, animation
 
-from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_full_path
+from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_full_path, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D
@@ -28,7 +27,6 @@ class LocalUpdateResultIteration:
     active_set_expanded: MaskNd
     computed_values: ArrayNd
     active_set_post_filtered: MaskNd
-    solver_info: Optional[List[List[int]]] = None
 
     @classmethod
     def from_parts(
@@ -37,26 +35,25 @@ class LocalUpdateResultIteration:
             active_set_expanded: MaskNd,
             values_next: ArrayNd,
             active_set_post_filtered: MaskNd,
-            solver_info: Optional[List[List[int]]] = None,
     ):
         return cls(
             active_set_pre_filtered=active_set_pre_filtered,
             active_set_expanded=active_set_expanded,
             computed_values=values_next,
             active_set_post_filtered=active_set_post_filtered,
-            solver_info=solver_info,
         )
 
 
 @attr.dataclass
 class LocalUpdateResult:
     local_solver: "LocalHjrSolver"
-
-    hj_setup: HjSetup
+    dynamics: hj_reachability.Dynamics
+    grid: hj_reachability.Grid
     avoid_set: MaskNd
     reach_set: MaskNd
-    seed_set: MaskNd
     initial_values: ArrayNd
+    terminal_values: ArrayNd
+    seed_set: MaskNd
 
     iterations: List[LocalUpdateResultIteration] = attr.ib(factory=list)
 
@@ -64,16 +61,27 @@ class LocalUpdateResult:
     def from_parts(
             cls,
             local_solver: "LocalHjrSolver",
-            hj_setup: HjSetup,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
             avoid_set: MaskNd,
             seed_set: MaskNd,
             initial_values: ArrayNd,
+            terminal_values: ArrayNd,
             reach_set: Optional[MaskNd] = None
     ):
         if reach_set is None:
             reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
-        return cls(local_solver, hj_setup, avoid_set, reach_set, seed_set, initial_values)
+        return cls(
+            local_solver=local_solver,
+            dynamics=dynamics,
+            grid=grid,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            initial_values=initial_values,
+            terminal_values=terminal_values,
+            seed_set=seed_set,
+        )
 
     def __len__(self):
         return len(self.iterations)
@@ -87,19 +95,12 @@ class LocalUpdateResult:
         with open(full_path, "wb") as f:
             dill.dump(self, f)
 
-    @classmethod
-    def load(cls, file_path: FilePathRelative) -> "LocalUpdateResult":
+    @staticmethod
+    def load(file_path: FilePathRelative) -> "LocalUpdateResult":
         full_path = construct_full_path(file_path)
         with open(full_path, "rb") as f:
             cls = dill.load(f)
         return cls
-
-    def get_where_certified(self) -> MaskNd:
-        if len(self) == 0:
-            return self.seed_set
-        else:
-            return jnp.zeros_like(self.seed_set, dtype=bool)
-            # return ~self.iterations[-1].active_set_post_filtered & self.iterations[-1].active_set_expanded
 
     def get_pending_seed_set(self) -> MaskNd:
         if len(self.iterations) == 0:
@@ -144,12 +145,12 @@ class LocalUpdateResult:
 
     def plot_value_1d(self, ref_index: ArraySlice1D):
         fig, ax = plt.subplots(figsize=(9, 7))
-        ax.plot(self.hj_setup.grid.coordinate_vectors[ref_index.free_dim_1.dim],
+        ax.plot(self.grid.coordinate_vectors[ref_index.free_dim_1.dim],
                 ref_index.get_sliced_array(self.initial_values),
                 )
         for iteration in self.iterations:
             ax.plot(
-                self.hj_setup.grid.coordinate_vectors[ref_index.free_dim_1.dim],
+                self.grid.coordinate_vectors[ref_index.free_dim_1.dim],
                 ref_index.get_sliced_array(iteration.computed_values)
             )
 
@@ -198,75 +199,53 @@ class LocalUpdateResult:
 
             # always have reach and avoid set up
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.avoid_set).T,
                 levels=[0, .5], colors=['r'], alpha=.3
             )
 
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.reach_set).T,
                 levels=[0, .5], colors=['g'], alpha=.3
             )
 
             # always have seed set up
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.seed_set).T,
                 levels=[0, .5], colors=['k'], alpha=.3
             )
 
             # always have initial zero levelset up
             ax.contour(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 reference_slice.get_sliced_array(self.initial_values).T,
                 levels=[0], colors=['k'], alpha=.7
             )
 
-            if self.iterations[i].solver_info is not None:
-                ax.axvline(
-                    x=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim][
-                          self.iterations[i].solver_info[0][reference_slice.free_dim_1.dim]] - 1,
-                    color='b', linestyle='--'
-                )
-                ax.axvline(
-                    x=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim][
-                        self.iterations[i].solver_info[1][reference_slice.free_dim_1.dim]],
-                    color='b', linestyle='--'
-                )
-                ax.axhline(
-                    y=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim][
-                          self.iterations[i].solver_info[0][reference_slice.free_dim_2.dim]] - 1,
-                    color='b', linestyle='--'
-                )
-                ax.axhline(
-                    y=self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim][
-                        self.iterations[i].solver_info[1][reference_slice.free_dim_2.dim]],
-                    color='b', linestyle='--'
-                )
-
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.iterations[i].active_set_expanded).T,
                 levels=[0, .5], colors=['b'], alpha=.2
             )
 
             ax.contourf(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 ~reference_slice.get_sliced_array(self.iterations[i].active_set_post_filtered).T,
                 levels=[0, 0.5], colors=['b'], alpha=.2
             )
 
             values = self.initial_values if i == 0 else self.iterations[i - 1].computed_values
             ax.contour(
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-                self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
                 reference_slice.get_sliced_array(values).T,
                 levels=[0], colors=['k'], linestyles=['--']
             )
@@ -294,8 +273,6 @@ class LocalUpdateResult:
             verbose: bool = False,
             save_path: Optional[FilePathRelative] = None
     ):
-        if save_path is not None:
-            raise NotImplementedError('saving not implemented yet')
 
         final_values = self.get_recent_values()
 
@@ -306,7 +283,8 @@ class LocalUpdateResult:
         )
 
         truth = hj_step(
-            hj_setup=self.hj_setup,
+            dynamics=self.dynamics,
+            grid=self.grid,
             solver_settings=solver_settings,
             initial_values=terminal_values,
             time_start=0.,
@@ -314,11 +292,14 @@ class LocalUpdateResult:
             progress_bar=True
         )
 
+        if save_path is not None:
+            np.save(construct_full_path(generate_unique_filename(save_path,'npy')), np.array(truth))
+
         total_active_mask = self.get_total_active_mask()
 
         x1, x2 = np.meshgrid(
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
         )
 
         proxies_for_labels = [
@@ -375,7 +356,6 @@ class LocalUpdateResult:
         ax.set_zlabel('value')
 
         ax.set_zlim(bottom=-10)
-        print(f'total inaccurate states: {np.count_nonzero(~jnp.isclose(truth, final_values, atol=.1) & total_active_mask)}')
 
         if verbose:
             plt.show(block=False)
@@ -389,8 +369,8 @@ class LocalUpdateResult:
         where_changed = ~jnp.isclose(final_values, initial_values, atol=1e-3)
 
         x1, x2 = np.meshgrid(
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
         )
 
         fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
@@ -425,8 +405,8 @@ class LocalUpdateResult:
         final_values = self.get_recent_values()
 
         x1, x2 = np.meshgrid(
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-            self.hj_setup.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
         )
 
         proxies_for_labels = [
@@ -492,7 +472,8 @@ class LocalUpdateResult:
         )
 
         truth = hj_step(
-            hj_setup=self.hj_setup,
+            dynamics=self.dynamics,
+            grid=self.grid,
             solver_settings=solver_settings,
             initial_values=terminal_values,
             time_start=0.,

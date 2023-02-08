@@ -5,8 +5,8 @@ from refineNCBF.dynamic_systems.implementations.active_cruise_control import Act
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.refining.local_hjr_solver.local_hjr_result import LocalUpdateResult
-from refineNCBF.refining.local_hjr_solver.local_hjr_solver import LocalHjrSolver
+from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
+from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import remove_file
 from refineNCBF.utils.sets import compute_signed_distance
 from scripts.barrier_refinement.pre_constrcuted_stuff.active_cruise_control_stuff import get_saved_signed_distance_function, SignedDistanceFunctions
