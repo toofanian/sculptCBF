@@ -119,3 +119,18 @@ def load_quadcopter_sac_jax_hj(
         control_mode=ActorModes.MAX,
         disturbance_mode=ActorModes.MIN,
     )
+
+
+if __name__ == '__main__':
+    grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
+        domain=hj_reachability.sets.Box(
+            [-10, -10, -10, -10],
+            [10, 10, 10, 10]
+        ),
+        shape=(11, 11, 11, 11)
+    )
+    dynamics = load_quadcopter_sac_jax_hj(grid)
+
+    control = dynamics._dynamics.compute_control(jnp.array([1, 1, 1, 1]))
+
+    print(control)

@@ -33,10 +33,10 @@ def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool =
     # set up dynamics and grid
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            [5, -4, -1.3, -1.5],
-            [10, 5.5, .5, 3]
+            [-1, -8, -jnp.pi, -10],
+            [11, 8, jnp.pi, 10]
         ),
-        shape=(31, 31, 31, 31)
+        shape=(41, 41, 41, 41)
     )
 
     dynamics = load_quadcopter_sac_jax_hj(grid)
@@ -54,12 +54,12 @@ def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool =
     )
 
     # define reach and avoid targets
-    avoid_set = (dnn_values_over_grid < 0)
-    # avoid_set = (
-    #         (hj_setup.grid.states[..., 0] < 1)
-    #         |
-    #         (hj_setup.grid.states[..., 0] > 9)
-    # )
+    # avoid_set = (dnn_values_over_grid < 0)
+    avoid_set = (
+            (hj_setup.grid.states[..., 0] < 0)
+            |
+            (hj_setup.grid.states[..., 0] > 10)
+    )
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
     # create solver settings for backwards reachable tube
@@ -79,7 +79,7 @@ def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool =
         avoid_set=avoid_set,
         reach_set=reach_set,
         verbose=verbose,
-        max_iterations=3,
+        max_iterations=1000,
         boundary_distance=1,
         neighbor_distance=1
     )

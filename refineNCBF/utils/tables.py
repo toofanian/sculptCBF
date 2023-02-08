@@ -68,8 +68,7 @@ def flag_states_on_grid(
 def snap_state_to_grid_index(
         state: Vector,
         grid: hj_reachability.Grid
-) -> tuple[int, ...]:
-    dims = grid.states.shape[-1]
+) -> Tuple[int, ...]:
     state_in_grid_frame = state + np.array(grid.spacings)/2 - np.array(grid.domain.lo)
     grid_index = state_in_grid_frame // jnp.array(grid.spacings)
     tuple_output = tuple(grid_index.astype(int))
