@@ -3,7 +3,9 @@ from typing import Callable
 
 import attr
 import hj_reachability
+from hj_reachability.solver import backwards_reachable_tube
 
+from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
@@ -34,11 +36,23 @@ class ClassicLocalHjrStepper(LocalHjrStepper):
             cls,
             dynamics: hj_reachability.Dynamics,
             grid: hj_reachability.Grid,
-            solver_settings: hj_reachability.SolverSettings,
+            terminal_values: ArrayNd,
             time_step: float,
             verbose: bool
     ):
-        return cls(dynamics=dynamics, grid=grid, solver_settings=solver_settings, time_step=time_step, verbose=verbose)
+        solver_settings = hj_reachability.SolverSettings.with_accuracy(
+            hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            value_postprocessor=ReachAvoid.from_array(
+                values=terminal_values,
+            ),
+        )
+        return cls(
+            dynamics=dynamics,
+            grid=grid,
+            solver_settings=solver_settings,
+            time_step=time_step,
+            verbose=verbose
+        )
 
     def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
         values = hj_reachability.step(
@@ -67,13 +81,31 @@ class DecreaseLocalHjrStepper(LocalHjrStepper):
             cls,
             dynamics: hj_reachability.Dynamics,
             grid: hj_reachability.Grid,
-            solver_settings: hj_reachability.SolverSettings,
+            terminal_values: ArrayNd,
             time_step: float,
             verbose: bool
     ):
-        return cls(dynamics=dynamics, grid=grid, solver_settings=solver_settings, time_step=time_step, verbose=verbose)
+        solver_settings = hj_reachability.SolverSettings.with_accuracy(
+            hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            value_postprocessor=ReachAvoid.from_array(
+                values=terminal_values,
+            ),
+            hamiltonian_postprocessor=backwards_reachable_tube
+        )
+        return cls(
+            dynamics=dynamics,
+            grid=grid,
+            solver_settings=solver_settings,
+            time_step=time_step,
+            verbose=verbose
+        )
 
-    def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
+    def __call__(
+            self,
+            data: LocalUpdateResult,
+            active_set_prefiltered: MaskNd,
+            active_set_expanded: MaskNd
+    ) -> ArrayNd:
         values_next = hj_reachability.step(
             solver_settings=self._solver_settings,
             dynamics=self._dynamics,
@@ -84,9 +116,7 @@ class DecreaseLocalHjrStepper(LocalHjrStepper):
             active_set=active_set_expanded,
             progress_bar=self._verbose,
         )
-        values_decreased = (values_next < data.get_recent_values()) #& active_set_expanded
-        values = data.get_recent_values().at[values_decreased].set(values_next[values_decreased])
-        return values
+        return values_next
 
 
 @attr.s(auto_attribs=True)

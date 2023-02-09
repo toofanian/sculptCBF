@@ -33,7 +33,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 251, 251)
+        shape=(3, 151, 151)
     )
 
     avoid_set = get_saved_signed_distance_function(
@@ -54,17 +54,17 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
         )
     )
 
-    solver = LocalHjrSolver.as_boundary_decrease_split(
+    solver = LocalHjrSolver.as_custom(
         dynamics=dynamics,
         grid=grid,
-        solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=300,
+        neighbor_distance=2,
         boundary_distance_inner=2,
-        boundary_distance_outer=1,
-        solver_timestep=-.01,
+        boundary_distance_outer=2,
+        solver_timestep=-.1,
         verbose=verbose,
     )
 

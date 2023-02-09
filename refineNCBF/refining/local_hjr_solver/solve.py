@@ -4,6 +4,8 @@ from typing import Callable
 
 import attr
 import hj_reachability
+import jax
+import numpy as np
 
 from refineNCBF.refining.local_hjr_solver.postfilter import ActiveSetPostFilter, RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
 from refineNCBF.refining.local_hjr_solver.prefilter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset, \
@@ -13,6 +15,7 @@ from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult, Local
 from refineNCBF.refining.local_hjr_solver.step import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper, DecreaseReplaceLocalHjrStepper
 from refineNCBF.refining.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, InnerSignedDistanceNeighbors, NoNeighbors, \
     SignedDistanceNeighborsNearBoundary
+from refineNCBF.utils.sets import get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger
 
@@ -33,7 +36,6 @@ class LocalHjrSolver(Callable):
     # problem setup
     _dynamics: hj_reachability.Dynamics
     _grid: hj_reachability.Grid
-    _solver_settings: hj_reachability.SolverSettings
     _avoid_set: MaskNd
     _reach_set: MaskNd
     _terminal_values: ArrayNd
@@ -50,6 +52,7 @@ class LocalHjrSolver(Callable):
 
     def __call__(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
         start_time = time.time()
+        check = False
         local_update_result = self._initialize_local_result(active_set, initial_values)
         while True:
             iteration = self._perform_local_update_iteration(local_update_result)
@@ -58,6 +61,14 @@ class LocalHjrSolver(Callable):
                 self._logger.info(f'iteration {len(local_update_result)} complete, \trunning duration is {(time.time() - start_time):.2f} seconds, \t\tcomputed over {local_update_result.get_recent_set_for_compute().sum()} of {self._avoid_set.size} cells')
             if self._check_for_break(local_update_result):
                 break
+        # local_update_result.iterations[-1].active_set_post_filtered = get_mask_boundary_on_both_sides_by_signed_distance(local_update_result.get_recent_values() >= 0, 2)
+        # while True:
+        #     iteration = self._perform_local_update_iteration(local_update_result)
+        #     local_update_result.add_iteration(iteration)
+        #     if self._verbose:
+        #         self._logger.info(f'iteration {len(local_update_result)} complete, \trunning duration is {(time.time() - start_time):.2f} seconds, \t\tcomputed over {local_update_result.get_recent_set_for_compute().sum()} of {self._avoid_set.size} cells')
+        #     if self._check_for_break(local_update_result):
+        #         break
         return local_update_result
 
     def _initialize_local_result(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
@@ -442,7 +453,6 @@ class LocalHjrSolver(Callable):
             cls,
             dynamics: hj_reachability.Dynamics,
             grid: hj_reachability.Grid,
-            solver_settings: hj_reachability.SolverSettings,
             avoid_set: MaskNd,
             reach_set: MaskNd,
             terminal_values: ArrayNd,
@@ -462,19 +472,17 @@ class LocalHjrSolver(Callable):
         """
         assert solver_timestep < 0, "solver_timestep must be negative"
 
-        active_set_pre_filter = PreFilterWhereFarFromBoundarySplit.from_parts(
-            distance_inner=boundary_distance_inner,
-            distance_outer=boundary_distance_outer
+        active_set_pre_filter = NoPreFilter.from_parts(
         )
         neighbor_expander = SignedDistanceNeighborsNearBoundary.from_parts(
             neighbor_distance=neighbor_distance,
             boundary_distance_inner=boundary_distance_inner,
-            boundary_distance_outer=boundary_distance_inner,
+            boundary_distance_outer=boundary_distance_outer,
         )
         local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
             dynamics=dynamics,
             grid=grid,
-            solver_settings=solver_settings,
+            terminal_values=terminal_values,
             time_step=solver_timestep,
             verbose=verbose
         )
@@ -491,7 +499,65 @@ class LocalHjrSolver(Callable):
         return cls(
             dynamics=dynamics,
             grid=grid,
-            solver_settings=solver_settings,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            terminal_values=terminal_values,
+            active_set_pre_filter=active_set_pre_filter,
+            neighbor_expander=neighbor_expander,
+            local_hjr_stepper=local_hjr_stepper,
+            active_set_post_filter=active_set_post_filter,
+            break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
+        )
+
+    @classmethod
+    def as_custom(
+            cls,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
+            avoid_set: MaskNd,
+            reach_set: MaskNd,
+            terminal_values: ArrayNd,
+
+            boundary_distance_inner: float = 1,
+            boundary_distance_outer: float = 1,
+            neighbor_distance: float = 1,
+            solver_timestep: float = -0.1,
+            max_iterations: int = 100,
+
+            verbose: bool = False,
+    ):
+        assert solver_timestep < 0, "solver_timestep must be negative"
+
+        active_set_pre_filter = NoPreFilter.from_parts(
+        )
+        neighbor_expander = SignedDistanceNeighborsNearBoundary.from_parts(
+            neighbor_distance=neighbor_distance,
+            boundary_distance_inner=np.inf,
+            boundary_distance_outer=6,
+        )
+        local_hjr_stepper = ClassicLocalHjrStepper.from_parts(
+            dynamics=dynamics,
+            grid=grid,
+            terminal_values=terminal_values,
+            time_step=solver_timestep,
+            verbose=verbose
+        )
+        active_set_post_filter = RemoveWhereUnchanged.from_parts(
+            atol=1e-3,
+            rtol=1e-3,
+        )
+        break_criteria_checker = BreakCriteriaChecker.from_criteria(
+            [
+                MaxIterations.from_parts(max_iterations=max_iterations),
+                PostFilteredActiveSetEmpty.from_parts(),
+            ],
+            verbose=verbose
+        )
+
+        return cls(
+            dynamics=dynamics,
+            grid=grid,
             avoid_set=avoid_set,
             reach_set=reach_set,
             terminal_values=terminal_values,

@@ -11,7 +11,11 @@ from refineNCBF.utils.types import MaskNd
 @attr.s(auto_attribs=True)
 class NeighborExpander(ABC, Callable):
     @abstractmethod
-    def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
+    def __call__(
+            self,
+            data: LocalUpdateResult,
+            source_set: MaskNd
+    ) -> MaskNd:
         ...
 
 
@@ -20,14 +24,27 @@ class SignedDistanceNeighbors(NeighborExpander):
     _distance: float
 
     @classmethod
-    def from_parts(cls, distance: float):
-        return cls(distance=distance)
+    def from_parts(
+            cls,
+            distance: float
+    ):
+        return cls(
+            distance=distance
+        )
 
-    def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
+    def __call__(
+            self,
+            data: LocalUpdateResult,
+            source_set: MaskNd
+    ) -> MaskNd:
         if len(data) == 0:
-            return source_set
+            active_set_expanded = source_set
         else:
-            return expand_mask_by_signed_distance(source_set, self._distance)
+            active_set_expanded = expand_mask_by_signed_distance(
+                source_set,
+                self._distance
+            )
+        return active_set_expanded
 
 
 @attr.s(auto_attribs=True)
@@ -37,17 +54,40 @@ class SignedDistanceNeighborsNearBoundary(NeighborExpander):
     _boundary_distance_outer: float
 
     @classmethod
-    def from_parts(cls, neighbor_distance: float, boundary_distance_inner: float, boundary_distance_outer: float):
-        return cls(neighbor_distance=neighbor_distance, boundary_distance_inner=boundary_distance_inner, boundary_distance_outer=boundary_distance_outer)
+    def from_parts(
+            cls,
+            neighbor_distance: float,
+            boundary_distance_inner: float,
+            boundary_distance_outer: float
+    ):
+        return cls(
+            neighbor_distance=neighbor_distance,
+            boundary_distance_inner=boundary_distance_inner,
+            boundary_distance_outer=boundary_distance_outer
+        )
 
-    def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
+    def __call__(
+            self,
+            data: LocalUpdateResult,
+            source_set: MaskNd
+    ) -> MaskNd:
         if len(data) == 0:
-            return source_set
+            active_set_expanded = source_set
         else:
-            expanded = expand_mask_by_signed_distance(source_set, self._neighbor_distance)
-            boundary_inner = get_mask_boundary_by_signed_distance(data.get_viability_kernel(), self._boundary_distance_inner)
-            boundary_outer = get_mask_boundary_by_signed_distance(~data.get_viability_kernel(), self._boundary_distance_outer)
-            return expanded & (boundary_inner | boundary_outer)
+            expanded = expand_mask_by_signed_distance(
+                source_set,
+                self._neighbor_distance
+            )
+            boundary_inner = get_mask_boundary_by_signed_distance(
+                data.get_viability_kernel(),
+                self._boundary_distance_inner
+            )
+            boundary_outer = get_mask_boundary_by_signed_distance(
+                ~data.get_viability_kernel(),
+                self._boundary_distance_outer
+            )
+            active_set_expanded = expanded & (boundary_inner | boundary_outer)
+        return active_set_expanded
 
 
 @attr.s(auto_attribs=True)
@@ -55,23 +95,42 @@ class InnerSignedDistanceNeighbors(NeighborExpander):
     _distance: float
 
     @classmethod
-    def from_parts(cls, distance: float):
-        return cls(distance=distance)
+    def from_parts(
+            cls,
+            distance: float
+    ):
+        return cls(
+            distance=distance
+        )
 
-    def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
-        inner_set = data.get_viability_kernel()
-        expanded_set = expand_mask_by_signed_distance(source_set, self._distance) & inner_set
-        return expanded_set
+    def __call__(
+            self,
+            data: LocalUpdateResult,
+            source_set: MaskNd
+    ) -> MaskNd:
+        if len(data) == 0:
+            active_set_expanded = source_set
+        else:
+            active_set_expanded = expand_mask_by_signed_distance(
+                source_set,
+                self._distance
+            ) & data.get_viability_kernel()
+        return active_set_expanded
 
 
 @attr.s(auto_attribs=True)
 class NoNeighbors(NeighborExpander):
-
     @classmethod
-    def from_parts(cls):
+    def from_parts(
+            cls
+    ):
         return cls()
 
-    def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
+    def __call__(
+            self,
+            data: LocalUpdateResult,
+            source_set: MaskNd
+    ) -> MaskNd:
         return source_set
 
 

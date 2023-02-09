@@ -10,7 +10,6 @@ from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_ver
 
 import jax.numpy as jnp
 
-from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
@@ -42,27 +41,19 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
 
     # create solver settings for backwards reachable tube
     terminal_values = compute_signed_distance(~avoid_set)
-    solver_settings = hj_reachability.SolverSettings.with_accuracy(
-        hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
-        value_postprocessor=ReachAvoid.from_array(
-            values=terminal_values,
-            reach_set=reach_set,
-        ),
-    )
 
     # load into solver
-    solver = LocalHjrSolver.as_boundary_decrease_split(
+    solver = LocalHjrSolver.as_custom(
         dynamics=dynamics,
         grid=grid,
-        solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=500,
-        neighbor_distance=3,
-        boundary_distance_inner=np.inf,
-        boundary_distance_outer=np.inf,
-        solver_timestep=-.05,
+        neighbor_distance=2,
+        boundary_distance_inner=2,
+        boundary_distance_outer=2,
+        solver_timestep=-.1,
         verbose=verbose,
     )
 
