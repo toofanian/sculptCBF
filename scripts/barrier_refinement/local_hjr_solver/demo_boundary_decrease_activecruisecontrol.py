@@ -2,6 +2,7 @@ import os
 import warnings
 
 import hj_reachability
+import numpy as np
 from jax import numpy as jnp
 import matplotlib
 from matplotlib import pyplot as plt
@@ -32,7 +33,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(5, 151, 151)
+        shape=(3, 251, 251)
     )
 
     avoid_set = get_saved_signed_distance_function(
@@ -61,8 +62,9 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=300,
-        boundary_distance_inner=1,
+        boundary_distance_inner=2,
         boundary_distance_outer=1,
+        solver_timestep=-.01,
         verbose=verbose,
     )
 
@@ -73,7 +75,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
 
     if verbose:
         ref_index = ArraySlice2D.from_reference_index(
-            reference_index=(3, 0, 0),
+            reference_index=(2, 0, 0),
             free_dim_1=DimName(1, 'relative velocity'),
             free_dim_2=DimName(2, 'relative distance'),
         )
@@ -98,17 +100,18 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
             verbose=verbose
         )
 
-        result.plot_result_and_hjr_avoiding_result(
+        result.plot_value_function_against_truth(
             reference_slice=ref_index,
+            levelset=[0],
             verbose=verbose
         )
 
-        result.plot_value_1d(
-            ref_index=ArraySlice1D.from_reference_index(
-                reference_index=(3, 0, 90),
-                free_dim_1=DimName(1, 'relative velocity'),
-            ),
-        )
+        # result.plot_value_1d(
+        #     ref_index=ArraySlice1D.from_reference_index(
+        #         reference_index=(3, 0, 90),
+        #         free_dim_1=DimName(1, 'relative velocity'),
+        #     ),
+        # )
 
         plt.pause(0)
 

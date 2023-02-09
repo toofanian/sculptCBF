@@ -5,6 +5,7 @@ import attr
 import hj_reachability
 
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
+from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
 
 
@@ -85,6 +86,43 @@ class DecreaseLocalHjrStepper(LocalHjrStepper):
         )
         values_decreased = (values_next < data.get_recent_values()) #& active_set_expanded
         values = data.get_recent_values().at[values_decreased].set(values_next[values_decreased])
+        return values
+
+
+@attr.s(auto_attribs=True)
+class DecreaseReplaceLocalHjrStepper(LocalHjrStepper):
+    _dynamics: hj_reachability.Dynamics
+    _grid: hj_reachability.Grid
+    _solver_settings: hj_reachability.SolverSettings
+    _time_step: float
+    _verbose: bool
+
+    @classmethod
+    def from_parts(
+            cls,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
+            solver_settings: hj_reachability.SolverSettings,
+            time_step: float,
+            verbose: bool
+    ):
+        return cls(dynamics=dynamics, grid=grid, solver_settings=solver_settings, time_step=time_step, verbose=verbose)
+
+    def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
+        values_next = hj_reachability.step(
+            solver_settings=self._solver_settings,
+            dynamics=self._dynamics,
+            grid=self._grid,
+            time=0,
+            values=data.get_recent_values(),
+            target_time=self._time_step,
+            active_set=active_set_expanded,
+            progress_bar=self._verbose,
+        )
+        values_decreased = (values_next < data.get_recent_values())  # & active_set_expanded
+        values = data.get_recent_values().at[values_decreased].set(values_next[values_decreased])
+        signed_distance_to_kernel = compute_signed_distance(values >= 0)
+        values = values.at[signed_distance_to_kernel < 0].set(signed_distance_to_kernel[signed_distance_to_kernel < 0])
         return values
 
 

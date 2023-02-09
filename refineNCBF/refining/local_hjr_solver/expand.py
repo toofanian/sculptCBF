@@ -4,7 +4,7 @@ from typing import Callable
 import attr
 
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
-from refineNCBF.utils.sets import expand_mask_by_signed_distance
+from refineNCBF.utils.sets import expand_mask_by_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance, get_mask_boundary_by_signed_distance
 from refineNCBF.utils.types import MaskNd
 
 
@@ -29,6 +29,25 @@ class SignedDistanceNeighbors(NeighborExpander):
         else:
             return expand_mask_by_signed_distance(source_set, self._distance)
 
+
+@attr.s(auto_attribs=True)
+class SignedDistanceNeighborsNearBoundary(NeighborExpander):
+    _neighbor_distance: float
+    _boundary_distance_inner: float
+    _boundary_distance_outer: float
+
+    @classmethod
+    def from_parts(cls, neighbor_distance: float, boundary_distance_inner: float, boundary_distance_outer: float):
+        return cls(neighbor_distance=neighbor_distance, boundary_distance_inner=boundary_distance_inner, boundary_distance_outer=boundary_distance_outer)
+
+    def __call__(self, data: LocalUpdateResult, source_set: MaskNd) -> MaskNd:
+        if len(data) == 0:
+            return source_set
+        else:
+            expanded = expand_mask_by_signed_distance(source_set, self._neighbor_distance)
+            boundary_inner = get_mask_boundary_by_signed_distance(data.get_viability_kernel(), self._boundary_distance_inner)
+            boundary_outer = get_mask_boundary_by_signed_distance(~data.get_viability_kernel(), self._boundary_distance_outer)
+            return expanded & (boundary_inner | boundary_outer)
 
 
 @attr.s(auto_attribs=True)

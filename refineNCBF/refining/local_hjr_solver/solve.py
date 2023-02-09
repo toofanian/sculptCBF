@@ -7,11 +7,12 @@ import hj_reachability
 
 from refineNCBF.refining.local_hjr_solver.postfilter import ActiveSetPostFilter, RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
 from refineNCBF.refining.local_hjr_solver.prefilter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset, \
-    PreFilterWhereOutsideZeroLevelset, PreFilterWhereFarWithTrailingOuter
+    PreFilterWhereOutsideZeroLevelset, PreFilterWhereFarFromBoundarySplit
 from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult, LocalUpdateResultIteration
-from refineNCBF.refining.local_hjr_solver.step import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
-from refineNCBF.refining.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, InnerSignedDistanceNeighbors, NoNeighbors
+from refineNCBF.refining.local_hjr_solver.step import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper, DecreaseReplaceLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, InnerSignedDistanceNeighbors, NoNeighbors, \
+    SignedDistanceNeighborsNearBoundary
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger
 
@@ -447,7 +448,7 @@ class LocalHjrSolver(Callable):
             terminal_values: ArrayNd,
 
             boundary_distance_inner: float = 1,
-            boundary_distance_outer: float = 3,
+            boundary_distance_outer: float = 1,
             neighbor_distance: float = 1,
             solver_timestep: float = -0.1,
             max_iterations: int = 100,
@@ -459,12 +460,16 @@ class LocalHjrSolver(Callable):
 
         classic solver with "boundary" pre-filtering, "signed distance" neighbors, "only decrease" local hjr stepper, and "no change" post-filtering.
         """
-        active_set_pre_filter = PreFilterWhereFarWithTrailingOuter.from_parts(
+        assert solver_timestep < 0, "solver_timestep must be negative"
+
+        active_set_pre_filter = PreFilterWhereFarFromBoundarySplit.from_parts(
             distance_inner=boundary_distance_inner,
             distance_outer=boundary_distance_outer
         )
-        neighbor_expander = SignedDistanceNeighbors.from_parts(
-            distance=neighbor_distance
+        neighbor_expander = SignedDistanceNeighborsNearBoundary.from_parts(
+            neighbor_distance=neighbor_distance,
+            boundary_distance_inner=boundary_distance_inner,
+            boundary_distance_outer=boundary_distance_inner,
         )
         local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
             dynamics=dynamics,

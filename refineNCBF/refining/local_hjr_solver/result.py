@@ -269,6 +269,7 @@ class LocalUpdateResult:
     def plot_value_function_against_truth(
             self,
             reference_slice: ArraySlice2D,
+            levelset: float = [0],
             target_time: float = -10,
             verbose: bool = False,
             save_path: Optional[FilePathRelative] = None
@@ -345,7 +346,7 @@ class LocalUpdateResult:
         )
         ax.contour3D(
             x1, x2, reference_slice.get_sliced_array(truth).T,
-            levels=[0], colors=['r'], linewidths=1, linestyles=['--']
+            levels=levelset, colors=['r'], linewidths=1, linestyles=['--']
         )
 
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')

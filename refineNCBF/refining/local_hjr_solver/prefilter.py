@@ -67,7 +67,7 @@ class PreFilterWhereOutsideZeroLevelset(ActiveSetPreFilter):
 
 
 @attr.s(auto_attribs=True)
-class PreFilterWhereFarWithTrailingOuter(ActiveSetPreFilter):
+class PreFilterWhereFarFromBoundarySplit(ActiveSetPreFilter):
     _distance_inner: float
     _distance_outer: float
 

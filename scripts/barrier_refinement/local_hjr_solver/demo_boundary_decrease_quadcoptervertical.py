@@ -3,6 +3,7 @@ import warnings
 
 import hj_reachability
 import matplotlib
+import numpy as np
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
@@ -28,7 +29,7 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
             [0, -8, -jnp.pi, -10],
             [10, 8, jnp.pi, 10]
         ),
-        shape=(25, 25, 25, 25)
+        shape=(31, 31, 31, 31)
     )
 
     # define reach and avoid targets
@@ -50,14 +51,19 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
     )
 
     # load into solver
-    solver = LocalHjrSolver.as_boundary_decrease(
+    solver = LocalHjrSolver.as_boundary_decrease_split(
         dynamics=dynamics,
         grid=grid,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
         reach_set=reach_set,
+        terminal_values=terminal_values,
         max_iterations=500,
-        verbose=verbose
+        neighbor_distance=3,
+        boundary_distance_inner=np.inf,
+        boundary_distance_outer=np.inf,
+        solver_timestep=-.05,
+        verbose=verbose,
     )
 
     # define initial values and initial active set to solve on
@@ -77,12 +83,7 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
     # visualize
     if verbose:
         ref_index = ArraySlice2D.from_reference_index(
-            reference_index=(
-                jnp.array(grid.states.shape[0]) // 2,
-                jnp.array(grid.states.shape[1]) // 4,
-                jnp.array(grid.states.shape[2]) // 2,
-                jnp.array(grid.states.shape[3]) // 2,
-            ),
+            reference_index=(15, 15, 15, 15),
             free_dim_1=DimName(0, 'y'),
             free_dim_2=DimName(2, 'theta')
         )
