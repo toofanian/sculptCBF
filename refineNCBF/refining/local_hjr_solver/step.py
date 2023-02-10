@@ -132,10 +132,17 @@ class DecreaseReplaceLocalHjrStepper(LocalHjrStepper):
             cls,
             dynamics: hj_reachability.Dynamics,
             grid: hj_reachability.Grid,
-            solver_settings: hj_reachability.SolverSettings,
+            terminal_values: ArrayNd,
             time_step: float,
             verbose: bool
     ):
+        solver_settings = hj_reachability.SolverSettings.with_accuracy(
+            hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            value_postprocessor=ReachAvoid.from_array(
+                values=terminal_values,
+            ),
+            hamiltonian_postprocessor=backwards_reachable_tube
+        )
         return cls(dynamics=dynamics, grid=grid, solver_settings=solver_settings, time_step=time_step, verbose=verbose)
 
     def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
@@ -152,7 +159,8 @@ class DecreaseReplaceLocalHjrStepper(LocalHjrStepper):
         values_decreased = (values_next < data.get_recent_values())  # & active_set_expanded
         values = data.get_recent_values().at[values_decreased].set(values_next[values_decreased])
         signed_distance_to_kernel = compute_signed_distance(values >= 0)
-        values = values.at[signed_distance_to_kernel < 0].set(signed_distance_to_kernel[signed_distance_to_kernel < 0])
+        values = values.at[signed_distance_to_kernel >= 3].set(signed_distance_to_kernel[signed_distance_to_kernel >= 3])
+        values = values.at[signed_distance_to_kernel < -3].set(signed_distance_to_kernel[signed_distance_to_kernel < -3])
         return values
 
 

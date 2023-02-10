@@ -547,31 +547,35 @@ class LocalUpdateResult:
         return fig, ax
 
     def plot_safe_cells_against_truth(self, reference_slice: ArraySlice2D, verbose: bool = False):
-        fig, ax = plt.subplots(figsize=(9, 7))
-
-        ax.imshow(reference_slice.get_sliced_array(self.get_recent_values() >= 0).T, origin='lower')
-
-        if verbose:
-            plt.show(block=False)
-
-        fig, ax = plt.subplots(figsize=(9, 7))
-
-        terminal_values = compute_signed_distance(~self.avoid_set)
         solver_settings = hj_reachability.solver.SolverSettings.with_accuracy(
             accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
-            value_postprocessor=ReachAvoid.from_array(terminal_values, self.reach_set)
+            value_postprocessor=ReachAvoid.from_array(self.terminal_values, self.reach_set)
         )
-
         truth = hj_step(
             dynamics=self.dynamics,
             grid=self.grid,
             solver_settings=solver_settings,
-            initial_values=terminal_values,
+            initial_values=self.initial_values,
             time_start=0.,
             time_target=-10,
             progress_bar=True
         )
+        truth_safe = reference_slice.get_sliced_array(truth >= 0).T
+        result_safe = reference_slice.get_sliced_array(self.get_viability_kernel()).T
+        both_safe = truth_safe & result_safe
 
-        ax.imshow(reference_slice.get_sliced_array(truth >= 0).T, origin='lower')
+        blue = np.array([0, 0, 255])
+        red = np.array([255, 0, 0])
+        green = np.array([0, 255, 0])
+        white = np.array([255, 255, 255])
 
-        plt.show(block=False)
+        image = np.zeros(truth_safe.shape + (3,), dtype=np.uint8)
+        image[~truth_safe & ~result_safe] = white
+        image[truth_safe] = red
+        image[result_safe] = blue
+        image[both_safe] = green
+
+        fig, ax = plt.subplots(figsize=(9, 7))
+        ax.imshow(image, origin='lower')
+        if verbose:
+            plt.show(block=False)

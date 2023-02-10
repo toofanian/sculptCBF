@@ -32,7 +32,7 @@ default_quadcopter_vertical_params = QuadcopterVerticalParams(
     moment_of_inertia=1.0,
 
     min_thrust=0.,
-    max_thrust=15,  # default should be 18.39375
+    max_thrust=.75*9.81*2.5,  # default should be 18.39375
 )
 
 

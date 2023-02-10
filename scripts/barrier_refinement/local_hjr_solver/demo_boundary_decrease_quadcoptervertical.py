@@ -3,14 +3,18 @@ import warnings
 
 import hj_reachability
 import matplotlib
-import numpy as np
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
 
 import jax.numpy as jnp
 
+from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
+from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighborsNearBoundary
+from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereNonNegativeHamiltonian
+from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
+from refineNCBF.refining.local_hjr_solver.step import DecreaseReplaceLocalHjrStepper, DecreaseLocalHjrStepper
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
@@ -28,7 +32,7 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
             [0, -8, -jnp.pi, -10],
             [10, 8, jnp.pi, 10]
         ),
-        shape=(31, 31, 31, 31)
+        shape=(31, 25, 41, 25)
     )
 
     # define reach and avoid targets
@@ -42,18 +46,39 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
     # create solver settings for backwards reachable tube
     terminal_values = compute_signed_distance(~avoid_set)
 
-    # load into solver
-    solver = LocalHjrSolver.as_custom(
+
+    solver = LocalHjrSolver.from_parts(
         dynamics=dynamics,
         grid=grid,
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=500,
-        neighbor_distance=2,
-        boundary_distance_inner=2,
-        boundary_distance_outer=2,
-        solver_timestep=-.1,
+
+        prefilter=NoPreFilter.from_parts(
+        ),
+        expander=SignedDistanceNeighborsNearBoundary.from_parts(
+            neighbor_distance=2,
+            boundary_distance_inner=2,
+            boundary_distance_outer=2,
+        ),
+        stepper=DecreaseLocalHjrStepper.from_parts(
+            dynamics=dynamics,
+            grid=grid,
+            terminal_values=terminal_values,
+            time_step=-.1,
+            verbose=verbose,
+        ),
+        postfilter=RemoveWhereNonNegativeHamiltonian.from_parts(
+            hamiltonian_atol=1e-3,
+        ),
+        breaker=BreakCriteriaChecker.from_criteria(
+            [
+                MaxIterations.from_parts(max_iterations=200),
+                PostFilteredActiveSetEmpty.from_parts(),
+            ],
+            verbose=verbose
+        ),
+
         verbose=verbose,
     )
 
@@ -63,7 +88,7 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
     #     grid=hj_setup.grid
     # )
     initial_values = terminal_values.copy()
-    active_set = get_mask_boundary_on_both_sides_by_signed_distance(~avoid_set, distance=1)
+    active_set = get_mask_boundary_on_both_sides_by_signed_distance(~avoid_set, distance=2)
 
     # solve
     result = solver(active_set=active_set, initial_values=initial_values)
@@ -74,7 +99,7 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
     # visualize
     if verbose:
         ref_index = ArraySlice2D.from_reference_index(
-            reference_index=(15, 15, 15, 15),
+            reference_index=(15, 12, 20, 12),
             free_dim_1=DimName(0, 'y'),
             free_dim_2=DimName(2, 'theta')
         )
@@ -98,7 +123,7 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
             verbose=verbose
         )
 
-        result.plot_value_function_against_truth(
+        result.plot_safe_cells_against_truth(
             reference_slice=ref_index,
             verbose=verbose
         )
