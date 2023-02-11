@@ -10,6 +10,7 @@ from refineNCBF.dynamic_systems.implementations.active_cruise_control import Act
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
 
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
+from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
@@ -43,13 +44,13 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
 
     terminal_values = compute_signed_distance(~avoid_set)
 
-    solver = LocalHjrSolver.as_global_solver(
+    solver = create_global_solver_odp(
         dynamics=dynamics,
         grid=grid,
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=500,
+        max_iterations=5,
         verbose=True
     )
 

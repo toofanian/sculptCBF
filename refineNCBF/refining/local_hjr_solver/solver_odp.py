@@ -12,7 +12,6 @@ from refineNCBF.utils.types import MaskNd, ArrayNd
 
 
 def create_global_solver_odp(
-        cls,
         dynamics: OdpDynamics,
         grid: hj_reachability.Grid,
         avoid_set: MaskNd,
