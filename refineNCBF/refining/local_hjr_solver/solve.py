@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Callable
+from typing import Callable, Union
 
 import attr
 import hj_reachability
@@ -14,6 +14,7 @@ from refineNCBF.refining.local_hjr_solver.prefilter import ActiveSetPreFilter, N
     PreFilterWhereOutsideZeroLevelset, PreFilterWhereFarFromBoundarySplit
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult, LocalUpdateResultIteration
 from refineNCBF.refining.local_hjr_solver.step import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
+from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger
 
@@ -32,7 +33,7 @@ class LocalHjrSolver(Callable):
         - checks break criteria
     """
     # problem setup
-    _dynamics: hj_reachability.Dynamics
+    _dynamics: Union[hj_reachability.Dynamics, OdpDynamics]
     _grid: hj_reachability.Grid
     _avoid_set: MaskNd
     _reach_set: MaskNd

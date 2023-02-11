@@ -199,3 +199,5 @@ class TrashLocalHjrStepper(LocalHjrStepper):
             progress_bar=self._verbose
         )
         return data.get_recent_values()
+
+
