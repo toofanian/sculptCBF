@@ -13,7 +13,7 @@ from refineNCBF.utils.types import MaskNd, ArrayNd
 
 @attr.s(auto_attribs=True)
 class ClassicLocalHjrStepperOdp(LocalHjrStepper):
-    grid: odp.Grid.Grid
+    grid: odp.Grid.GridProcessing.Grid
     dynamics: OdpDynamics
     time_step: float
     system_objectives: dict = {"TargetSetMode": "minVWithV0"}
