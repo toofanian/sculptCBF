@@ -14,5 +14,5 @@ class OdpDynamics(ABC):
         ...
 
     @abstractmethod
-    def opt_dstr(self, t, state, spat_deriv):
+    def opt_dstb(self, t, state, spat_deriv):
         ...
