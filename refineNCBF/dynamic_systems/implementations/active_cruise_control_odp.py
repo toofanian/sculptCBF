@@ -1,6 +1,6 @@
 import attr
 
-from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControl
+from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControl, simplified_active_cruise_control_params
 from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
 
 import heterocl as hcl
@@ -31,7 +31,12 @@ class ActiveCruiseControlOdp(OdpDynamics, ActiveCruiseControl):
 
         x1_dot[0] = state[1]
         x2_dot[0] = -1 / self.mass * \
-            (self.friction_coefficients[0] + self.friction_coefficients[1] * state[1] + self.friction_coefficients[2] * state[1] ** 2) \
+            (self.friction_coefficients[0] + self.friction_coefficients[1] * state[1] + self.friction_coefficients[2] * state[1]*state[1]) \
             + uOpt[0]
         x3_dot[0] = self.target_velocity - state[1]
         return x1_dot[0], x2_dot[0], x3_dot[0]
+
+
+active_cruise_control_odp = ActiveCruiseControlOdp.from_params(
+    simplified_active_cruise_control_params
+)

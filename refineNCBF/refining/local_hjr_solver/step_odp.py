@@ -1,7 +1,7 @@
 import attr
 import hj_reachability
 import numpy as np
-import odp
+import odp.Grid
 from odp.Plots import PlotOptions
 from odp.solver import HjSolver
 

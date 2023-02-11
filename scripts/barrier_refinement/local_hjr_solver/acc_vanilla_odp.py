@@ -7,6 +7,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControlJAX, simplified_active_cruise_control_params
+from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import active_cruise_control_odp
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
 
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
@@ -20,11 +21,7 @@ matplotlib.use("TkAgg")
 
 
 def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
-    dynamics = HJControlAffineDynamics.from_parts(
-        control_affine_dynamic_system=ActiveCruiseControlJAX.from_params(simplified_active_cruise_control_params),
-        control_mode=ActorModes.MAX,
-        disturbance_mode=ActorModes.MIN,
-    )
+    dynamics = active_cruise_control_odp
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
@@ -50,7 +47,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=5,
+        max_iterations=1,
         verbose=True
     )
 
@@ -75,35 +72,35 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
                 verbose=verbose,
                 save_path=os.path.join(
                     visuals_data_directory,
-                    f'{generate_unique_filename("demo_local_hjr_solver_classic_on_active_cruise_control", "gif")}'
+                    f'{generate_unique_filename("acc_odp", "gif")}'
                 )
             )
-        else:
-            result.create_gif(
-                reference_slice=ref_index,
-                verbose=verbose
-            )
-
-        result.plot_value_function(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
-
-        result.plot_value_function_against_truth(
-            reference_slice=ref_index,
-            levelset=[0],
-            verbose=verbose
-        )
-
-        result.plot_safe_cells_against_truth(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
-
-        plt.pause(0)
+    #     else:
+    #         result.create_gif(
+    #             reference_slice=ref_index,
+    #             verbose=verbose
+    #         )
+    #
+    #     result.plot_value_function(
+    #         reference_slice=ref_index,
+    #         verbose=verbose
+    #     )
+    #
+    #     result.plot_value_function_against_truth(
+    #         reference_slice=ref_index,
+    #         levelset=[0],
+    #         verbose=verbose
+    #     )
+    #
+    #     result.plot_safe_cells_against_truth(
+    #         reference_slice=ref_index,
+    #         verbose=verbose
+    #     )
+    #
+    #     plt.pause(0)
 
     return result
 
 
 if __name__ == '__main__':
-    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=False)
+    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=True, save_result=False)
