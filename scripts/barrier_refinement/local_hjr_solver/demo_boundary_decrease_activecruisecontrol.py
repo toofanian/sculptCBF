@@ -36,7 +36,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 151, 151)
+        shape=(3, 51, 51)
     )
 
     avoid_set = get_saved_signed_distance_function(
@@ -136,4 +136,4 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
 
 
 if __name__ == '__main__':
-    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=True)
+    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=True, save_result=False)

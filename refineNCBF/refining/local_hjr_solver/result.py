@@ -546,20 +546,21 @@ class LocalUpdateResult:
 
         return fig, ax
 
-    def plot_safe_cells_against_truth(self, reference_slice: ArraySlice2D, verbose: bool = False):
-        solver_settings = hj_reachability.solver.SolverSettings.with_accuracy(
-            accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
-            value_postprocessor=ReachAvoid.from_array(self.terminal_values, self.reach_set)
-        )
-        truth = hj_step(
-            dynamics=self.dynamics,
-            grid=self.grid,
-            solver_settings=solver_settings,
-            initial_values=self.initial_values,
-            time_start=0.,
-            time_target=-10,
-            progress_bar=True
-        )
+    def plot_safe_cells_against_truth(self, reference_slice: ArraySlice2D, truth: Optional[ArrayNd] = None, verbose: bool = False):
+        if truth is None:
+            solver_settings = hj_reachability.solver.SolverSettings.with_accuracy(
+                accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+                value_postprocessor=ReachAvoid.from_array(self.terminal_values, self.reach_set)
+            )
+            truth = hj_step(
+                dynamics=self.dynamics,
+                grid=self.grid,
+                solver_settings=solver_settings,
+                initial_values=self.initial_values,
+                time_start=0.,
+                time_target=-10,
+                progress_bar=True
+            )
         truth_safe = reference_slice.get_sliced_array(truth >= 0).T
         result_safe = reference_slice.get_sliced_array(self.get_viability_kernel()).T
         both_safe = truth_safe & result_safe

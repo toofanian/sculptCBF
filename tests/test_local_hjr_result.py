@@ -42,7 +42,7 @@ def test_save_and_load():
         )
     )
 
-    solver = LocalHjrSolver.as_classic_solver(
+    solver = LocalHjrSolver.as_local_solver(
         hj_setup=hj_setup,
         solver_settings=solver_settings,
         avoid_set=avoid_set,
