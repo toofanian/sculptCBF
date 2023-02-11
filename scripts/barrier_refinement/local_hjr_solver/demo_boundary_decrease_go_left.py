@@ -2,18 +2,16 @@ import os
 import warnings
 
 import hj_reachability
+import jax.numpy as jnp
 import matplotlib
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.go_left import go_left_jax_hj
-
-import jax.numpy as jnp
-
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
-from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D, DimName
+from refineNCBF.utils.visuals import ArraySlice1D, DimName
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use('TkAgg')
@@ -33,7 +31,7 @@ def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_
 
     # define reach and avoid targets
     avoid_set = (
-            (grid.states[..., 0] < 0)
+        (grid.states[..., 0] < 0)
     )
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
 
@@ -95,7 +93,6 @@ def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_
         result.plot_value_1d(
             ref_index
         )
-
 
     plt.pause(0)
 

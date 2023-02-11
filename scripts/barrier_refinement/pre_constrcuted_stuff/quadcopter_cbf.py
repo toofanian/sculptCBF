@@ -8,11 +8,9 @@ import stable_baselines3
 import torch
 from gym import spaces
 
-from neural_barrier_kinematic_model.custom_gym.envs.QuadVertical.quad_vertical import Quad_Vertical_Env as QuadVerticalEnv
-
 from refineNCBF.training.dnn_models.cbf import Cbf
-from refineNCBF.utils.files import construct_full_path
 from refineNCBF.training.dnn_models.standardizer import Standardizer
+from refineNCBF.utils.files import construct_full_path
 from refineNCBF.utils.tables import tabularize_dnn, snap_state_to_grid_index
 from refineNCBF.utils.types import VectorBatch, ArrayNd, Vector
 
@@ -44,6 +42,7 @@ def load_uncertified_states() -> VectorBatch:
     total_states_destandardized = standardizer.destandardize(np.array(total_states))
     return total_states_destandardized
 
+
 def load_certified_states() -> VectorBatch:
     with open(construct_full_path('data/trained_NCBFs/sac_policy/quad4d_sac_boundary_cert_results.json')) as f:
         quad4d_result_dict = json.load(f)
@@ -51,7 +50,6 @@ def load_certified_states() -> VectorBatch:
     standardizer = load_standardizer()
     total_states_destandardized = standardizer.destandardize(np.array(certified_states))
     return total_states_destandardized
-
 
 
 @attr.s(auto_attribs=True)
@@ -92,7 +90,7 @@ def load_policy_sac() -> StableBaselinesCallable:
     }
 
     return StableBaselinesCallable(
-        stable_baselines3.SAC.load(construct_full_path('data/trained_NCBFs/sac_policy/best_model-sac.zip'),  custom_objects=custom_objects)
+        stable_baselines3.SAC.load(construct_full_path('data/trained_NCBFs/sac_policy/best_model-sac.zip'), custom_objects=custom_objects)
     )
 
 
@@ -118,4 +116,3 @@ def load_tabularized_ppo(grid: hj_reachability.Grid) -> TabularizedDnn:
 
 def load_tabularized_sac(grid: hj_reachability.Grid) -> TabularizedDnn:
     return TabularizedDnn.from_dnn_and_grid(load_policy_sac(), grid)
-

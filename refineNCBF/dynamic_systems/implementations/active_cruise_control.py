@@ -6,8 +6,11 @@ import jax.numpy as jnp
 import numpy as np
 
 from refineNCBF.dynamic_systems.dynamic_systems import ControlAffineDynamicSystem
-from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
+from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import VectorBatch, MatrixBatch
+
+
+# import heterocl as hcl
 
 
 @attr.dataclass
@@ -173,3 +176,17 @@ class ActiveCruiseControlJAX(ActiveCruiseControl):
 
     def compute_disturbance_jacobian(self, state, time=0.0):
         return jnp.expand_dims(jnp.zeros(3), axis=-1)
+
+
+@attr.s(auto_attribs=True)
+class ActiveCruiseControlODP(OdpDynamics, ActiveCruiseControl):
+    def dynamics(self, t, state, uOpt, dOpt):
+        ...
+
+        # return jnp.array(
+        #     [
+        #         state[1],
+        #         -1 / self.mass * self._get_rolling_resistance(state),
+        #         self.target_velocity - state[1]
+        #     ]
+        # )

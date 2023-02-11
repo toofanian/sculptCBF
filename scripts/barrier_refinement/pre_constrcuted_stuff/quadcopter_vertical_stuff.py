@@ -1,10 +1,8 @@
 import hj_reachability
-
-from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
+import jax.numpy as jnp
 from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 
-import jax.numpy as jnp
-
+from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
 from refineNCBF.utils.types import VectorBatch, ScalarBatch
 
 
@@ -24,5 +22,3 @@ def quadcopter_cbf_from_refine_cbf(state: VectorBatch) -> ScalarBatch:
     scaling = jnp.array([0.75, 0.5, 2., 0.5])
     return 15 - (scaling[0] * (5 - state[..., 0]) ** 2 + scaling[1] * (state[..., 1]) ** 2
                  + scaling[2] * (state[..., 2]) ** 2 + scaling[3] * (state[..., 3]) ** 2)
-
-

@@ -2,19 +2,18 @@ import os
 import warnings
 
 import hj_reachability
-from jax import numpy as jnp
 import matplotlib
+from jax import numpy as jnp
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControlJAX, simplified_active_cruise_control_params
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
 from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
 from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighborsNearBoundary
-from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
+from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereNonNegativeHamiltonian
 from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter
-
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
-from refineNCBF.refining.local_hjr_solver.step import DecreaseLocalHjrStepper, DecreaseReplaceLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.step import DecreaseLocalHjrStepper
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName

@@ -2,22 +2,18 @@ import os
 import warnings
 
 import hj_reachability
+import jax.numpy as jnp
 import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
-
-import jax.numpy as jnp
-
-from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
-from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
 from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighborsNearBoundary
 from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereNonNegativeHamiltonian
-from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter, PreFilterWhereFarFromBoundarySplit
+from refineNCBF.refining.local_hjr_solver.prefilter import PreFilterWhereFarFromBoundarySplit
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
-from refineNCBF.refining.local_hjr_solver.step import DecreaseReplaceLocalHjrStepper, DecreaseLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.step import DecreaseLocalHjrStepper
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename, construct_full_path
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance, expand_mask_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
@@ -53,13 +49,13 @@ def get_warmstart_boundary_for_quadcopter(dynamics, grid):
     kernel = truth >= 0
 
     oops_im_adding_leaky_stuff = (
-        (grid.states[..., 2] < 2)
-        &
-        (grid.states[..., 2] > 1)
-        &
-        (grid.states[..., 0] > 2)
-        &
-        (grid.states[..., 0] < 9)
+            (grid.states[..., 2] < 2)
+            &
+            (grid.states[..., 2] > 1)
+            &
+            (grid.states[..., 0] > 2)
+            &
+            (grid.states[..., 0] < 9)
     )
 
     leaky_kernel = kernel | oops_im_adding_leaky_stuff
@@ -98,7 +94,6 @@ def demo_local_hjr_boundary_decrease_solver_quadcopter_vertical(verbose: bool = 
     terminal_values = compute_signed_distance(~avoid_set)
     initial_values = terminal_values.copy()
     active_set = get_mask_boundary_on_both_sides_by_signed_distance(~avoid_set, distance=2)
-
 
     solver = LocalHjrSolver.from_parts(
         dynamics=dynamics,

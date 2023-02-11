@@ -4,7 +4,6 @@ from typing import Tuple
 import attr
 import numpy as np
 
-from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.types import ArrayNd
 
 
@@ -12,8 +11,6 @@ from refineNCBF.utils.types import ArrayNd
 class DimName:
     dim: int
     name: str
-
-
 
 
 @attr.dataclass
@@ -88,6 +85,7 @@ class ArraySlice2D:
         if self.free_dim_1.dim == self.free_dim_2.dim:
             values = np.tile(values, (values.size, 1))
         return values
+
 
 def make_configured_logger(name: str) -> logging.Logger:
     logging.basicConfig()

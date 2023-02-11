@@ -81,24 +81,24 @@ def demo_local_hjr_boundary_decrease_sac(verbose: bool = False, save_gif: bool =
     # define initial values and initial active set to solve on
     initial_values = terminal_values.copy()
     active_set = (
-        get_mask_boundary_on_both_sides_by_signed_distance(~avoid_set, 1)
-        & ~
-        (flag_states_on_grid(
-            cell_centerpoints=load_certified_states(),
-            cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
-            grid=grid,
-            verbose=True,
-            save_array=False
-        )
+            get_mask_boundary_on_both_sides_by_signed_distance(~avoid_set, 1)
             & ~
-         flag_states_on_grid(
-             cell_centerpoints=load_uncertified_states(),
-             cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
-             grid=grid,
-             verbose=True,
-             save_array=False
-         )
-        )
+            (flag_states_on_grid(
+                cell_centerpoints=load_certified_states(),
+                cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+                grid=grid,
+                verbose=True,
+                save_array=False
+            )
+             & ~
+             flag_states_on_grid(
+                 cell_centerpoints=load_uncertified_states(),
+                 cell_halfwidths=(0.009375, 0.009375, 0.009375, 0.009375),
+                 grid=grid,
+                 verbose=True,
+                 save_array=False
+             )
+             )
     )
 
     # solve

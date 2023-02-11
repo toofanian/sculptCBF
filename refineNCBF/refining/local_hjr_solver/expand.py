@@ -4,7 +4,7 @@ from typing import Callable
 import attr
 
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
-from refineNCBF.utils.sets import expand_mask_by_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance, get_mask_boundary_by_signed_distance
+from refineNCBF.utils.sets import expand_mask_by_signed_distance, get_mask_boundary_by_signed_distance
 from refineNCBF.utils.types import MaskNd
 
 
@@ -133,8 +133,6 @@ class NoNeighbors(NeighborExpander):
     ) -> MaskNd:
         return source_set
 
-
 # TODO: add a neighbor expander that uses dynamics.
 #  use partial max magnitudes to determine the maximum step size from this cell in each direction.
 #  then snap to nearest grid point in each direction using snap_state_to_grid_index(), and fill in the box between the 2^N points.
-

@@ -8,17 +8,11 @@ from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControlJAX, simplified_active_cruise_control_params
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
-from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
-from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighborsNearBoundary
-from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
-from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter
 
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
-from refineNCBF.refining.local_hjr_solver.step import DecreaseLocalHjrStepper, DecreaseReplaceLocalHjrStepper
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
-from scripts.barrier_refinement.pre_constrcuted_stuff.active_cruise_control_stuff import get_saved_signed_distance_function, SignedDistanceFunctions
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use("TkAgg")
@@ -40,9 +34,9 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
     )
 
     avoid_set = (
-        (grid.states[..., 2] > 60)
-        |
-        (grid.states[..., 2] < 40)
+            (grid.states[..., 2] > 60)
+            |
+            (grid.states[..., 2] < 40)
     )
 
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)

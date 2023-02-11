@@ -46,17 +46,18 @@ def flag_states_on_grid(
     cell_lower_bounds = cell_centerpoints - cell_halfwidths
     cell_upper_bounds = cell_centerpoints + cell_halfwidths
 
-    cell_lower_bounds_in_grid_frame = cell_lower_bounds + np.array(grid.spacings).reshape((1, dims))/2 - np.array(grid.domain.lo).reshape((1, dims))
-    cell_upper_bounds_in_grid_frame = cell_upper_bounds + np.array(grid.spacings).reshape((1, dims))/2 - np.array(grid.domain.lo).reshape((1, dims))
+    cell_lower_bounds_in_grid_frame = cell_lower_bounds + np.array(grid.spacings).reshape((1, dims)) / 2 - np.array(grid.domain.lo).reshape((1, dims))
+    cell_upper_bounds_in_grid_frame = cell_upper_bounds + np.array(grid.spacings).reshape((1, dims)) / 2 - np.array(grid.domain.lo).reshape((1, dims))
 
     lower_index = np.maximum(cell_lower_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), 0)
-    upper_index = np.minimum(cell_upper_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), np.array(grid.states.shape[0:-1]).reshape((1, dims))-1)
+    upper_index = np.minimum(cell_upper_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)),
+                             np.array(grid.states.shape[0:-1]).reshape((1, dims)) - 1)
 
     overlap_indices = np.stack([lower_index, upper_index], axis=-1).astype(int)
 
     bool_grid = np.zeros_like(grid.states[..., 0], dtype=bool)
     for overlap_index in tqdm(overlap_indices, disable=not verbose, desc='flagging states on grid'):
-        index_slice = tuple([np.s_[overlap_index[dim][0]:overlap_index[dim][1]+1] for dim in range(dims)])
+        index_slice = tuple([np.s_[overlap_index[dim][0]:overlap_index[dim][1] + 1] for dim in range(dims)])
         bool_grid[index_slice] = True
 
     if save_array:
@@ -69,7 +70,7 @@ def snap_state_to_grid_index(
         state: Vector,
         grid: hj_reachability.Grid
 ) -> Tuple[int, ...]:
-    state_in_grid_frame = state + np.array(grid.spacings)/2 - np.array(grid.domain.lo)
+    state_in_grid_frame = state + np.array(grid.spacings) / 2 - np.array(grid.domain.lo)
     grid_index = state_in_grid_frame // jnp.array(grid.spacings)
     tuple_output = tuple(grid_index.astype(int))
     return tuple_output

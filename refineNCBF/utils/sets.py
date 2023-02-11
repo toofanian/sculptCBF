@@ -1,13 +1,8 @@
-from typing import List, Tuple
-
-import hj_reachability
+import jax.numpy as jnp
 import numpy as np
 import skfmm
-import jax.numpy as jnp
-from tqdm import tqdm
 
-from refineNCBF.utils.files import generate_unique_filename, construct_full_path
-from refineNCBF.utils.types import MaskNd, ArrayNd, Vector
+from refineNCBF.utils.types import MaskNd, ArrayNd
 
 
 # TODO default distance should be .5, since it is from boundary of cell to center of cell

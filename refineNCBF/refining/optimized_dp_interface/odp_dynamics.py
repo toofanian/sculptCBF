@@ -1,17 +1,18 @@
-import attr
+from abc import ABC, abstractmethod
 
-from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControl
-from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics
+import attr
 
 
 @attr.s(auto_attribs=True)
-class OdpDynamics(HJControlAffineDynamics):
-    def opt_ctrl(self, t, state, spat_deriv):
-        ...
-
-    def opt_dstr(self, t, state, spat_deriv):
-        ...
-
+class OdpDynamics(ABC):
+    @abstractmethod
     def dynamics(self, t, state, uOpt, dOpt):
         ...
 
+    @abstractmethod
+    def opt_ctrl(self, t, state, spat_deriv):
+        ...
+
+    @abstractmethod
+    def opt_dstr(self, t, state, spat_deriv):
+        ...

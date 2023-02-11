@@ -4,6 +4,7 @@ from typing import List, Optional, Union
 import attr
 import dill
 import hj_reachability
+import matplotlib
 import numpy as np
 from jax import numpy as jnp
 from matplotlib import pyplot as plt, animation
@@ -11,11 +12,9 @@ from matplotlib import pyplot as plt, animation
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_full_path, generate_unique_filename
-from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D
 
-import matplotlib
 matplotlib.use('TkAgg')
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -294,7 +293,7 @@ class LocalUpdateResult:
         )
 
         if save_path is not None:
-            np.save(construct_full_path(generate_unique_filename(save_path,'npy')), np.array(truth))
+            np.save(construct_full_path(generate_unique_filename(save_path, 'npy')), np.array(truth))
 
         x1, x2 = np.meshgrid(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
@@ -387,7 +386,7 @@ class LocalUpdateResult:
         )
 
         if save_path is not None:
-            np.save(construct_full_path(generate_unique_filename(save_path,'npy')), np.array(truth))
+            np.save(construct_full_path(generate_unique_filename(save_path, 'npy')), np.array(truth))
 
         x1, x2 = np.meshgrid(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],

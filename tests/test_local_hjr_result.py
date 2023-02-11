@@ -1,9 +1,9 @@
 import hj_reachability
 import jax
+from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 
 from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControlJAX, simplified_active_cruise_control_params
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
-from refineNCBF.refining.hj_reachability_interface.hj_setup import HjSetup
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
@@ -66,5 +66,3 @@ def test_save_and_load():
     remove_file(path)
 
     assert jax.numpy.equal(dummy_result.get_recent_values(), loaded_result.get_recent_values()).all()
-
-
