@@ -8,6 +8,7 @@ import numpy as np
 from refineNCBF.dynamic_systems.dynamic_systems import ControlAffineDynamicSystem
 from refineNCBF.utils.types import VectorBatch, MatrixBatch
 
+
 @attr.dataclass
 class ActiveCruiseControlParams:
     friction_coefficients: Tuple[float, float, float]

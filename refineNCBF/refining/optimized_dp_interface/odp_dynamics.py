@@ -6,7 +6,7 @@ import attr
 @attr.s(auto_attribs=True)
 class OdpDynamics(ABC):
     @abstractmethod
-    def dynamics(self, t, state, uOpt, dOpt):
+    def dynamics(self, t, state, u_opt, d_opt):
         ...
 
     @abstractmethod

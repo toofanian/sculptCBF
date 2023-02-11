@@ -4,13 +4,9 @@ import warnings
 import hj_reachability
 from jax import numpy as jnp
 import matplotlib
-from matplotlib import pyplot as plt
 
-from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControlJAX, simplified_active_cruise_control_params
-from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import active_cruise_control_odp
-from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
+from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import active_cruise_control_odp_dynamics
 
-from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
@@ -21,7 +17,7 @@ matplotlib.use("TkAgg")
 
 
 def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
-    dynamics = active_cruise_control_odp
+    dynamics = active_cruise_control_odp_dynamics
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(

@@ -24,7 +24,7 @@ class ActiveCruiseControlOdp(OdpDynamics, ActiveCruiseControl):
         d3 = hcl.scalar(0, "d3")
         return d1[0], d2[0], d3[0]
 
-    def dynamics(self, t, state, uOpt, dOpt):
+    def dynamics(self, t, state, u_opt, d_opt):
         x1_dot = hcl.scalar(0, "x1_dot")
         x2_dot = hcl.scalar(0, "x2_dot")
         x3_dot = hcl.scalar(0, "x3_dot")
@@ -32,11 +32,11 @@ class ActiveCruiseControlOdp(OdpDynamics, ActiveCruiseControl):
         x1_dot[0] = state[1]
         x2_dot[0] = -1 / self.mass * \
             (self.friction_coefficients[0] + self.friction_coefficients[1] * state[1] + self.friction_coefficients[2] * state[1]*state[1]) \
-            + uOpt[0]
+            + u_opt[0]
         x3_dot[0] = self.target_velocity - state[1]
         return x1_dot[0], x2_dot[0], x3_dot[0]
 
 
-active_cruise_control_odp = ActiveCruiseControlOdp.from_params(
-    simplified_active_cruise_control_params
+active_cruise_control_odp_dynamics = ActiveCruiseControlOdp.from_params(
+    params=simplified_active_cruise_control_params
 )
