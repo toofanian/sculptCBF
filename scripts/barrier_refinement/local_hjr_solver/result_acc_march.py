@@ -15,7 +15,6 @@ from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
-matplotlib.use("TkAgg")
 
 
 def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
@@ -105,4 +104,4 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
 
 
 if __name__ == '__main__':
-    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=False)
+    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=False, save_gif=False, save_result=True)

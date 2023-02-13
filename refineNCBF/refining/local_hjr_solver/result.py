@@ -16,7 +16,6 @@ from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D
 
 matplotlib.use('TkAgg')
-
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
@@ -175,7 +174,6 @@ class LocalUpdateResult:
             plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.2),
             plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.4),
             plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='--'),
-            plt.Rectangle((0, 0), 1, 1, fc='w', ec='b', linestyle='--'),
 
         ]
         legend_for_labels = [
@@ -186,10 +184,9 @@ class LocalUpdateResult:
             'active set',
             'changed set',
             'running viability kernel',
-            'computed subgrid'
         ]
 
-        def animate(i):
+        def render_iteration(i: int):
             ax.clear()
 
             ax.set(title=f"iteration: {i}, total active: {self.get_total_active_count(i)} of {self.avoid_set.size} \nSliced at {reference_slice.slice_string}")
@@ -254,7 +251,7 @@ class LocalUpdateResult:
             return ax
 
         fig, ax = plt.subplots(figsize=(9, 7))
-        anim = animation.FuncAnimation(fig, animate, frames=len(self), interval=100)
+        anim = animation.FuncAnimation(fig, render_iteration, frames=len(self), interval=100)
 
         if save_path is not None:
             if not check_if_file_exists(save_path):
@@ -264,6 +261,94 @@ class LocalUpdateResult:
 
         if verbose:
             plt.show(block=False)
+
+    def render_iteration(self, i: int, reference_slice: ArraySlice2D, verbose: bool = True, save_path: str = None):
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='g', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='k', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', alpha=.7),
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.2),
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.4),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='--'),
+        ]
+
+        legend_for_labels = [
+            'avoid set',
+            'reach set',
+            'seed set',
+            'initial zero levelset',
+            'active set',
+            'changed set',
+            'running viability kernel',
+        ]
+
+        ax.set(title=f"iteration: {i} of {len(self)}")
+
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
+
+        # always have reach and avoid set up
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.avoid_set).T,
+            levels=[0, .5], colors=['r'], alpha=.3
+        )
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.reach_set).T,
+            levels=[0, .5], colors=['g'], alpha=.3
+        )
+
+        # always have seed set up
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.seed_set).T,
+            levels=[0, .5], colors=['k'], alpha=.3
+        )
+
+        # always have initial zero levelset up
+        ax.contour(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            reference_slice.get_sliced_array(self.initial_values).T,
+            levels=[0], colors=['k'], alpha=.7
+        )
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.iterations[i].active_set_expanded).T,
+            levels=[0, .5], colors=['b'], alpha=.2
+        )
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.iterations[i].active_set_post_filtered).T,
+            levels=[0, 0.5], colors=['b'], alpha=.2
+        )
+
+        values = self.initial_values if i == 0 else self.iterations[i - 1].computed_values
+        ax.contour(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            reference_slice.get_sliced_array(values).T,
+            levels=[0], colors=['k'], linestyles=['--']
+        )
+
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+
+        if verbose:
+            plt.show(block=False)
+
+        return ax
 
     def plot_value_function_against_truth(
             self,

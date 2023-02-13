@@ -104,4 +104,4 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
 
 
 if __name__ == '__main__':
-    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=False)
+    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=True)

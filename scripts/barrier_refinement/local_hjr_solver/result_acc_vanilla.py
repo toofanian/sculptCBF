@@ -54,7 +54,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
     )
 
     initial_values = terminal_values.copy()
-    active_set = get_mask_boundary_on_both_sides_by_signed_distance(~avoid_set, distance=2)
+    active_set = jnp.ones_like(avoid_set, dtype=bool)
 
     result = solver(active_set=active_set, initial_values=initial_values)
 
@@ -105,4 +105,4 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
 
 
 if __name__ == '__main__':
-    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=False)
+    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=True)

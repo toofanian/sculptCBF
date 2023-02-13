@@ -10,33 +10,39 @@ from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 
 def load_result_and_check_visualizations():
-    result = LocalUpdateResult.load("data/local_update_results/demo_local_hjr_boundary_decrease_solver_quadcopter_vertical_20230210_135303.dill")
+    result = LocalUpdateResult.load("data/local_update_results/result_acc_march.dill")
 
     ref_index = ArraySlice2D.from_reference_index(
         reference_index=(
-            15,
-            12,
-            20,
-            17
+            1,
+            50,
+            50,
         ),
-        free_dim_1=DimName(0, 'y'),
-        free_dim_2=DimName(2, 'theta')
+        free_dim_1=DimName(1, 'rel_vel'),
+        free_dim_2=DimName(2, 'rel_dis')
     )
 
-    result.create_gif(
+    # result.create_gif(
+    #     reference_slice=ref_index,
+    #     verbose=True,
+    #     save_path=os.path.join(
+    #         visuals_data_directory,
+    #         f'{generate_unique_filename("demo_local_hjr_boundary_decrease_solver_quadcopter_vertical", "gif")}')
+    # )
+    #
+    # result.plot_safe_cells_against_truth(
+    #     reference_slice=ref_index,
+    #     verbose=True,
+    #     truth=jax.numpy.array(np.load(construct_full_path("data/visuals/truth_20230210_124946.npy")))
+    #
+    # )
+
+    result.render_iteration(
+        i=25,
         reference_slice=ref_index,
         verbose=True,
-        save_path=os.path.join(
-            visuals_data_directory,
-            f'{generate_unique_filename("demo_local_hjr_boundary_decrease_solver_quadcopter_vertical", "gif")}')
     )
 
-    result.plot_safe_cells_against_truth(
-        reference_slice=ref_index,
-        verbose=True,
-        truth=jax.numpy.array(np.load(construct_full_path("data/visuals/truth_20230210_124946.npy")))
-
-    )
     plt.pause(0)
 
 
