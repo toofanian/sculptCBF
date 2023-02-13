@@ -43,7 +43,7 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper):
             [0, -self.time_step],
             self.system_objectives,
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
-            active_set=active_set_expanded
+            # active_set=active_set_expanded,
+            active_set=np.ones_like(active_set_expanded, dtype=bool)
         )
-        print(result.shape)
         return result

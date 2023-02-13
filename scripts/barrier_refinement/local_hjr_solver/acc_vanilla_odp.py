@@ -4,16 +4,17 @@ import warnings
 import hj_reachability
 from jax import numpy as jnp
 import matplotlib
+from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import active_cruise_control_odp_dynamics
 
 from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp
-from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
+from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
+matplotlib.use('TkAgg')
 warnings.simplefilter(action='ignore', category=FutureWarning)
-matplotlib.use("TkAgg")
 
 
 def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
@@ -43,6 +44,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
+        solver_timestep=-3.,
         max_iterations=1,
         verbose=True
     )
@@ -62,25 +64,25 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
             free_dim_2=DimName(2, 'relative distance'),
         )
 
-        if save_gif:
-            result.create_gif(
-                reference_slice=ref_index,
-                verbose=verbose,
-                save_path=os.path.join(
-                    visuals_data_directory,
-                    f'{generate_unique_filename("acc_odp", "gif")}'
-                )
-            )
+        # if save_gif:
+        #     result.create_gif(
+        #         reference_slice=ref_index,
+        #         verbose=verbose,
+        #         save_path=os.path.join(
+        #             visuals_data_directory,
+        #             f'{generate_unique_filename("acc_odp", "gif")}'
+        #         )
+        #     )
     #     else:
     #         result.create_gif(
     #             reference_slice=ref_index,
     #             verbose=verbose
     #         )
     #
-    #     result.plot_value_function(
-    #         reference_slice=ref_index,
-    #         verbose=verbose
-    #     )
+        result.plot_value_function(
+            reference_slice=ref_index,
+            verbose=verbose
+        )
     #
     #     result.plot_value_function_against_truth(
     #         reference_slice=ref_index,
@@ -93,7 +95,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
     #         verbose=verbose
     #     )
     #
-    #     plt.pause(0)
+        plt.pause(0)
 
     return result
 
