@@ -140,6 +140,8 @@ class LocalHjrSolver(Callable):
 
             solver_timestep: float = -0.1,
             max_iterations: int = 100,
+            atol: float = 1e-3,
+            rtol: float = 1e-3,
 
             verbose: bool = False,
     ):
@@ -162,8 +164,8 @@ class LocalHjrSolver(Callable):
             verbose=verbose
         )
         active_set_post_filter = RemoveWhereUnchanged.from_parts(
-            atol=1e-3,
-            rtol=1e-3,
+            atol=atol,
+            rtol=rtol,
         )
         break_criteria_checker = BreakCriteriaChecker.from_criteria(
             [
