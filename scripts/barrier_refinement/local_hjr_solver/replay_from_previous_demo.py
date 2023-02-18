@@ -10,7 +10,7 @@ from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 
 def load_result_and_check_visualizations():
-    result = LocalUpdateResult.load("data/local_update_results/result_qv_march_20230213_142633.dill")
+    result = LocalUpdateResult.load("data/local_update_results/result_qv_sac_global_20230217_185539.dill")
 
     ref_index = ArraySlice2D.from_reference_index(
         reference_index=(
@@ -23,26 +23,26 @@ def load_result_and_check_visualizations():
         free_dim_2=DimName(2, 'theta')
     )
 
-    result.create_gif(
+    # result.create_gif(
+    #     reference_slice=ref_index,
+    #     verbose=True,
+    #     # save_path=os.path.join(
+    #     #     visuals_data_directory,
+    #     #     f'{generate_unique_filename("demo_local_hjr_boundary_decrease_solver_quadcopter_vertical", "gif")}')
+    # )
+    # #
+    # # result.plot_safe_cells_against_truth(
+    # #     reference_slice=ref_index,
+    # #     verbose=True,
+    # #     truth=jax.numpy.array(np.load(construct_full_path("data/visuals/truth_20230210_124946.npy")))
+    # #
+    # # )
+
+    result.render_iteration(
+        i=9,
         reference_slice=ref_index,
         verbose=True,
-        # save_path=os.path.join(
-        #     visuals_data_directory,
-        #     f'{generate_unique_filename("demo_local_hjr_boundary_decrease_solver_quadcopter_vertical", "gif")}')
     )
-    #
-    # result.plot_safe_cells_against_truth(
-    #     reference_slice=ref_index,
-    #     verbose=True,
-    #     truth=jax.numpy.array(np.load(construct_full_path("data/visuals/truth_20230210_124946.npy")))
-    #
-    # )
-
-    # result.render_iteration(
-    #     i=50,
-    #     reference_slice=ref_index,
-    #     verbose=True,
-    # )
 
     plt.pause(0)
 

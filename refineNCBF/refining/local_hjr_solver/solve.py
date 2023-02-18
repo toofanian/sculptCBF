@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Callable, Union
+from typing import Callable, Union, Optional
 
 import attr
 import hj_reachability
@@ -46,6 +46,8 @@ class LocalHjrSolver(Callable):
     _active_set_post_filter: ActiveSetPostFilter
     _break_criteria_checker: BreakCriteriaChecker
 
+    _preloaded_result: Optional[LocalUpdateResult] = None
+
     _verbose: bool = False
     _logger: logging.Logger = make_configured_logger(__name__)
 
@@ -63,16 +65,19 @@ class LocalHjrSolver(Callable):
         return local_update_result
 
     def _initialize_local_result(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
-        return LocalUpdateResult.from_parts(
-            local_solver=self,
-            dynamics=self._dynamics,
-            grid=self._grid,
-            avoid_set=self._avoid_set,
-            reach_set=self._reach_set,
-            seed_set=active_set,
-            initial_values=initial_values,
-            terminal_values=self._terminal_values
-        )
+        if self._preloaded_result is None:
+            return LocalUpdateResult.from_parts(
+                local_solver=self,
+                dynamics=self._dynamics,
+                grid=self._grid,
+                avoid_set=self._avoid_set,
+                reach_set=self._reach_set,
+                seed_set=active_set,
+                initial_values=initial_values,
+                terminal_values=self._terminal_values
+            )
+        else:
+            return self._preloaded_result
 
     def _perform_local_update_iteration(self, result: LocalUpdateResult):
         active_set_pre_filtered = self._active_set_pre_filter(
@@ -128,6 +133,12 @@ class LocalHjrSolver(Callable):
             break_criteria_checker=breaker,
             verbose=verbose,
         )
+
+    @classmethod
+    def as_continue(cls, previous_result: LocalUpdateResult):
+        previous_solver = LocalUpdateResult.local_solver
+        previous_solver._preloaded_result = previous_result
+        return previous_solver
 
     @classmethod
     def as_global_solver(

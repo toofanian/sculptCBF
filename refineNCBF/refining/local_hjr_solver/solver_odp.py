@@ -6,7 +6,7 @@ from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighbors
 from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereUnchanged
 from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
-from refineNCBF.refining.local_hjr_solver.step_odp import ClassicLocalHjrStepperOdp
+from refineNCBF.refining.local_hjr_solver.step_odp_functional import ClassicLocalHjrStepperOdp
 from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import MaskNd, ArrayNd
 
