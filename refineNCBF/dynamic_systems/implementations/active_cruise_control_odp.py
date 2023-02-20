@@ -13,8 +13,8 @@ class ActiveCruiseControlOdp(OdpDynamics, ActiveCruiseControl):
         in2 = hcl.scalar(0, "in2")
         in3 = hcl.scalar(0, "in3")
 
-        with hcl.if_(spat_deriv[1] < 0):
-            opt_a[0] = -opt_a
+        with hcl.if_(spat_deriv[1] > 0):
+            opt_a[0] = self.control_lower_bounds[0]
 
         return opt_a[0], in2[0], in3[0]
 
