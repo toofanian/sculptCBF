@@ -45,8 +45,8 @@ target_values = compute_signed_distance(reach_set)
 
 # trying to say "just do the infinite-time BRT for avoiding the obstacle".
 system_objectives = {
-    "TargetSetMode": "minVWithVTarget",
-    "ObstacleSetMode": "maxVWithObstacle"
+    "TargetSetMode": "maxVWithVTarget",
+    "ObstacleSetMode": "minVWithObstacle"
 }
 
 # reconstructing the grid for ODP
