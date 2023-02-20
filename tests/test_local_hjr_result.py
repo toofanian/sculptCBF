@@ -9,7 +9,7 @@ from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import remove_file
 from refineNCBF.utils.sets import compute_signed_distance
-from scripts.barrier_refinement.pre_constrcuted_stuff.active_cruise_control_stuff import get_saved_signed_distance_function, SignedDistanceFunctions
+from scripts.barrier_refinement.pre_constrcuted_stuff.archive_active_cruise_control_stuff import get_saved_signed_distance_function, SignedDistanceFunctions
 
 
 def test_save_and_load():

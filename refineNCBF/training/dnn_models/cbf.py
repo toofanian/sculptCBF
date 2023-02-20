@@ -1,5 +1,9 @@
+from typing import Dict, List
+
 import torch
 import torch.nn as nn
+
+from refineNCBF.utils.types import Vector
 
 
 class Cbf(nn.Module):
@@ -13,3 +17,6 @@ class Cbf(nn.Module):
         x = torch.tanh(x)
         x = self.affine2(x)
         return x
+
+
+NnCertifiedDict = Dict[str, List[Vector]]

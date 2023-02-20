@@ -26,10 +26,10 @@ def result_qv_sac_global(save_result: bool = False):
             [-1, -8, -jnp.pi, -10],
             [11, 8, jnp.pi, 10]
         ),
-        shape=(41, 41, 41, 41)
+        shape=(101, 101, 101, 101)
     )
 
-    dynamics = load_quadcopter_sac_jax_hj(grid)
+    dynamics = load_quadcopter_sac_jax_hj(grid=grid, relative_path='data/trained_NCBFs/feb18/best_model-3.zip')
 
     avoid_set = (
             (grid.states[..., 0] < 0)
@@ -40,13 +40,13 @@ def result_qv_sac_global(save_result: bool = False):
 
     terminal_values = compute_signed_distance(~avoid_set)
 
-    solver = LocalHjrSolver.as_global_solver(
+    solver = LocalHjrSolver.as_marching_solver(
         dynamics=dynamics,
         grid=grid,
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=100,
+        max_iterations=30,
         verbose=True,
     )
 

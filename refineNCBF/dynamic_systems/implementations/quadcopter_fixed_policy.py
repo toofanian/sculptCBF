@@ -9,6 +9,7 @@ from jax import numpy as jnp
 from refineNCBF.dynamic_systems.dynamic_systems import ControlAffineDynamicSystemFixedPolicy
 from refineNCBF.dynamic_systems.implementations.quadcopter import QuadcopterVerticalParams, default_quadcopter_vertical_params
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamicsFixedPolicy, ActorModes
+from refineNCBF.utils.files import FilePathRelative
 from refineNCBF.utils.types import VectorBatch
 from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_tabularized_ppo, load_tabularized_sac
 
@@ -109,28 +110,14 @@ def load_quadcopter_ppo_jax_hj(
 
 
 def load_quadcopter_sac_jax_hj(
-        grid: hj_reachability.Grid
+        grid: hj_reachability.Grid,
+        relative_path: FilePathRelative
 ) -> HJControlAffineDynamicsFixedPolicy:
     return HJControlAffineDynamicsFixedPolicy.from_parts(
         dynamics=QuadcopterFixedPolicy.from_specs_with_policy(
             params=default_quadcopter_vertical_params,
-            control_policy=load_tabularized_sac(grid),
+            control_policy=load_tabularized_sac(grid, relative_path),
         ),
         control_mode=ActorModes.MAX,
         disturbance_mode=ActorModes.MIN,
     )
-
-
-if __name__ == '__main__':
-    grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
-        domain=hj_reachability.sets.Box(
-            [-10, -10, -10, -10],
-            [10, 10, 10, 10]
-        ),
-        shape=(11, 11, 11, 11)
-    )
-    dynamics = load_quadcopter_sac_jax_hj(grid)
-
-    control = dynamics._dynamics.compute_control(jnp.array([1, 1, 1, 1]))
-
-    print(control)

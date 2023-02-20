@@ -10,7 +10,7 @@ from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 
 def load_result_and_check_visualizations():
-    result = LocalUpdateResult.load("data/local_update_results/result_qv_sac_global_20230217_185539.dill")
+    result = LocalUpdateResult.load("data/local_update_results/result_qv_sac_global_20230218_140747.dill")
 
     ref_index = ArraySlice2D.from_reference_index(
         reference_index=(
@@ -38,8 +38,8 @@ def load_result_and_check_visualizations():
     # #
     # # )
 
-    result.render_iteration(
-        i=9,
+    result.plot_value_function(
+        iteration=16,
         reference_slice=ref_index,
         verbose=True,
     )

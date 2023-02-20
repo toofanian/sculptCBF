@@ -571,13 +571,14 @@ class LocalUpdateResult:
     def plot_value_function(
             self,
             reference_slice: ArraySlice2D,
+            iteration: int = -1,
             verbose: bool = False,
             save_path: Optional[FilePathRelative] = None
     ):
         if save_path is not None:
             raise NotImplementedError('saving not implemented yet')
 
-        final_values = self.get_recent_values()
+        values = self.iterations[iteration].computed_values
 
         x1, x2 = np.meshgrid(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
@@ -598,11 +599,11 @@ class LocalUpdateResult:
         ax.set(title='value function')
 
         ax.plot_surface(
-            x1, x2, reference_slice.get_sliced_array(final_values).T,
+            x1, x2, reference_slice.get_sliced_array(values).T,
             cmap='Blues', edgecolor='none', alpha=.5
         )
         ax.contour3D(
-            x1, x2, reference_slice.get_sliced_array(final_values).T,
+            x1, x2, reference_slice.get_sliced_array(values).T,
             levels=[0], colors=['b']
         )
 
