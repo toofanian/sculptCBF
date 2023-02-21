@@ -10,9 +10,6 @@ import heterocl as hcl
 
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
-import matplotlib
-matplotlib.use('TkAgg')
-
 
 class ActiveCruiseControl:
     def __init__(self, friction_coeffs, target_velocity, mass, uMode="min", dMode="max"):
@@ -74,20 +71,13 @@ tau_1 = tau
 compMethods_1 = compMethods
 po2_1 = po2
 
-my_car_2 = my_car
-g_2 = g
-initial_value_f_2 = initial_value_f.copy()
-tau_2 = tau
-compMethods_2 = compMethods
-po2_2 = po2
+# active_set = initial_value_f > 0
+active_set = np.ones_like(initial_value_f)
 
-values_1 = hj_solve(my_car_1, g_1, initial_value_f_1, tau_1, compMethods_1, po2_1, saveAllTimeSteps=False)
+values_1 = hj_solve(my_car_1, g_1, initial_value_f_1, tau_1, compMethods_1, po2_1, saveAllTimeSteps=False, active_set=active_set)
+values_2 = hj_solve(my_car_1, g_1, initial_value_f_1, tau_1, compMethods_1, po2_1, saveAllTimeSteps=False, active_set=active_set)
 
 
-assert (my_car_1 == my_car_2) & (g_1 == g_2) & (initial_value_f_1 == initial_value_f_2).all() & (tau_1 == tau_2) & (compMethods_1 == compMethods_2) & (po2_1 == po2_2)
-
-
-values_2 = hj_solve(my_car_2, g_2, initial_value_f_2, tau_2, compMethods_2, po2_2, saveAllTimeSteps=False)
 
 
 #

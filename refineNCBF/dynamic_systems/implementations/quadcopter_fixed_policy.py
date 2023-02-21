@@ -11,7 +11,7 @@ from refineNCBF.dynamic_systems.implementations.quadcopter import QuadcopterVert
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamicsFixedPolicy, ActorModes
 from refineNCBF.utils.files import FilePathRelative
 from refineNCBF.utils.types import VectorBatch
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_tabularized_ppo, load_tabularized_sac
+from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_tabularized_sac
 
 
 @attr.s(auto_attribs=True, eq=False)
@@ -94,19 +94,6 @@ class QuadcopterFixedPolicy(ControlAffineDynamicSystemFixedPolicy):
     def compute_disturbance(self, state: VectorBatch) -> VectorBatch:
         disturbance = jnp.atleast_1d(self._disturbance_policy(state).squeeze())
         return disturbance
-
-
-def load_quadcopter_ppo_jax_hj(
-        grid: hj_reachability.Grid
-) -> HJControlAffineDynamicsFixedPolicy:
-    return HJControlAffineDynamicsFixedPolicy.from_parts(
-        dynamics=QuadcopterFixedPolicy.from_specs_with_policy(
-            params=default_quadcopter_vertical_params,
-            control_policy=load_tabularized_ppo(grid),
-        ),
-        control_mode=ActorModes.MAX,
-        disturbance_mode=ActorModes.MIN,
-    )
 
 
 def load_quadcopter_sac_jax_hj(
