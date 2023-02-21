@@ -6,9 +6,8 @@ from jax import numpy as jnp
 import matplotlib
 from matplotlib import pyplot as plt
 
-from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import active_cruise_control_odp_dynamics
-
-from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp
+from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import ActiveCruiseControlOdp
+from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp, create_marching_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
@@ -18,14 +17,14 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
-    dynamics = active_cruise_control_odp_dynamics
+    dynamics = ActiveCruiseControlOdp()
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 101, 101)
+        shape=(3, 301, 301)
     )
 
     avoid_set = (
@@ -38,14 +37,14 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
 
     terminal_values = compute_signed_distance(~avoid_set)
 
-    solver = create_global_solver_odp(
+    solver = create_marching_solver_odp(
         dynamics=dynamics,
         grid=grid,
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        solver_timestep=-3.,
         max_iterations=1,
+        solver_timestep=-.1,
         verbose=True
     )
 
@@ -64,37 +63,11 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
             free_dim_2=DimName(2, 'relative distance'),
         )
 
-        # if save_gif:
-        #     result.create_gif(
-        #         reference_slice=ref_index,
-        #         verbose=verbose,
-        #         save_path=os.path.join(
-        #             visuals_data_directory,
-        #             f'{generate_unique_filename("acc_odp", "gif")}'
-        #         )
-        #     )
-    #     else:
-    #         result.create_gif(
-    #             reference_slice=ref_index,
-    #             verbose=verbose
-    #         )
-    #
         result.plot_value_function(
             reference_slice=ref_index,
             verbose=verbose
         )
-    #
-    #     result.plot_value_function_against_truth(
-    #         reference_slice=ref_index,
-    #         levelset=[0],
-    #         verbose=verbose
-    #     )
-    #
-    #     result.plot_safe_cells_against_truth(
-    #         reference_slice=ref_index,
-    #         verbose=verbose
-    #     )
-    #
+
         plt.pause(0)
 
     return result

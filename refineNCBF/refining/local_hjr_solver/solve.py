@@ -13,7 +13,7 @@ from refineNCBF.refining.local_hjr_solver.postfilter import ActiveSetPostFilter,
 from refineNCBF.refining.local_hjr_solver.prefilter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset, \
     PreFilterWhereOutsideZeroLevelset, PreFilterWhereFarFromBoundarySplit
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult, LocalUpdateResultIteration
-from refineNCBF.refining.local_hjr_solver.step import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.step_hj import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
 from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger

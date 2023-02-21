@@ -2,11 +2,11 @@ import hj_reachability
 import numpy as np
 
 from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
-from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighbors
-from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereUnchanged
-from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter
+from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighbors, SignedDistanceNeighborsNearBoundary
+from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian, NoPostFilter
+from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter, PreFilterWhereFarFromBoundarySplit
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
-from refineNCBF.refining.local_hjr_solver.step_odp_functional import ClassicLocalHjrStepperOdp
+from refineNCBF.refining.local_hjr_solver.step_odp import DecreaseLocalHjrStepperOdp
 from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import MaskNd, ArrayNd
 
@@ -43,6 +43,73 @@ def create_global_solver_odp(
         atol=1e-3,
         rtol=1e-3,
     )
+    break_criteria_checker = BreakCriteriaChecker.from_criteria(
+        [
+            MaxIterations.from_parts(max_iterations=max_iterations),
+            PostFilteredActiveSetEmpty.from_parts(),
+        ],
+        verbose=verbose
+    )
+
+    return LocalHjrSolver(
+        dynamics=dynamics,
+        grid=grid,
+        avoid_set=avoid_set,
+        reach_set=reach_set,
+        terminal_values=terminal_values,
+        active_set_pre_filter=active_set_pre_filter,
+        neighbor_expander=neighbor_expander,
+        local_hjr_stepper=local_hjr_stepper,
+        active_set_post_filter=active_set_post_filter,
+        break_criteria_checker=break_criteria_checker,
+        verbose=verbose,
+    )
+
+
+def create_marching_solver_odp(
+        dynamics: OdpDynamics,
+        grid: hj_reachability.Grid,
+        avoid_set: MaskNd,
+        reach_set: MaskNd,
+        terminal_values: ArrayNd,
+
+        boundary_distance_inner: float = 2,
+        boundary_distance_outer: float = 2,
+        neighbor_distance: float = 2,
+        solver_timestep: float = -0.1,
+        hamiltonian_atol: float = 1e-3,
+        max_iterations: int = 100,
+
+        verbose: bool = False,
+) -> LocalHjrSolver:
+    """
+    NOTE: see readme for more details, info here may be inaccurate.
+
+    classic solver with "boundary" pre-filtering, "signed distance" neighbors, "only decrease" local hjr stepper, and "no change" post-filtering.
+    """
+    assert solver_timestep < 0, "solver_timestep must be negative"
+
+    # TODO: Prefilter is only relevant for the first iteration to protect against bad seed sets.
+    #       Redundant with neighbor expander after first iteration.
+    active_set_pre_filter = PreFilterWhereFarFromBoundarySplit.from_parts(
+        distance_inner=boundary_distance_inner,
+        distance_outer=boundary_distance_outer,
+    )
+    neighbor_expander = SignedDistanceNeighborsNearBoundary.from_parts(
+        neighbor_distance=neighbor_distance,
+        boundary_distance_inner=boundary_distance_inner,
+        boundary_distance_outer=boundary_distance_outer,
+    )
+    local_hjr_stepper = DecreaseLocalHjrStepperOdp.from_parts(
+        dynamics=dynamics,
+        grid=grid,
+        time_step=solver_timestep,
+    )
+
+    active_set_post_filter = RemoveWhereNonNegativeHamiltonian.from_parts(
+        hamiltonian_atol=hamiltonian_atol
+    )
+
     break_criteria_checker = BreakCriteriaChecker.from_criteria(
         [
             MaxIterations.from_parts(max_iterations=max_iterations),

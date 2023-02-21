@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt, animation
 
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
+from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_full_path, generate_unique_filename
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D
@@ -59,7 +60,7 @@ class LocalUpdateResult:
     def from_parts(
             cls,
             local_solver: "LocalHjrSolver",
-            dynamics: hj_reachability.Dynamics,
+            dynamics: Union[hj_reachability.Dynamics, OdpDynamics],
             grid: hj_reachability.Grid,
             avoid_set: MaskNd,
             seed_set: MaskNd,

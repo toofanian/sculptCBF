@@ -7,13 +7,21 @@ import heterocl as hcl
 
 
 @attr.s(auto_attribs=True)
-class ActiveCruiseControlOdp(OdpDynamics, ActiveCruiseControl):
+class ActiveCruiseControlOdp(OdpDynamics):
+    friction_coefficients = [0, 0, 0]
+    target_velocity = 0
+    mass = 1650
+    uMode = 'max'
+    control_upper_bounds = [5000.0]
+    control_lower_bounds = [-5000.0]
+    dMode = 'min'
+
     def opt_ctrl(self, t, state, spat_deriv):
         opt_a = hcl.scalar(self.control_upper_bounds[0], "opt_a")
         in2 = hcl.scalar(0, "in2")
         in3 = hcl.scalar(0, "in3")
 
-        with hcl.if_(spat_deriv[1] > 0):
+        with hcl.if_(spat_deriv[1] < 0):
             opt_a[0] = self.control_lower_bounds[0]
 
         return opt_a[0], in2[0], in3[0]
@@ -38,11 +46,7 @@ class ActiveCruiseControlOdp(OdpDynamics, ActiveCruiseControl):
                     self.friction_coefficients[2] *
                     state[1]*state[1]
             ) \
-            + u_opt[0]
+            + 1 / self.mass * u_opt[0]
         x3_dot[0] = self.target_velocity - state[1]
         return x1_dot[0], x2_dot[0], x3_dot[0]
 
-
-active_cruise_control_odp_dynamics = ActiveCruiseControlOdp.from_params(
-    params=simplified_active_cruise_control_params
-)
