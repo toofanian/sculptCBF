@@ -48,6 +48,7 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             [0, -self.time_step],
             self.system_objectives,
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
+            accuracy='medium',
             active_set=active_set_expanded,
             verbose=False
         )
@@ -89,11 +90,13 @@ class DecreaseLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             [0, -self.time_step],
             self.system_objectives,
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
+            accuracy='medium',
+            # active_set=np.ones_like(values, dtype=bool),
             active_set=active_set_expanded,
-            verbose=False
+            verbose=True
         )
         next_result = jax.numpy.array(next_result)
-        where_decrease = (next_result < values)
+        where_decrease = (next_result < values) & active_set_expanded
         thing = jax.numpy.array(values)
         thing = thing.at[where_decrease].set(next_result[where_decrease])
         return thing
