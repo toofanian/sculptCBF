@@ -2,16 +2,12 @@ import warnings
 
 import hj_reachability
 from jax import numpy as jnp
-from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import ActiveCruiseControlOdp
-from refineNCBF.refining.local_hjr_solver.solver_odp import create_marching_solver_odp, create_global_solver_odp
+from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
-from refineNCBF.utils.visuals import ArraySlice2D, DimName
-import matplotlib
 
-matplotlib.use('TkAgg')
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
@@ -42,7 +38,7 @@ def wip_acc_marching_odp(save_result: bool = False):
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=50,
+        max_iterations=70,
         solver_timestep=-.1,
         verbose=True
     )
@@ -55,20 +51,8 @@ def wip_acc_marching_odp(save_result: bool = False):
     if save_result:
         result.save(generate_unique_filename('data/local_update_results/wip_acc_marching_odp', 'dill'))
 
-    reference_slice = ArraySlice2D.from_reference_index(
-        reference_index=(1, 0, 0),
-        free_dim_1=DimName(1, 'relative velocity'),
-        free_dim_2=DimName(2, 'relative position'),
-    )
-
-    result.plot_value_function(
-        reference_slice=reference_slice,
-        verbose=True
-    )
-
-    plt.pause(0)
-
     return result
+
 
 if __name__ == '__main__':
     wip_acc_marching_odp(save_result=False)

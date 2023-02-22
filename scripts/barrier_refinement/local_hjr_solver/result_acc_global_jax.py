@@ -15,7 +15,6 @@ from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
-matplotlib.use("TkAgg")
 
 
 def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
@@ -61,48 +60,9 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
     if save_result:
         result.save(generate_unique_filename('data/local_update_results/demo_local_hjr_classic_solver_on_active_cruise_control', 'dill'))
 
-    if verbose:
-        ref_index = ArraySlice2D.from_reference_index(
-            reference_index=(2, 0, 0),
-            free_dim_1=DimName(1, 'relative velocity'),
-            free_dim_2=DimName(2, 'relative distance'),
-        )
-
-        if save_gif:
-            result.create_gif(
-                reference_slice=ref_index,
-                verbose=verbose,
-                save_path=os.path.join(
-                    visuals_data_directory,
-                    f'{generate_unique_filename("demo_local_hjr_solver_classic_on_active_cruise_control", "gif")}'
-                )
-            )
-        else:
-            result.create_gif(
-                reference_slice=ref_index,
-                verbose=verbose
-            )
-
-        result.plot_value_function(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
-
-        result.plot_value_function_against_truth(
-            reference_slice=ref_index,
-            levelset=[0],
-            verbose=verbose
-        )
-
-        result.plot_safe_cells_against_truth(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
-
-        plt.pause(0)
 
     return result
 
 
 if __name__ == '__main__':
-    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=True)
+    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=False, save_result=False)
