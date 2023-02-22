@@ -16,7 +16,6 @@ from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, const
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D
 
-matplotlib.use('TkAgg')
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 

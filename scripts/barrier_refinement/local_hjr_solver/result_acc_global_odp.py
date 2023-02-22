@@ -1,22 +1,21 @@
-import os
 import warnings
 
 import hj_reachability
 from jax import numpy as jnp
-import matplotlib
 from matplotlib import pyplot as plt
 
 from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import ActiveCruiseControlOdp
-from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp, create_marching_solver_odp
+from refineNCBF.refining.local_hjr_solver.solver_odp import create_marching_solver_odp, create_global_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
+import matplotlib
 
 matplotlib.use('TkAgg')
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
+def wip_acc_marching_odp(save_result: bool = False):
     dynamics = ActiveCruiseControlOdp()
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
@@ -24,7 +23,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 301, 301)
+        shape=(3, 101, 101)
     )
 
     avoid_set = (
@@ -37,13 +36,13 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
 
     terminal_values = compute_signed_distance(~avoid_set)
 
-    solver = create_marching_solver_odp(
+    solver = create_global_solver_odp(
         dynamics=dynamics,
         grid=grid,
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=1,
+        max_iterations=50,
         solver_timestep=-.1,
         verbose=True
     )
@@ -54,24 +53,22 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/demo_local_hjr_classic_solver_on_active_cruise_control', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/wip_acc_marching_odp', 'dill'))
 
-    if verbose:
-        ref_index = ArraySlice2D.from_reference_index(
-            reference_index=(2, 0, 0),
-            free_dim_1=DimName(1, 'relative velocity'),
-            free_dim_2=DimName(2, 'relative distance'),
-        )
+    reference_slice = ArraySlice2D.from_reference_index(
+        reference_index=(1, 0, 0),
+        free_dim_1=DimName(1, 'relative velocity'),
+        free_dim_2=DimName(2, 'relative position'),
+    )
 
-        result.plot_value_function(
-            reference_slice=ref_index,
-            verbose=verbose
-        )
+    result.plot_value_function(
+        reference_slice=reference_slice,
+        verbose=True
+    )
 
-        plt.pause(0)
+    plt.pause(0)
 
     return result
 
-
 if __name__ == '__main__':
-    demo_local_hjr_classic_solver_on_active_cruise_control(verbose=True, save_gif=True, save_result=False)
+    wip_acc_marching_odp(save_result=False)

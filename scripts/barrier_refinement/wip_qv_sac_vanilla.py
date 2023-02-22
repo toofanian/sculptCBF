@@ -2,6 +2,8 @@ import hj_reachability
 import jax
 import numpy as np
 from matplotlib import pyplot as plt
+from odp.Plots import PlotOptions
+import odp.Grid
 
 from refineNCBF.dynamic_systems.implementations.quadcopter_fixed_policy import load_quadcopter_sac_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
@@ -10,17 +12,18 @@ from refineNCBF.utils.files import construct_full_path, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
-import matplotlib
-matplotlib.use('TkAgg')
+# import matplotlib
+# matplotlib.use('TkAgg')
 
 
-def wip_qv_sac_vanilla():
+def wip_qv_sac_vanilla_jax():
+    print('doing jax')
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            [0, -8, -jax.numpy.pi, -10],
-            [10, 8, jax.numpy.pi, 10]
+            [0, -8, -jax.numpy.pi/2, -3],
+            [10, 8, jax.numpy.pi/2, 3]
         ),
-        shape=(101, 101, 101, 101)
+        shape=(101, 51, 61, 51)
     )
 
     dynamics = load_quadcopter_sac_jax_hj(grid=grid, relative_path='data/trained_NCBFs/feb18/best_model-3.zip')
@@ -49,13 +52,16 @@ def wip_qv_sac_vanilla():
             time_target=-.25
         )
         np.save(
-            construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_run_bigtime_1', 'npy')),
+            construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_run_midtime_1', 'npy')),
             next_values
         )
         running_values = next_values
 
 
+
+
 def render_result(relative_path: FilePathRelative):
+    print('rendering')
     running_values = np.load(construct_full_path(relative_path))
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
@@ -67,9 +73,9 @@ def render_result(relative_path: FilePathRelative):
     )
 
     avoid_set = (
-            (grid.states[..., 0] < 1)
+            (grid.states[..., 0] < 0)
             |
-            (grid.states[..., 0] > 9)
+            (grid.states[..., 0] > 10)
     )
 
     terminal_values = compute_signed_distance(~avoid_set)
@@ -121,5 +127,5 @@ def render_result(relative_path: FilePathRelative):
 
 
 if __name__ == '__main__':
-    wip_qv_sac_vanilla()
-    # render_result(relative_path='data/try_fixed_policy_run_bigtime_1_2021-02-19_16-46-46.npy')
+    # wip_qv_sac_vanilla_jax()
+    render_result(relative_path='data/try_fixed_policy_run_bigtime_1_20230221_230229.npy')

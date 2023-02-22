@@ -14,6 +14,7 @@ from refineNCBF.refining.local_hjr_solver.prefilter import ActiveSetPreFilter, N
     PreFilterWhereOutsideZeroLevelset, PreFilterWhereFarFromBoundarySplit
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult, LocalUpdateResultIteration
 from refineNCBF.refining.local_hjr_solver.step_hj import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
+from refineNCBF.refining.local_hjr_solver.step_odp_type import OdpStepper
 from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger
@@ -67,7 +68,7 @@ class LocalHjrSolver(Callable):
     def _initialize_local_result(self, active_set: MaskNd, initial_values: ArrayNd) -> LocalUpdateResult:
         if self._preloaded_result is None:
             return LocalUpdateResult.from_parts(
-                local_solver=self,
+                local_solver=None if isinstance(self._local_hjr_stepper, OdpStepper) else self,
                 dynamics=self._dynamics,
                 grid=self._grid,
                 avoid_set=self._avoid_set,

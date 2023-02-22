@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from odp.Grid import Grid
 from odp.Plots import PlotOptions
 from odp.Shapes import Lower_Half_Space, Upper_Half_Space, Intersection
-from odp.solver import hj_solve, HjSolver
+from odp.solver import HJSolverClass
 
 import heterocl as hcl
 
@@ -76,7 +76,10 @@ po2_1 = po2
 # active_set = initial_value_f > 0
 active_set = np.ones_like(initial_value_f)
 
-solver_1 = HjSolver()
+solver_1 = HJSolverClass()
+
+print('hi')
+time.sleep(1)
 
 values_1 = solver_1(my_car_1, g_1, initial_value_f_1, tau_1, compMethods_1, po2_1, saveAllTimeSteps=False, active_set=active_set)
 print(
