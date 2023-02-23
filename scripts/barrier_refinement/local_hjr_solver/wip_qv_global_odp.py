@@ -14,15 +14,15 @@ from refineNCBF.utils.sets import compute_signed_distance
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def wip_acc_global_odp(save_result: bool = False):
+def wip_qv_global_odp(save_result: bool = False):
     dynamics = Quad4D()
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            [0, -8, -np.pi/2, -3],
-            [10, 8, np.pi/2, 3]
+            [0, -8, -np.pi, -10],
+            [10, 8, np.pi, 10]
         ),
-        shape=(101, 51, 61, 51)
+        shape=(101, 51, 101, 51)
         # shape=(31, 31, 31, 31)
     )
 
@@ -39,11 +39,12 @@ def wip_acc_global_odp(save_result: bool = False):
     solver = create_global_solver_odp(
         dynamics=dynamics,
         grid=grid,
+        periodic_dims=[2],
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=15,
-        solver_timestep=-.1,
+        max_iterations=1,
+        solver_timestep=-.75,
         verbose=True
     )
 
@@ -53,10 +54,10 @@ def wip_acc_global_odp(save_result: bool = False):
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/wip_qv_global_odp', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/wip_qv_global_odp_highres', 'dill'))
 
     return result
 
 
 if __name__ == '__main__':
-    wip_acc_global_odp(save_result=True)
+    wip_qv_global_odp(save_result=True)

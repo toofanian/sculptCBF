@@ -26,6 +26,7 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             cls,
             dynamics: OdpDynamics,
             grid: hj_reachability.Grid,
+            periodic_dims,
             time_step: float,
     ):
         grid_odp = odp.Grid.Grid(
@@ -33,7 +34,7 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             np.array(grid.domain.hi),
             len(grid.domain.hi),
             np.array(list(grid.shape)),
-            [2]
+            periodic_dims
         )
         system_objectives = {"TargetSetMode": "minVWithV0"}
         hj_solver = HJSolverClass()

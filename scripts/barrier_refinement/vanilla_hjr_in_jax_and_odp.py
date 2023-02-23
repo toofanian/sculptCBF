@@ -76,10 +76,10 @@ def wip_qv_vanilla_odp(save_array=False):
     print('doing odp')
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            [0, -8, -np.pi/2, -3],
-            [10, 8, np.pi/2, 3]
+            [0, -8, -np.pi, -10],
+            [10, 8, np.pi, 10]
         ),
-        shape=(21, 21, 21, 21)
+        shape=(101, 101, 101, 101)
     )
 
     dynamics = Quad4D()
@@ -105,7 +105,7 @@ def wip_qv_vanilla_odp(save_array=False):
     system_objectives = {"TargetSetMode": "minVWithV0"}
     solver = HJSolverClass()
 
-    for i in range(20):
+    for i in range(1):
         next_values = solver(
             dynamics,
             grid_odp,

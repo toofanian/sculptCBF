@@ -14,6 +14,7 @@ from refineNCBF.utils.types import MaskNd, ArrayNd
 def create_global_solver_odp(
         dynamics: OdpDynamics,
         grid: hj_reachability.Grid,
+        periodic_dims,
         avoid_set: MaskNd,
         reach_set: MaskNd,
         terminal_values: ArrayNd,
@@ -37,6 +38,7 @@ def create_global_solver_odp(
     local_hjr_stepper = ClassicLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
+        periodic_dims=periodic_dims,
         time_step=solver_timestep,
     )
     active_set_post_filter = RemoveWhereUnchanged.from_parts(
