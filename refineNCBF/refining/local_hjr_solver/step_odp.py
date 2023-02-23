@@ -50,7 +50,8 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
             accuracy='medium',
             active_set=active_set_expanded,
-            verbose=False
+            verbose=True,
+            untilConvergent=True
         )
         return next_result
 
@@ -91,7 +92,6 @@ class DecreaseLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             self.system_objectives,
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
             accuracy='medium',
-            # active_set=np.ones_like(values, dtype=bool),
             active_set=active_set_expanded,
             verbose=True
         )

@@ -69,7 +69,7 @@ class LocalHjrSolver(Callable):
         if self._preloaded_result is None:
             return LocalUpdateResult.from_parts(
                 local_solver=None if isinstance(self._local_hjr_stepper, OdpStepper) else self,
-                dynamics=None if isinstance(self._dynamics, OdpDynamics) else self._dynamics,
+                dynamics=None if isinstance(self._local_hjr_stepper, OdpStepper) else self._dynamics,
                 grid=self._grid,
                 avoid_set=self._avoid_set,
                 reach_set=self._reach_set,

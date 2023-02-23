@@ -22,7 +22,7 @@ def create_global_solver_odp(
         max_iterations: int = 100,
 
         verbose: bool = False,
-):
+) -> LocalHjrSolver:
     """
     NOTE: see readme for more details, info here may be inaccurate.
 

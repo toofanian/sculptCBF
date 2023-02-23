@@ -1,8 +1,11 @@
 import warnings
 
+import numpy as np
+
 import hj_reachability
 from jax import numpy as jnp
 
+from odp.dynamics.quad4d import Quad4D
 from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import ActiveCruiseControlOdp
 from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
@@ -12,20 +15,21 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def wip_acc_global_odp(save_result: bool = False):
-    dynamics = ActiveCruiseControlOdp()
+    dynamics = Quad4D()
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            [0, -20, 20],
-            [1e3, 20, 80]
+            [0, -8, -np.pi/2, -3],
+            [10, 8, np.pi/2, 3]
         ),
-        shape=(3, 101, 101)
+        shape=(101, 51, 61, 51)
+        # shape=(31, 31, 31, 31)
     )
 
     avoid_set = (
-            (grid.states[..., 2] > 60)
+            (grid.states[..., 0] < 1)
             |
-            (grid.states[..., 2] < 40)
+            (grid.states[..., 0] > 9)
     )
 
     reach_set = jnp.zeros_like(avoid_set, dtype=bool)
@@ -49,7 +53,7 @@ def wip_acc_global_odp(save_result: bool = False):
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/wip_acc_global_odp', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/wip_qv_global_odp', 'dill'))
 
     return result
 
