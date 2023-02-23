@@ -20,6 +20,11 @@ from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 
 def wip_qv_sac_vanilla_jax():
+    """
+    Compute the viability kernel for the quadcopter using zhizhen's fixed sac policy, done in JAX.
+    Currently, has zero safe set result, which either means something is wrong with the
+    control policy usage, or the policy itself.
+    """
     print('doing jax')
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
@@ -62,6 +67,9 @@ def wip_qv_sac_vanilla_jax():
 
 
 def wip_qv_vanilla_odp():
+    """
+    Solve for the viability kernel of the quad4d system using optimal control, done in ODP.
+    """
     print('doing odp')
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
@@ -111,7 +119,11 @@ def wip_qv_vanilla_odp():
         )
         running_values = next_values
 
+
 def wip_acc_vanilla_odp():
+    """
+    Solve for the viability kernel of the acc system using optimal control, done in ODP.
+    """
     print('doing odp')
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
