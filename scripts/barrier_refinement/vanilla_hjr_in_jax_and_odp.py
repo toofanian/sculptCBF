@@ -66,7 +66,7 @@ def wip_qv_sac_vanilla_jax():
         running_values = next_values
 
 
-def wip_qv_vanilla_odp():
+def wip_qv_vanilla_odp(save_array=False):
     """
     Solve for the viability kernel of the quad4d system using optimal control, done in ODP.
     """
@@ -113,14 +113,15 @@ def wip_qv_vanilla_odp():
             verbose=True,
             untilConvergent=True
         )
-        np.save(
-            construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_odp2', 'npy')),
-            next_values
-        )
+        if save_array:
+            np.save(
+                construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_odp2', 'npy')),
+                next_values
+            )
         running_values = next_values
 
 
-def wip_acc_vanilla_odp():
+def wip_acc_vanilla_odp(save_array=False):
     """
     Solve for the viability kernel of the acc system using optimal control, done in ODP.
     """
@@ -166,14 +167,14 @@ def wip_acc_vanilla_odp():
             system_objectives,
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
             accuracy='medium',
-            # active_set=active_set_expanded,
             verbose=True,
             untilConvergent=True
         )
-        np.save(
-            construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_odp2', 'npy')),
-            next_values
-        )
+        if save_array:
+            np.save(
+                construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_odp2', 'npy')),
+                next_values
+            )
         running_values = next_values
 
 
@@ -245,6 +246,6 @@ def render_result(relative_path: FilePathRelative):
 
 if __name__ == '__main__':
     # wip_qv_sac_vanilla_jax()
-    # wip_qv_vanilla_odp()
-    wip_acc_vanilla_odp()
+    wip_qv_vanilla_odp()
+    # wip_acc_vanilla_odp()
     # render_result(relative_path='data/try_fixed_policy_run_bigtime_1_20230221_230229.npy')
