@@ -90,7 +90,9 @@ def wip_qv_vanilla_odp(save_array=False):
     terminal_values = compute_signed_distance(~avoid_set)
     initial_values = terminal_values.copy()
     running_values = initial_values.copy()
+
     solver = HJSolverClass()
+
     grid_odp = odp.Grid.Grid(
         np.array(grid.domain.lo),
         np.array(grid.domain.hi),
@@ -246,6 +248,6 @@ def render_result(relative_path: FilePathRelative):
 
 if __name__ == '__main__':
     # wip_qv_sac_vanilla_jax()
-    wip_qv_vanilla_odp()
-    # wip_acc_vanilla_odp()
+    # wip_qv_vanilla_odp()
+    wip_acc_vanilla_odp()
     # render_result(relative_path='data/try_fixed_policy_run_bigtime_1_20230221_230229.npy')
