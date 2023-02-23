@@ -4,6 +4,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from odp.Plots import PlotOptions
 import odp.Grid
+from odp.dynamics import ActiveCruiseControl
+from odp.dynamics.quad4d import Quad4D
+from odp.solver import HJSolverClass
 
 from refineNCBF.dynamic_systems.implementations.quadcopter_fixed_policy import load_quadcopter_sac_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
@@ -58,6 +61,108 @@ def wip_qv_sac_vanilla_jax():
         running_values = next_values
 
 
+def wip_qv_vanilla_odp():
+    print('doing odp')
+    grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
+        domain=hj_reachability.sets.Box(
+            [0, -8, -jax.numpy.pi/2, -3],
+            [10, 8, jax.numpy.pi/2, 3]
+        ),
+        shape=(101, 51, 61, 51)
+    )
+
+    dynamics = Quad4D()
+
+    avoid_set = (
+            (grid.states[..., 0] < 1)
+            |
+            (grid.states[..., 0] > 9)
+    )
+
+    terminal_values = compute_signed_distance(~avoid_set)
+    initial_values = terminal_values.copy()
+    running_values = initial_values.copy()
+    solver = HJSolverClass()
+    grid_odp = odp.Grid.Grid(
+        np.array(grid.domain.lo),
+        np.array(grid.domain.hi),
+        len(grid.domain.hi),
+        np.array(list(grid.shape)),
+        [2]
+    )
+    system_objectives = {"TargetSetMode": "minVWithV0"}
+
+    for i in range(20):
+        next_values = solver(
+            dynamics,
+            grid_odp,
+            running_values,
+            [0, .25],
+            system_objectives,
+            PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
+            accuracy='medium',
+            # active_set=active_set_expanded,
+            verbose=True,
+            untilConvergent=True
+        )
+        np.save(
+            construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_odp2', 'npy')),
+            next_values
+        )
+        running_values = next_values
+
+def wip_acc_vanilla_odp():
+    print('doing odp')
+    grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
+        domain=hj_reachability.sets.Box(
+            [0, -20, 20],
+            [1e3, 20, 80]
+        ),
+        shape=(3, 101, 101)
+    )
+
+    dynamics = ActiveCruiseControl([0,0,0], 0, 1600)
+
+
+
+    avoid_set = (
+            (grid.states[..., 2] > 60)
+            |
+            (grid.states[..., 2] < 40)
+    )
+
+
+    terminal_values = compute_signed_distance(~avoid_set)
+    initial_values = terminal_values.copy()
+    running_values = initial_values.copy()
+    solver = HJSolverClass()
+    grid_odp = odp.Grid.Grid(
+        np.array(grid.domain.lo),
+        np.array(grid.domain.hi),
+        len(grid.domain.hi),
+        np.array(list(grid.shape)),
+        [2]
+    )
+    system_objectives = {"TargetSetMode": "minVWithV0"}
+
+    for i in range(20):
+        next_values = solver(
+            dynamics,
+            grid_odp,
+            running_values,
+            [0, .25],
+            system_objectives,
+            PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
+            accuracy='medium',
+            # active_set=active_set_expanded,
+            verbose=True,
+            untilConvergent=True
+        )
+        np.save(
+            construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_odp2', 'npy')),
+            next_values
+        )
+        running_values = next_values
 
 
 def render_result(relative_path: FilePathRelative):
@@ -128,4 +233,5 @@ def render_result(relative_path: FilePathRelative):
 
 if __name__ == '__main__':
     # wip_qv_sac_vanilla_jax()
-    render_result(relative_path='data/try_fixed_policy_run_bigtime_1_20230221_230229.npy')
+    wip_acc_vanilla_odp()
+    # render_result(relative_path='data/try_fixed_policy_run_bigtime_1_20230221_230229.npy')
