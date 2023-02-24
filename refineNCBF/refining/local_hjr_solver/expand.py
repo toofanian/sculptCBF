@@ -75,10 +75,24 @@ class SignedDistanceNeighborsNearBoundary(NeighborExpander):
         if len(data) == 0:
             active_set_expanded = source_set
         else:
-            signed_distance = compute_signed_distance(source_set)
-            expanded = source_set >= -self._neighbor_distance
-            boundary = (signed_distance <= self._boundary_distance_inner) & (signed_distance >= -self._boundary_distance_outer)
+            signed_distance_active = compute_signed_distance(source_set)
+            signed_distance_kernel = compute_signed_distance(data.get_viability_kernel())
+            expanded = signed_distance_active >= -self._neighbor_distance
+            boundary = (signed_distance_kernel <= self._boundary_distance_inner) & (signed_distance_kernel >= -self._boundary_distance_outer)
             active_set_expanded = expanded & boundary
+            # expanded = expand_mask_by_signed_distance(
+            #     source_set,
+            #     self._neighbor_distance
+            # )
+            # boundary_inner = get_mask_boundary_by_signed_distance(
+            #     data.get_viability_kernel(),
+            #     self._boundary_distance_inner
+            # )
+            # boundary_outer = get_mask_boundary_by_signed_distance(
+            #     ~data.get_viability_kernel(),
+            #     self._boundary_distance_outer
+            # )
+            # active_set_expanded = expanded & (boundary_inner | boundary_outer)
         return active_set_expanded
 
 
