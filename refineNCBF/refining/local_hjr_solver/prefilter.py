@@ -89,3 +89,31 @@ class PreFilterWhereFarFromBoundarySplit(ActiveSetPreFilter):
                 )
         )
         return active_set_filtered
+
+
+@attr.s(auto_attribs=True)
+class PreFilterWhereFarFromBoundarySplitOnce(ActiveSetPreFilter):
+    _distance_inner: float
+    _distance_outer: float
+
+    @classmethod
+    def from_parts(cls, distance_inner: float, distance_outer: float):
+        return cls(distance_inner=distance_inner, distance_outer=distance_outer)
+
+    def __call__(self, data: LocalUpdateResult) -> MaskNd:
+        if len(data) == 0:
+            where_far_exterior = shrink_mask_by_signed_distance(data.get_recent_values() >= 0, distance=self._distance_inner)
+            where_far_interior = shrink_mask_by_signed_distance(data.get_recent_values() < 0, distance=self._distance_outer)
+
+            active_set_filtered = (
+                    data.get_pending_seed_set()
+                    & ~
+                    (
+                            where_far_exterior
+                            |
+                            where_far_interior
+                    )
+            )
+            return active_set_filtered
+        else:
+            return data.get_pending_seed_set()
