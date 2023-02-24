@@ -4,7 +4,8 @@ from typing import Callable
 import attr
 
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
-from refineNCBF.utils.sets import expand_mask_by_signed_distance, get_mask_boundary_by_signed_distance
+from refineNCBF.utils.sets import expand_mask_by_signed_distance, get_mask_boundary_by_signed_distance, \
+    compute_signed_distance
 from refineNCBF.utils.types import MaskNd
 
 
@@ -74,19 +75,10 @@ class SignedDistanceNeighborsNearBoundary(NeighborExpander):
         if len(data) == 0:
             active_set_expanded = source_set
         else:
-            expanded = expand_mask_by_signed_distance(
-                source_set,
-                self._neighbor_distance
-            )
-            boundary_inner = get_mask_boundary_by_signed_distance(
-                data.get_viability_kernel(),
-                self._boundary_distance_inner
-            )
-            boundary_outer = get_mask_boundary_by_signed_distance(
-                ~data.get_viability_kernel(),
-                self._boundary_distance_outer
-            )
-            active_set_expanded = expanded & (boundary_inner | boundary_outer)
+            signed_distance = compute_signed_distance(source_set)
+            expanded = source_set >= -self._neighbor_distance
+            boundary = (signed_distance <= self._boundary_distance_inner) & (signed_distance >= -self._boundary_distance_outer)
+            active_set_expanded = expanded & boundary
         return active_set_expanded
 
 
