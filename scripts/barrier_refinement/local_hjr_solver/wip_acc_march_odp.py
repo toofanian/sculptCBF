@@ -21,7 +21,7 @@ def wip_acc_marching_odp(save_result: bool = False):
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 501, 501)
+        shape=(3, 101, 101)
     )
 
     avoid_set = (
@@ -43,7 +43,8 @@ def wip_acc_marching_odp(save_result: bool = False):
         max_iterations=100,
         hamiltonian_atol=5e-2,
         solver_timestep=-.1,
-        verbose=True
+        verbose=True,
+        periodic_dims=[]
     )
 
     initial_values = terminal_values.copy()

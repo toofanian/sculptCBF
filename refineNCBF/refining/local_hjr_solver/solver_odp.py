@@ -4,7 +4,8 @@ import numpy as np
 from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
 from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighbors, SignedDistanceNeighborsNearBoundary
 from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian, NoPostFilter
-from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter, PreFilterWhereFarFromBoundarySplit
+from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter, PreFilterWhereFarFromBoundarySplit, \
+    PreFilterWhereFarFromBoundarySplitOnce
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.refining.local_hjr_solver.step_odp import DecreaseLocalHjrStepperOdp, ClassicLocalHjrStepperOdp
 from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
@@ -71,6 +72,7 @@ def create_global_solver_odp(
 def create_local_solver_odp(
         dynamics: OdpDynamics,
         grid: hj_reachability.Grid,
+        periodic_dims,
         avoid_set: MaskNd,
         reach_set: MaskNd,
         terminal_values: ArrayNd,
@@ -99,6 +101,7 @@ def create_local_solver_odp(
     local_hjr_stepper = ClassicLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
+        periodic_dims=periodic_dims,
         time_step=solver_timestep,
     )
     active_set_post_filter = RemoveWhereUnchanged.from_parts(
@@ -185,6 +188,7 @@ def create_local_decrease_solver_odp(
 def create_marching_solver_odp(
         dynamics: OdpDynamics,
         grid: hj_reachability.Grid,
+        periodic_dims,
         avoid_set: MaskNd,
         reach_set: MaskNd,
         terminal_values: ArrayNd,
@@ -207,7 +211,7 @@ def create_marching_solver_odp(
 
     # TODO: Prefilter is only relevant for the first iteration to protect against bad seed sets.
     #       Redundant with neighbor expander after first iteration.
-    active_set_pre_filter = PreFilterWhereFarFromBoundarySplit.from_parts(
+    active_set_pre_filter = PreFilterWhereFarFromBoundarySplitOnce.from_parts(
         distance_inner=boundary_distance_inner,
         distance_outer=boundary_distance_outer,
     )
@@ -219,6 +223,7 @@ def create_marching_solver_odp(
     local_hjr_stepper = DecreaseLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
+        periodic_dims=periodic_dims,
         time_step=solver_timestep,
     )
 

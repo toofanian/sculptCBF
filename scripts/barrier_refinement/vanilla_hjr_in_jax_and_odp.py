@@ -252,6 +252,6 @@ def render_result(relative_path: FilePathRelative):
 
 if __name__ == '__main__':
     # wip_qv_sac_vanilla_jax()
-    wip_qv_vanilla_odp()
+    wip_qv_vanilla_odp(save_array=True)
     # wip_acc_vanilla_odp()
     # render_result(relative_path='data/try_fixed_policy_run_bigtime_1_20230221_230229.npy')

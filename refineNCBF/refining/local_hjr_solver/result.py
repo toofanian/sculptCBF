@@ -100,6 +100,16 @@ class LocalUpdateResult:
             cls = dill.load(f)
         return cls
 
+    def max_diff(self):
+        max_diff = jnp.max(jnp.abs(self.get_recent_values() - self.get_previous_values()))
+        return max_diff
+
+    def get_previous_values(self):
+        if len(self) > 1:
+            return self.iterations[-2].computed_values
+        else:
+            return self.initial_values
+
     def get_pending_seed_set(self) -> MaskNd:
         if len(self.iterations) == 0:
             return self.seed_set

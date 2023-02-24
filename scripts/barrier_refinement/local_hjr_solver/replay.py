@@ -10,12 +10,18 @@ from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 
 def load_result_and_check_visualizations():
-    result = LocalUpdateResult.load("data/local_update_results/wip_acc_global_odp_20230222_043457.dill")
+    result = LocalUpdateResult.load("data/local_update_results/wip_qv_global_odp_highres_20230223_225605.dill")
+
+    # ref_index = ArraySlice2D.from_reference_index(
+    #     reference_index=(1, 0, 0),
+    #     free_dim_1=DimName(1, 'rel_vel'),
+    #     free_dim_2=DimName(2, 'rel_dis')
+    # )
 
     ref_index = ArraySlice2D.from_reference_index(
-        reference_index=(1, 0, 0),
-        free_dim_1=DimName(1, 'rel_vel'),
-        free_dim_2=DimName(2, 'rel_dis')
+        reference_index=(50, 25, 50, 25),
+        free_dim_1=DimName(0, 'y'),
+        free_dim_2=DimName(2, 'theta')
     )
 
     result.create_gif(
@@ -27,7 +33,7 @@ def load_result_and_check_visualizations():
     )
 
     result.plot_value_function(
-        iteration=16,
+        iteration=-1,
         reference_slice=ref_index,
         verbose=True,
     )

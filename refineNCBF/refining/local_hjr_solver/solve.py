@@ -59,8 +59,9 @@ class LocalHjrSolver(Callable):
             iteration = self._perform_local_update_iteration(local_update_result)
             local_update_result.add_iteration(iteration)
             if self._verbose:
+                max_diff = local_update_result.max_diff()
                 self._logger.info(
-                    f'iteration {len(local_update_result)} complete, \trunning duration is {(time.time() - start_time):.2f} seconds, \t\tcomputed over {local_update_result.get_recent_set_for_compute().sum()} of {self._avoid_set.size} cells')
+                    f'iteration {len(local_update_result)} complete, \trunning duration is {(time.time() - start_time):.2f} seconds, \t\tcomputed over {local_update_result.get_recent_set_for_compute().sum()} of {self._avoid_set.size} cells, \t\tmax diff: {max_diff}')
             if self._check_for_break(local_update_result):
                 break
         return local_update_result

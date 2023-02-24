@@ -6,14 +6,14 @@ import hj_reachability
 from jax import numpy as jnp
 
 from odp.dynamics.quad4d import Quad4D
-from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp, create_marching_solver_odp
+from refineNCBF.refining.local_hjr_solver.solver_odp import create_local_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def wip_acc_march_odp(save_result: bool = False):
+def wip_qv_global_odp(save_result: bool = False):
     dynamics = Quad4D()
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
@@ -21,7 +21,6 @@ def wip_acc_march_odp(save_result: bool = False):
             [0, -8, -np.pi, -10],
             [10, 8, np.pi, 10]
         ),
-        # shape=(101, 51, 61, 51)
         shape=(51, 25, 51, 25)
     )
 
@@ -35,29 +34,30 @@ def wip_acc_march_odp(save_result: bool = False):
 
     terminal_values = compute_signed_distance(~avoid_set)
 
-    solver = create_marching_solver_odp(
+    solver = create_local_solver_odp(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=[2],
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=50,
-        solver_timestep=-.1,
-        hamiltonian_atol=1,
+        max_iterations=100,
+        change_atol=1e-1,
+        change_rtol=1e-1,
+        solver_timestep=-.2,
         verbose=True
     )
 
     initial_values = terminal_values.copy()
-    active_set = jnp.ones_like(initial_values, dtype=bool)
+    active_set = terminal_values >= 0
 
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/wip_qv_march_odp', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/wip_qv_local_odp', 'dill'))
 
     return result
 
 
 if __name__ == '__main__':
-    wip_acc_march_odp(save_result=True)
+    wip_qv_global_odp(save_result=True)
