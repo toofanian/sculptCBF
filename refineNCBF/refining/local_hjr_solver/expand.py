@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Callable
 
 import attr
+import jax
 
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.utils.sets import expand_mask_by_signed_distance, get_mask_boundary_by_signed_distance, \
@@ -38,6 +39,9 @@ class SignedDistanceNeighbors(NeighborExpander):
             data: LocalUpdateResult,
             source_set: MaskNd
     ) -> MaskNd:
+        if self._distance == jax.numpy.inf:
+            return jax.numpy.ones_like(source_set, dtype=bool)
+
         if len(data) == 0:
             active_set_expanded = source_set
         else:
