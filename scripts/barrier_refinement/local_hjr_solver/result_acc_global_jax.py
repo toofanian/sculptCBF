@@ -44,7 +44,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(verbose: bool = False
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=500,
+        max_iterations=100,
         verbose=True
     )
 

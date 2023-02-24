@@ -11,7 +11,7 @@ from refineNCBF.dynamic_systems.implementations.quadcopter import QuadcopterVert
 from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamicsFixedPolicy, ActorModes
 from refineNCBF.utils.files import FilePathRelative
 from refineNCBF.utils.types import VectorBatch
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_tabularized_sac
+from refineNCBF.pre_constrcuted_stuff.quadcopter_cbf import load_tabularized_sac
 
 
 @attr.s(auto_attribs=True, eq=False)

@@ -1,11 +1,11 @@
 import os
 import warnings
 
-import hj_reachability
 import jax.numpy as jnp
 import matplotlib
 from matplotlib import pyplot as plt
 
+import hj_reachability
 from refineNCBF.dynamic_systems.implementations.go_left import go_left_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver

@@ -7,7 +7,7 @@ import hj_reachability
 from odp.dynamics.quad4d import Quad4D
 from refineNCBF.pre_constructed_stuff.quadcopter_cbf import load_cbf_feb24, load_certified_states, \
     load_uncertified_states
-from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp
+from refineNCBF.refining.local_hjr_solver.solver_odp import create_marching_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.tables import flag_states_on_grid, tabularize_dnn
@@ -36,7 +36,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
 
     terminal_values = compute_signed_distance(~avoid_set)
 
-    solver = create_global_solver_odp(
+    solver = create_marching_solver_odp(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=[2],
@@ -45,6 +45,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
         terminal_values=terminal_values,
         max_iterations=50,
         solver_timestep=-.1,
+        hamiltonian_atol=.5,
         verbose=True
     )
 
@@ -73,7 +74,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/wip_qv_cbf_global_odp', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/wip_qv_cbf_march_odp', 'dill'))
 
     return result
 

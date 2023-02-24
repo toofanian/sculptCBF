@@ -1,11 +1,10 @@
 import warnings
 
-import hj_reachability
-from jax import numpy as jnp
 import matplotlib
+from jax import numpy as jnp
 
+import hj_reachability
 from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
-
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance

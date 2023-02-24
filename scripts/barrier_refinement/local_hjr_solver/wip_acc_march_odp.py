@@ -1,14 +1,13 @@
 import warnings
 
-import hj_reachability
 from jax import numpy as jnp
 from matplotlib import pyplot as plt
 
+import hj_reachability
 from refineNCBF.dynamic_systems.implementations.active_cruise_control_odp import ActiveCruiseControlOdp
 from refineNCBF.refining.local_hjr_solver.solver_odp import create_marching_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
-from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 

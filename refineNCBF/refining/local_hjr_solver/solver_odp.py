@@ -2,7 +2,8 @@ import hj_reachability
 import numpy as np
 
 from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
-from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighbors, SignedDistanceNeighborsNearBoundary
+from refineNCBF.refining.local_hjr_solver.expand import SignedDistanceNeighbors, SignedDistanceNeighborsNearBoundary, \
+    SignedDistanceNeighborsNearBoundaryDilation
 from refineNCBF.refining.local_hjr_solver.postfilter import RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian, NoPostFilter
 from refineNCBF.refining.local_hjr_solver.prefilter import NoPreFilter, PreFilterWhereFarFromBoundarySplit, \
     PreFilterWhereFarFromBoundarySplitOnce
@@ -195,7 +196,7 @@ def create_marching_solver_odp(
 
         boundary_distance_inner: float = 2,
         boundary_distance_outer: float = 2,
-        neighbor_distance: float = 2,
+        neighbor_distance: int = 2,
         solver_timestep: float = -0.1,
         hamiltonian_atol: float = 1e-3,
         max_iterations: int = 100,
@@ -215,7 +216,7 @@ def create_marching_solver_odp(
         distance_inner=boundary_distance_inner,
         distance_outer=boundary_distance_outer,
     )
-    neighbor_expander = SignedDistanceNeighborsNearBoundary.from_parts(
+    neighbor_expander = SignedDistanceNeighborsNearBoundaryDilation.from_parts(
         neighbor_distance=neighbor_distance,
         boundary_distance_inner=boundary_distance_inner,
         boundary_distance_outer=boundary_distance_outer,

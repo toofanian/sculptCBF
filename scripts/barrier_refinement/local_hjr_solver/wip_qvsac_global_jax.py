@@ -1,21 +1,13 @@
-import os
 import warnings
 
-import hj_reachability
 import matplotlib
 from jax import numpy as jnp
-from matplotlib import pyplot as plt
 
+import hj_reachability
 from refineNCBF.dynamic_systems.implementations.quadcopter_fixed_policy import load_quadcopter_sac_jax_hj
-from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
-from refineNCBF.utils.files import generate_unique_filename, visuals_data_directory
-from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
-from refineNCBF.utils.tables import tabularize_dnn, flag_states_on_grid
-from refineNCBF.utils.visuals import ArraySlice2D, DimName
-from scripts.barrier_refinement.pre_constrcuted_stuff.quadcopter_cbf import load_quadcopter_cbf, load_standardizer, \
-    load_uncertified_states, \
-    load_certified_states, load_cbf_feb24
+from refineNCBF.utils.files import generate_unique_filename
+from refineNCBF.utils.sets import compute_signed_distance
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use('TkAgg')

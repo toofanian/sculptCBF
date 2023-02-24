@@ -1,11 +1,9 @@
 import jax.numpy as jnp
 import numpy as np
+from scipy.ndimage import binary_dilation
 import skfmm
 
 from refineNCBF.utils.types import MaskNd, ArrayNd
-
-
-# TODO default distance should be .5, since it is from boundary of cell to center of cell
 
 
 def compute_signed_distance(bool_array: MaskNd) -> ArrayNd:
@@ -47,3 +45,15 @@ def get_mask_boundary_on_both_sides_by_signed_distance(mask: MaskNd, distance: f
     signed_distance = compute_signed_distance(mask)
     mask_boundary = (signed_distance <= distance) & (signed_distance >= -distance)
     return mask_boundary
+
+
+def expand_mask_by_dilation(mask: MaskNd, iterations: int = 1) -> MaskNd:
+    expanded_mask = binary_dilation(mask, iterations=iterations)
+    return expanded_mask
+
+
+def get_mask_boundary_by_dilation(mask: MaskNd, iterations_inner: int = 1, iterations_outer: int = 1) -> MaskNd:
+    inner = expand_mask_by_dilation(~mask, iterations=iterations_inner)
+    outer = expand_mask_by_dilation(mask, iterations=iterations_outer)
+    intersection = inner & outer
+    return intersection

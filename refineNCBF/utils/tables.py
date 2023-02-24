@@ -24,7 +24,7 @@ def tabularize_dnn(
         standardizer: Optional[Standardizer] = None,
 ) -> ArrayNd:
     flat_states = np.array(grid.states.reshape((-1, grid.states.shape[-1])))
-    if isinstance(standardizer, Standardizer):
+    if standardizer is not None:
         flat_states = standardizer.standardize(flat_states)
     tensor_states = torch.FloatTensor(flat_states)
     dnn_output = dnn(tensor_states)

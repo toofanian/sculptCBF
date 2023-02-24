@@ -1,8 +1,8 @@
 from typing import Callable
 
 import attr
-import hj_reachability
 
+import hj_reachability
 from refineNCBF.utils.tables import tabularize_dnn, snap_state_to_grid_index
 from refineNCBF.utils.types import ArrayNd, Vector
 

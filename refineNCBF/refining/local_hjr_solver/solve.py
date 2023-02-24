@@ -7,8 +7,9 @@ import hj_reachability
 import numpy as np
 
 from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
-from refineNCBF.refining.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, InnerSignedDistanceNeighbors, \
-    SignedDistanceNeighborsNearBoundary
+from refineNCBF.refining.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, \
+    InnerSignedDistanceNeighbors, \
+    SignedDistanceNeighborsNearBoundary, SignedDistanceNeighborsNearBoundaryDilation
 from refineNCBF.refining.local_hjr_solver.postfilter import ActiveSetPostFilter, RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
 from refineNCBF.refining.local_hjr_solver.prefilter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset, \
     PreFilterWhereOutsideZeroLevelset, PreFilterWhereFarFromBoundarySplit
@@ -294,7 +295,7 @@ class LocalHjrSolver(Callable):
             distance_inner=boundary_distance_inner,
             distance_outer=boundary_distance_outer,
         )
-        neighbor_expander = SignedDistanceNeighborsNearBoundary.from_parts(
+        neighbor_expander = SignedDistanceNeighborsNearBoundaryDilation.from_parts(
             neighbor_distance=neighbor_distance,
             boundary_distance_inner=boundary_distance_inner,
             boundary_distance_outer=boundary_distance_outer,

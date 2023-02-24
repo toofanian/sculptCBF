@@ -1,5 +1,4 @@
 import json
-from typing import Dict
 
 import hj_reachability
 import numpy as np

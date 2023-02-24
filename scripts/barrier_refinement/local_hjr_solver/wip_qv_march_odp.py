@@ -1,12 +1,11 @@
 import warnings
 
 import numpy as np
-
-import hj_reachability
 from jax import numpy as jnp
 
+import hj_reachability
 from odp.dynamics.quad4d import Quad4D
-from refineNCBF.refining.local_hjr_solver.solver_odp import create_global_solver_odp, create_marching_solver_odp
+from refineNCBF.refining.local_hjr_solver.solver_odp import create_marching_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 
@@ -42,9 +41,9 @@ def wip_acc_march_odp(save_result: bool = False):
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=50,
+        max_iterations=20,
         solver_timestep=-.1,
-        hamiltonian_atol=1,
+        hamiltonian_atol=.1,
         verbose=True
     )
 

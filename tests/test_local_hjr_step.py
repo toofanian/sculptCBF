@@ -7,7 +7,7 @@ from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlA
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.utils.sets import compute_signed_distance
-from scripts.barrier_refinement.pre_constrcuted_stuff.archive_active_cruise_control_stuff import get_saved_signed_distance_function, SignedDistanceFunctions
+from refineNCBF.pre_constrcuted_stuff.archive_active_cruise_control_stuff import get_saved_signed_distance_function, SignedDistanceFunctions
 
 
 def test_no_change_where_inactive():
