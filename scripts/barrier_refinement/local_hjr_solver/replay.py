@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
-from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename, construct_full_path
+from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename, construct_refine_ncbf_path
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 

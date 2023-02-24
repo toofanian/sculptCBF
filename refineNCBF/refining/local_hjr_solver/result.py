@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt, animation
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
-from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_full_path, generate_unique_filename
+from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_refine_ncbf_path, generate_unique_filename
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D
 
@@ -88,14 +88,14 @@ class LocalUpdateResult:
         self.iterations.append(iteration)
 
     def save(self, file_path: FilePathRelative):
-        full_path = construct_full_path(file_path)
+        full_path = construct_refine_ncbf_path(file_path)
         check_if_file_exists(full_path)
         with open(full_path, "wb") as f:
             dill.dump(self, f)
 
     @staticmethod
     def load(file_path: FilePathRelative) -> "LocalUpdateResult":
-        full_path = construct_full_path(file_path)
+        full_path = construct_refine_ncbf_path(file_path)
         with open(full_path, "rb") as f:
             cls = dill.load(f)
         return cls
@@ -265,7 +265,7 @@ class LocalUpdateResult:
 
         if save_path is not None:
             if not check_if_file_exists(save_path):
-                anim.save(construct_full_path(save_path), writer='imagemagick', fps=4)
+                anim.save(construct_refine_ncbf_path(save_path), writer='imagemagick', fps=4)
             else:
                 print(f"file {save_path} already exists, not saving animation")
 
@@ -388,7 +388,7 @@ class LocalUpdateResult:
         )
 
         if save_path is not None:
-            np.save(construct_full_path(generate_unique_filename(save_path, 'npy')), np.array(truth))
+            np.save(construct_refine_ncbf_path(generate_unique_filename(save_path, 'npy')), np.array(truth))
 
         x1, x2 = np.meshgrid(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
@@ -481,7 +481,7 @@ class LocalUpdateResult:
         )
 
         if save_path is not None:
-            np.save(construct_full_path(generate_unique_filename(save_path, 'npy')), np.array(truth))
+            np.save(construct_refine_ncbf_path(generate_unique_filename(save_path, 'npy')), np.array(truth))
 
         x1, x2 = np.meshgrid(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],

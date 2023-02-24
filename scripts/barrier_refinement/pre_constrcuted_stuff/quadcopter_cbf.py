@@ -1,31 +1,48 @@
+import json
+from typing import Dict
+
 import hj_reachability
 import numpy as np
 import stable_baselines3
 import torch
 from gym import spaces
 
+from neural_barrier_kinematic_model.cbf_tanh_2_layer import CBFTanh2Layer
 from refineNCBF.training.dnn_models.cbf import Cbf, NnCertifiedDict
 from refineNCBF.training.dnn_models.stable_baselines_interface import StableBaselinesCallable
 from refineNCBF.training.dnn_models.standardizer import Standardizer
 from refineNCBF.training.dnn_models.tabularized_dnn import TabularizedDnn
-from refineNCBF.utils.files import construct_full_path, FilePathRelative
+from refineNCBF.utils.files import construct_refine_ncbf_path, FilePathRelative, construct_nbkm_path
 from refineNCBF.utils.types import VectorBatch
 
 
-def load_quadcopter_cbf() -> Cbf:
+def load_quadcopter_cbf() -> (Cbf, Standardizer):
     device = 'cpu'
-    print("loading CBF model...")
     cbf_func = Cbf(4, 256)
-    cbf_ckpt = torch.load(construct_full_path('data/trained_NCBFs/sac_policy/quad4d_sac_cbf.pth'), map_location=device)
+    cbf_ckpt = torch.load(construct_refine_ncbf_path('data/trained_NCBFs/sac_policy/quad4d_sac_cbf.pth'), map_location=device)
     cbf_func.load_state_dict(cbf_ckpt['model_state_dict'])
     cbf_func.to(device)
-    return cbf_func
 
-
-def load_standardizer() -> Standardizer:
-    standardizer = Standardizer(fp=construct_full_path('data/trained_NCBFs/sac_policy/quad4d_sac_standardizer.npy'))
+    standardizer = Standardizer(fp=construct_refine_ncbf_path('data/trained_NCBFs/sac_policy/quad4d_sac_standardizer.npy'))
     standardizer.initialize_from_file()
-    return standardizer
+
+    return cbf_func, standardizer
+
+
+def load_cbf_feb24() -> (Cbf, Standardizer, NnCertifiedDict):
+    device = 'cpu'
+    cbf = CBFTanh2Layer(4, 512)
+    cbf_ckpt = torch.load(construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cbf_tanh_2_layer.pth'), map_location=device)
+    cbf.load_state_dict(cbf_ckpt['model_state_dict'])
+    cbf.to(device)
+
+    standardizer = Standardizer(fp=construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/standardizer.npy'))
+    standardizer.initialize_from_file()
+
+    with open(construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cert_results.json')) as f:
+        certified_dict: NnCertifiedDict = json.load(f)
+
+    return cbf, standardizer, certified_dict
 
 
 def load_uncertified_states(certified_dict: NnCertifiedDict, standardizer: Standardizer) -> VectorBatch:
@@ -66,7 +83,7 @@ def load_policy_sac(relative_path: FilePathRelative) -> StableBaselinesCallable:
     }
 
     return StableBaselinesCallable(
-        stable_baselines3.SAC.load(construct_full_path(relative_path), custom_objects=custom_objects)
+        stable_baselines3.SAC.load(construct_refine_ncbf_path(relative_path), custom_objects=custom_objects)
     )
 
 

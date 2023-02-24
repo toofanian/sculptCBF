@@ -14,7 +14,7 @@ from odp.solver import HJSolverClass
 from refineNCBF.dynamic_systems.implementations.quadcopter_fixed_policy import load_quadcopter_sac_jax_hj
 from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.utils.files import construct_full_path, generate_unique_filename, FilePathRelative
+from refineNCBF.utils.files import construct_refine_ncbf_path, generate_unique_filename, FilePathRelative
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
@@ -63,7 +63,7 @@ def wip_qv_sac_vanilla_jax():
             time_target=-.25
         )
         np.save(
-            construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_run_midtime_1', 'npy')),
+            construct_refine_ncbf_path(generate_unique_filename('data/try_fixed_policy' + '_run_midtime_1', 'npy')),
             next_values
         )
         running_values = next_values
@@ -118,7 +118,7 @@ def wip_qv_vanilla_odp(save_array=False):
         )
         if save_array:
             np.save(
-                construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_odp2', 'npy')),
+                construct_refine_ncbf_path(generate_unique_filename('data/try_fixed_policy' + '_odp2', 'npy')),
                 next_values
             )
         running_values = next_values
@@ -178,7 +178,7 @@ def wip_acc_vanilla_odp(save_array=False):
         )
         if save_array:
             np.save(
-                construct_full_path(generate_unique_filename('data/try_fixed_policy'+'_odp2', 'npy')),
+                construct_refine_ncbf_path(generate_unique_filename('data/try_fixed_policy' + '_odp2', 'npy')),
                 next_values
             )
         running_values = next_values
@@ -186,7 +186,7 @@ def wip_acc_vanilla_odp(save_array=False):
 
 def render_result(relative_path: FilePathRelative):
     print('rendering')
-    running_values = np.load(construct_full_path(relative_path))
+    running_values = np.load(construct_refine_ncbf_path(relative_path))
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(

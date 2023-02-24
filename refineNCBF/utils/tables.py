@@ -6,8 +6,8 @@ import torch
 from jax import numpy as jnp
 from tqdm import tqdm
 
-from refineNCBF.training.dnn_models.standardizer import Standardizer
-from refineNCBF.utils.files import construct_full_path, generate_unique_filename
+from neural_barrier_kinematic_model.standardizer import Standardizer
+from refineNCBF.utils.files import construct_refine_ncbf_path, generate_unique_filename
 from refineNCBF.utils.types import VectorBatch, ScalarBatch, ArrayNd, MaskNd, Vector
 
 
@@ -61,7 +61,7 @@ def flag_states_on_grid(
         bool_grid[index_slice] = True
 
     if save_array:
-        np.save(construct_full_path(generate_unique_filename('data/trained_NCBFs/quad4d_boundary/uncertified_grid', 'npy')), bool_grid)
+        np.save(construct_refine_ncbf_path(generate_unique_filename('data/trained_NCBFs/quad4d_boundary/uncertified_grid', 'npy')), bool_grid)
 
     return bool_grid
 
