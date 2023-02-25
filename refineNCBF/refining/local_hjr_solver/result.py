@@ -272,7 +272,7 @@ class LocalUpdateResult:
         if verbose:
             plt.show(block=False)
 
-    def render_iteration(self, i: int, reference_slice: ArraySlice2D, verbose: bool = True, save_path: str = None):
+    def render_iteration(self, iteration: int, reference_slice: ArraySlice2D, verbose: bool = True, save_path: str = None):
         fig, ax = plt.subplots(figsize=(9, 7))
 
         proxies_for_labels = [
@@ -295,7 +295,7 @@ class LocalUpdateResult:
             'running viability kernel',
         ]
 
-        ax.set(title=f"iteration: {i} of {len(self)}")
+        ax.set(title=f"iteration: {iteration} of {len(self)}")
 
         ax.set_xlabel(reference_slice.free_dim_1.name)
         ax.set_ylabel(reference_slice.free_dim_2.name)
@@ -334,18 +334,18 @@ class LocalUpdateResult:
         ax.contourf(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
             self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
-            ~reference_slice.get_sliced_array(self.iterations[i].active_set_expanded).T,
+            ~reference_slice.get_sliced_array(self.iterations[iteration].active_set_expanded).T,
             levels=[0, .5], colors=['b'], alpha=.2
         )
 
         ax.contourf(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
             self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
-            ~reference_slice.get_sliced_array(self.iterations[i].active_set_post_filtered).T,
+            ~reference_slice.get_sliced_array(self.iterations[iteration].active_set_post_filtered).T,
             levels=[0, 0.5], colors=['b'], alpha=.2
         )
 
-        values = self.initial_values if i == 0 else self.iterations[i - 1].computed_values
+        values = self.initial_values if iteration == 0 else self.iterations[iteration - 1].computed_values
         ax.contour(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
             self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],

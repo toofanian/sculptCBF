@@ -95,7 +95,7 @@ class DecreaseLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
             accuracy='medium',
             active_set=active_set_expanded,
-            verbose=True
+            verbose=False
         )
         next_result = jax.numpy.array(next_result)
         where_decrease = (next_result < values) & active_set_expanded
