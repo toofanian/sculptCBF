@@ -12,6 +12,7 @@ FilePathAbsolute = FilePath
 def construct_refine_ncbf_path(relative_path: FilePathRelative) -> FilePathAbsolute:
     return os.path.join(refineNCBF_dir, relative_path)
 
+
 def construct_nbkm_path(relative_path: FilePathRelative) -> FilePathAbsolute:
     return os.path.join(nbkm_dir, relative_path)
 

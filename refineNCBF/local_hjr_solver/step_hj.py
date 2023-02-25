@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Callable
 
 import attr
+
 import hj_reachability
 from hj_reachability.solver import backwards_reachable_tube
-
 from refineNCBF.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.utils.sets import compute_signed_distance
@@ -159,8 +159,10 @@ class DecreaseReplaceLocalHjrStepper(LocalHjrStepper):
         values_decreased = (values_next < data.get_recent_values())  # & active_set_expanded
         values = data.get_recent_values().at[values_decreased].set(values_next[values_decreased])
         signed_distance_to_kernel = compute_signed_distance(values >= 0)
-        values = values.at[signed_distance_to_kernel >= 3].set(signed_distance_to_kernel[signed_distance_to_kernel >= 3])
-        values = values.at[signed_distance_to_kernel < -3].set(signed_distance_to_kernel[signed_distance_to_kernel < -3])
+        values = values.at[signed_distance_to_kernel >= 3].set(
+            signed_distance_to_kernel[signed_distance_to_kernel >= 3])
+        values = values.at[signed_distance_to_kernel < -3].set(
+            signed_distance_to_kernel[signed_distance_to_kernel < -3])
         return values
 
 
@@ -199,5 +201,3 @@ class TrashLocalHjrStepper(LocalHjrStepper):
             progress_bar=self._verbose
         )
         return data.get_recent_values()
-
-

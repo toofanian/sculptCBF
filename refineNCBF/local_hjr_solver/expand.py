@@ -5,7 +5,8 @@ import attr
 import jax
 
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult
-from refineNCBF.utils.sets import expand_mask_by_signed_distance, compute_signed_distance, expand_mask_by_dilation, get_mask_boundary_by_dilation
+from refineNCBF.utils.sets import expand_mask_by_signed_distance, compute_signed_distance, expand_mask_by_dilation, \
+    get_mask_boundary_by_dilation
 from refineNCBF.utils.types import MaskNd
 
 
@@ -81,7 +82,8 @@ class SignedDistanceNeighborsNearBoundary(NeighborExpander):
             signed_distance_active = compute_signed_distance(source_set)
             signed_distance_kernel = compute_signed_distance(data.get_viability_kernel())
             expanded = signed_distance_active >= -self._neighbor_distance
-            boundary = (signed_distance_kernel <= self._boundary_distance_inner) & (signed_distance_kernel >= -self._boundary_distance_outer)
+            boundary = (signed_distance_kernel <= self._boundary_distance_inner) & (
+                        signed_distance_kernel >= -self._boundary_distance_outer)
             active_set_expanded = expanded & boundary
             # expanded = expand_mask_by_signed_distance(
             #     source_set,
@@ -127,7 +129,8 @@ class SignedDistanceNeighborsNearBoundaryDilation(NeighborExpander):
             active_set_expanded = source_set
         else:
             expanded = expand_mask_by_dilation(source_set, self._neighbor_distance)
-            boundary = get_mask_boundary_by_dilation(data.get_viability_kernel(), self._boundary_distance_inner, self._boundary_distance_outer)
+            boundary = get_mask_boundary_by_dilation(data.get_viability_kernel(), self._boundary_distance_inner,
+                                                     self._boundary_distance_outer)
             active_set_expanded = expanded & boundary
         return active_set_expanded
 

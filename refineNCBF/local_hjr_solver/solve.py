@@ -3,14 +3,15 @@ import time
 from typing import Callable, Union, Optional
 
 import attr
-import hj_reachability
 import numpy as np
 
+import hj_reachability
 from refineNCBF.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
 from refineNCBF.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, \
     InnerSignedDistanceNeighbors, \
     SignedDistanceNeighborsNearBoundary, SignedDistanceNeighborsNearBoundaryDilation
-from refineNCBF.local_hjr_solver.postfilter import ActiveSetPostFilter, RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
+from refineNCBF.local_hjr_solver.postfilter import ActiveSetPostFilter, RemoveWhereUnchanged, \
+    RemoveWhereNonNegativeHamiltonian
 from refineNCBF.local_hjr_solver.prefilter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset, \
     PreFilterWhereOutsideZeroLevelset, PreFilterWhereFarFromBoundarySplit
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult, LocalUpdateResultIteration

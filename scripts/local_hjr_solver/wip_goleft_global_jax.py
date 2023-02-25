@@ -17,7 +17,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 matplotlib.use('TkAgg')
 
 
-def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_gif: bool = False, save_result: bool = False):
+def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_gif: bool = False,
+                                                    save_result: bool = False):
     # set up dynamics and grid
     dynamics = go_left_jax_hj
 
@@ -67,7 +68,9 @@ def demo_local_hjr_boundary_decrease_solver_go_left(verbose: bool = False, save_
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/demo_local_hjr_boundary_decrease_solver_go_left', 'dill'))
+        result.save(
+            generate_unique_filename('data/local_update_results/demo_local_hjr_boundary_decrease_solver_go_left',
+                                     'dill'))
 
     # visualize
     if verbose:

@@ -1,8 +1,8 @@
 from typing import List
 
-import hj_reachability
 import numpy as np
 
+import hj_reachability
 from refineNCBF.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
 from refineNCBF.local_hjr_solver.expand import SignedDistanceNeighbors, SignedDistanceNeighborsNearBoundaryDilation
 from refineNCBF.local_hjr_solver.postfilter import RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian

@@ -1,6 +1,6 @@
-import hj_reachability
 import numpy as np
 
+import hj_reachability
 from refineNCBF.utils.types import ArrayNd, MaskNd
 
 

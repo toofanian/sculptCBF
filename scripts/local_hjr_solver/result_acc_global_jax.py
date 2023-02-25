@@ -54,7 +54,9 @@ def acc_global_jax(save_result: bool = False):
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/demo_local_hjr_classic_solver_on_active_cruise_control', 'dill'))
+        result.save(
+            generate_unique_filename('data/local_update_results/demo_local_hjr_classic_solver_on_active_cruise_control',
+                                     'dill'))
 
     return result
 

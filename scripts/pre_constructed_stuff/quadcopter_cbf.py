@@ -1,30 +1,34 @@
 import json
 
-import hj_reachability
 import numpy as np
 import stable_baselines3
 import torch
 from gym import spaces
 
+import hj_reachability
 from neural_barrier_kinematic_model.cbf_tanh_2_layer import CBFTanh2Layer
 from neural_barrier_kinematic_model.standardizer import Standardizer
 from refineNCBF.neural_barrier_kinematic_model_interface.stable_baselines_interface import StableBaselinesCallable
-from refineNCBF.utils.tables import TabularizedDnn
 from refineNCBF.utils.files import construct_refine_ncbf_path, FilePathRelative, construct_nbkm_path
+from refineNCBF.utils.tables import TabularizedDnn
 from refineNCBF.utils.types import NnCertifiedDict
 
 
 def load_cbf_feb24() -> (CBFTanh2Layer, Standardizer, NnCertifiedDict):
     device = 'cpu'
     cbf = CBFTanh2Layer(4, 512)
-    cbf_ckpt = torch.load(construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cbf_tanh_2_layer.pth'), map_location=device)
+    cbf_ckpt = torch.load(
+        construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cbf_tanh_2_layer.pth'),
+        map_location=device)
     cbf.load_state_dict(cbf_ckpt['model_state_dict'])
     cbf.to(device)
 
-    standardizer = Standardizer(fp=construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/standardizer.npy'))
+    standardizer = Standardizer(
+        fp=construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/standardizer.npy'))
     standardizer.initialize_from_file()
 
-    with open(construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cert_results.json')) as f:
+    with open(construct_nbkm_path(
+            'neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cert_results.json')) as f:
         certified_dict: NnCertifiedDict = json.load(f)
 
     return cbf, standardizer, certified_dict

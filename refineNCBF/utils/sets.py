@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import numpy as np
-from scipy.ndimage import binary_dilation
 import skfmm
+from scipy.ndimage import binary_dilation
 
 from refineNCBF.utils.types import MaskNd, ArrayNd
 

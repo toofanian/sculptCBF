@@ -1,11 +1,11 @@
 import attr
-import hj_reachability
 import jax
 import numpy as np
+
+import hj_reachability
 import odp.Grid
 from odp.Plots import PlotOptions
 from odp.solver import HJSolverClass
-
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.local_hjr_solver.step_hj import LocalHjrStepper
 from refineNCBF.local_hjr_solver.step_odp_type import OdpStepper
@@ -38,7 +38,8 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
         )
         system_objectives = {"TargetSetMode": "minVWithV0"}
         hj_solver = HJSolverClass()
-        return cls(grid=grid_odp, dynamics=dynamics, time_step=time_step, system_objectives=system_objectives, hj_solver=hj_solver)
+        return cls(grid=grid_odp, dynamics=dynamics, time_step=time_step, system_objectives=system_objectives,
+                   hj_solver=hj_solver)
 
     def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
         values = data.get_recent_values()
@@ -82,7 +83,8 @@ class DecreaseLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
         )
         system_objectives = {"TargetSetMode": "minVWithV0"}
         hj_solver = HJSolverClass()
-        return cls(grid=grid_odp, dynamics=dynamics, time_step=time_step, system_objectives=system_objectives, hj_solver=hj_solver)
+        return cls(grid=grid_odp, dynamics=dynamics, time_step=time_step, system_objectives=system_objectives,
+                   hj_solver=hj_solver)
 
     def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
         values = data.get_recent_values()

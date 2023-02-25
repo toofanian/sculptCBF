@@ -172,5 +172,3 @@ class ActiveCruiseControlJAX(ActiveCruiseControl):
 
     def compute_disturbance_jacobian(self, state, time=0.0):
         return jnp.expand_dims(jnp.zeros(3), axis=-1)
-
-

@@ -1,9 +1,9 @@
 from enum import IntEnum
 
 import attr
-import hj_reachability
 from jax import numpy as jnp
 
+import hj_reachability
 from refineNCBF.dynamic_systems.dynamic_systems import ControlAffineDynamicSystem, ControlAffineDynamicSystemFixedPolicy
 
 

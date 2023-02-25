@@ -3,15 +3,16 @@ from typing import List, Optional, Union
 
 import attr
 import dill
-import hj_reachability
 import numpy as np
 from jax import numpy as jnp
 from matplotlib import pyplot as plt, animation
 
+import hj_reachability
 from refineNCBF.hj_reachability_interface.hj_step import hj_step
 from refineNCBF.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
 from refineNCBF.optimized_dp_interface.odp_dynamics import OdpDynamics
-from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_refine_ncbf_path, generate_unique_filename
+from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_refine_ncbf_path, \
+    generate_unique_filename
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D
 
@@ -198,7 +199,8 @@ class LocalUpdateResult:
         def render_iteration(i: int):
             ax.clear()
 
-            ax.set(title=f"iteration: {i}, total active: {self.get_total_active_count(i)} of {self.avoid_set.size} \nSliced at {reference_slice.slice_string}")
+            ax.set(
+                title=f"iteration: {i}, total active: {self.get_total_active_count(i)} of {self.avoid_set.size} \nSliced at {reference_slice.slice_string}")
             ax.set_xlabel(reference_slice.free_dim_1.name)
             ax.set_ylabel(reference_slice.free_dim_2.name)
 
@@ -271,7 +273,8 @@ class LocalUpdateResult:
         if verbose:
             plt.show(block=False)
 
-    def render_iteration(self, iteration: int, reference_slice: ArraySlice2D, verbose: bool = True, save_path: str = None):
+    def render_iteration(self, iteration: int, reference_slice: ArraySlice2D, verbose: bool = True,
+                         save_path: str = None):
         fig, ax = plt.subplots(figsize=(9, 7))
 
         proxies_for_labels = [
@@ -640,7 +643,8 @@ class LocalUpdateResult:
 
         return fig, ax
 
-    def plot_safe_cells_against_truth(self, reference_slice: ArraySlice2D, truth: Optional[ArrayNd] = None, verbose: bool = False):
+    def plot_safe_cells_against_truth(self, reference_slice: ArraySlice2D, truth: Optional[ArrayNd] = None,
+                                      verbose: bool = False):
         if truth is None:
             solver_settings = hj_reachability.solver.SolverSettings.with_accuracy(
                 accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,

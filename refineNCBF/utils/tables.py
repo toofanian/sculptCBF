@@ -1,13 +1,12 @@
 from typing import Callable, Optional, Tuple
 
 import attr
-
-import hj_reachability
 import numpy as np
 import torch
 from jax import numpy as jnp
 from tqdm import tqdm
 
+import hj_reachability
 from neural_barrier_kinematic_model.standardizer import Standardizer
 from refineNCBF.utils.files import construct_refine_ncbf_path, generate_unique_filename
 from refineNCBF.utils.types import VectorBatch, ScalarBatch, ArrayNd, MaskNd, Vector
@@ -48,8 +47,10 @@ def flag_states_on_grid(
     cell_lower_bounds = cell_centerpoints - cell_halfwidths
     cell_upper_bounds = cell_centerpoints + cell_halfwidths
 
-    cell_lower_bounds_in_grid_frame = cell_lower_bounds + np.array(grid.spacings).reshape((1, dims)) / 2 - np.array(grid.domain.lo).reshape((1, dims))
-    cell_upper_bounds_in_grid_frame = cell_upper_bounds + np.array(grid.spacings).reshape((1, dims)) / 2 - np.array(grid.domain.lo).reshape((1, dims))
+    cell_lower_bounds_in_grid_frame = cell_lower_bounds + np.array(grid.spacings).reshape((1, dims)) / 2 - np.array(
+        grid.domain.lo).reshape((1, dims))
+    cell_upper_bounds_in_grid_frame = cell_upper_bounds + np.array(grid.spacings).reshape((1, dims)) / 2 - np.array(
+        grid.domain.lo).reshape((1, dims))
 
     lower_index = np.maximum(cell_lower_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)), 0)
     upper_index = np.minimum(cell_upper_bounds_in_grid_frame // np.array(grid.spacings).reshape((1, dims)),
@@ -63,7 +64,8 @@ def flag_states_on_grid(
         bool_grid[index_slice] = True
 
     if save_array:
-        np.save(construct_refine_ncbf_path(generate_unique_filename('data/trained_NCBFs/quad4d_boundary/uncertified_grid', 'npy')), bool_grid)
+        np.save(construct_refine_ncbf_path(
+            generate_unique_filename('data/trained_NCBFs/quad4d_boundary/uncertified_grid', 'npy')), bool_grid)
 
     return bool_grid
 
