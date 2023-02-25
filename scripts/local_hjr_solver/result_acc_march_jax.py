@@ -1,13 +1,12 @@
-import os
 import warnings
 
 from jax import numpy as jnp
 
 import hj_reachability
-from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControlJAX, \
+from refineNCBF.dynamic_systems.active_cruise_control import ActiveCruiseControlJAX, \
     simplified_active_cruise_control_params
-from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
-from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
+from refineNCBF.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
+from refineNCBF.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 

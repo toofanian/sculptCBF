@@ -3,8 +3,8 @@ import warnings
 from jax import numpy as jnp
 
 import hj_reachability
-from refineNCBF.dynamic_systems.implementations.quadcopter import quadcopter_vertical_jax_hj
-from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
+from refineNCBF.dynamic_systems.quadcopter import quadcopter_vertical_jax_hj
+from refineNCBF.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 

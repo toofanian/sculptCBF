@@ -6,10 +6,10 @@ import odp.Grid
 from odp.Plots import PlotOptions
 from odp.solver import HJSolverClass
 
-from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
-from refineNCBF.refining.local_hjr_solver.step_hj import LocalHjrStepper
-from refineNCBF.refining.local_hjr_solver.step_odp_type import OdpStepper
-from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
+from refineNCBF.local_hjr_solver.result import LocalUpdateResult
+from refineNCBF.local_hjr_solver.step_hj import LocalHjrStepper
+from refineNCBF.local_hjr_solver.step_odp_type import OdpStepper
+from refineNCBF.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import MaskNd, ArrayNd
 
 

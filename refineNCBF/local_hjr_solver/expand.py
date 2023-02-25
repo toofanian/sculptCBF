@@ -4,9 +4,8 @@ from typing import Callable
 import attr
 import jax
 
-from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
-from refineNCBF.utils.sets import expand_mask_by_signed_distance, get_mask_boundary_by_signed_distance, \
-    compute_signed_distance, expand_mask_by_dilation, get_mask_boundary_by_dilation
+from refineNCBF.local_hjr_solver.result import LocalUpdateResult
+from refineNCBF.utils.sets import expand_mask_by_signed_distance, compute_signed_distance, expand_mask_by_dilation, get_mask_boundary_by_dilation
 from refineNCBF.utils.types import MaskNd
 
 

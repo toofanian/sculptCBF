@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from refineNCBF.dynamic_systems.dynamic_systems import ControlAffineDynamicSystem
-from refineNCBF.refining.hj_reachability_interface.hj_dynamics import HJControlAffineDynamics, ActorModes
+from refineNCBF.hj_reachability_interface import HJControlAffineDynamics, ActorModes
 from refineNCBF.utils.types import VectorBatch, MatrixBatch
 
 

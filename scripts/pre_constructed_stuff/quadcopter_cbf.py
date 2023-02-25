@@ -7,28 +7,14 @@ import torch
 from gym import spaces
 
 from neural_barrier_kinematic_model.cbf_tanh_2_layer import CBFTanh2Layer
-from refineNCBF.training.dnn_models.cbf import Cbf, NnCertifiedDict
-from refineNCBF.training.dnn_models.stable_baselines_interface import StableBaselinesCallable
-from refineNCBF.training.dnn_models.standardizer import Standardizer
-from refineNCBF.training.dnn_models.tabularized_dnn import TabularizedDnn
+from neural_barrier_kinematic_model.standardizer import Standardizer
+from refineNCBF.neural_barrier_kinematic_model_interface.stable_baselines_interface import StableBaselinesCallable
+from refineNCBF.utils.tables import TabularizedDnn
 from refineNCBF.utils.files import construct_refine_ncbf_path, FilePathRelative, construct_nbkm_path
-from refineNCBF.utils.types import VectorBatch
+from refineNCBF.utils.types import NnCertifiedDict
 
 
-def load_quadcopter_cbf() -> (Cbf, Standardizer):
-    device = 'cpu'
-    cbf_func = Cbf(4, 256)
-    cbf_ckpt = torch.load(construct_refine_ncbf_path('data/trained_NCBFs/sac_policy/quad4d_sac_cbf.pth'), map_location=device)
-    cbf_func.load_state_dict(cbf_ckpt['model_state_dict'])
-    cbf_func.to(device)
-
-    standardizer = Standardizer(fp=construct_refine_ncbf_path('data/trained_NCBFs/sac_policy/quad4d_sac_standardizer.npy'))
-    standardizer.initialize_from_file()
-
-    return cbf_func, standardizer
-
-
-def load_cbf_feb24() -> (Cbf, Standardizer, NnCertifiedDict):
+def load_cbf_feb24() -> (CBFTanh2Layer, Standardizer, NnCertifiedDict):
     device = 'cpu'
     cbf = CBFTanh2Layer(4, 512)
     cbf_ckpt = torch.load(construct_nbkm_path('neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cbf_tanh_2_layer.pth'), map_location=device)
@@ -42,20 +28,6 @@ def load_cbf_feb24() -> (Cbf, Standardizer, NnCertifiedDict):
         certified_dict: NnCertifiedDict = json.load(f)
 
     return cbf, standardizer, certified_dict
-
-
-def load_uncertified_states(certified_dict: NnCertifiedDict, standardizer: Standardizer) -> VectorBatch:
-    uncertified_states = certified_dict['uns']
-    violated_states = certified_dict['vio']
-    total_states = uncertified_states + violated_states
-    total_states_destandardized = standardizer.destandardize(np.array(total_states))
-    return total_states_destandardized
-
-
-def load_certified_states(certified_dict: NnCertifiedDict, standardizer: Standardizer) -> VectorBatch:
-    certified_states = certified_dict['cert']
-    total_states_destandardized = standardizer.destandardize(np.array(certified_states))
-    return total_states_destandardized
 
 
 def load_policy_sac(relative_path: FilePathRelative) -> StableBaselinesCallable:

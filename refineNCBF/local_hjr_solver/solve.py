@@ -6,17 +6,17 @@ import attr
 import hj_reachability
 import numpy as np
 
-from refineNCBF.refining.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
-from refineNCBF.refining.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, \
+from refineNCBF.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
+from refineNCBF.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, \
     InnerSignedDistanceNeighbors, \
     SignedDistanceNeighborsNearBoundary, SignedDistanceNeighborsNearBoundaryDilation
-from refineNCBF.refining.local_hjr_solver.postfilter import ActiveSetPostFilter, RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
-from refineNCBF.refining.local_hjr_solver.prefilter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset, \
+from refineNCBF.local_hjr_solver.postfilter import ActiveSetPostFilter, RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
+from refineNCBF.local_hjr_solver.prefilter import ActiveSetPreFilter, NoPreFilter, PreFilterWhereFarFromZeroLevelset, \
     PreFilterWhereOutsideZeroLevelset, PreFilterWhereFarFromBoundarySplit
-from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult, LocalUpdateResultIteration
-from refineNCBF.refining.local_hjr_solver.step_hj import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
-from refineNCBF.refining.local_hjr_solver.step_odp_type import OdpStepper
-from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
+from refineNCBF.local_hjr_solver.result import LocalUpdateResult, LocalUpdateResultIteration
+from refineNCBF.local_hjr_solver.step_hj import LocalHjrStepper, ClassicLocalHjrStepper, DecreaseLocalHjrStepper
+from refineNCBF.local_hjr_solver.step_odp_type import OdpStepper
+from refineNCBF.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import make_configured_logger
 

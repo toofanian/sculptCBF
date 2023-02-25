@@ -5,7 +5,7 @@ from jax import numpy as jnp
 
 import hj_reachability
 from odp.dynamics.quad4d import Quad4D
-from refineNCBF.refining.local_hjr_solver.solver_odp import create_local_solver_odp
+from refineNCBF.local_hjr_solver.solver_odp import create_local_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 

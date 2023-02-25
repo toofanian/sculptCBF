@@ -6,9 +6,9 @@ import matplotlib
 from matplotlib import pyplot as plt
 
 import hj_reachability
-from refineNCBF.dynamic_systems.implementations.go_left import go_left_jax_hj
-from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
+from refineNCBF.dynamic_systems.go_left import go_left_jax_hj
+from refineNCBF.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
+from refineNCBF.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.visuals import ArraySlice1D, DimName

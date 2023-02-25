@@ -4,14 +4,13 @@ from typing import List, Optional, Union
 import attr
 import dill
 import hj_reachability
-import matplotlib
 import numpy as np
 from jax import numpy as jnp
 from matplotlib import pyplot as plt, animation
 
-from refineNCBF.refining.hj_reachability_interface.hj_step import hj_step
-from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
+from refineNCBF.hj_reachability_interface.hj_step import hj_step
+from refineNCBF.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
+from refineNCBF.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.files import FilePathRelative, check_if_file_exists, construct_refine_ncbf_path, generate_unique_filename
 from refineNCBF.utils.types import MaskNd, ArrayNd
 from refineNCBF.utils.visuals import ArraySlice2D, ArraySlice1D

@@ -4,8 +4,8 @@ import matplotlib
 from jax import numpy as jnp
 
 import hj_reachability
-from refineNCBF.dynamic_systems.implementations.quadcopter_fixed_policy import load_quadcopter_sac_jax_hj
-from refineNCBF.refining.local_hjr_solver.solve import LocalHjrSolver
+from refineNCBF.dynamic_systems.quadcopter_fixed_policy import load_quadcopter_sac_jax_hj
+from refineNCBF.local_hjr_solver.solve import LocalHjrSolver
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 

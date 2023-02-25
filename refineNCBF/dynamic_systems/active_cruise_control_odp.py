@@ -1,7 +1,6 @@
 import attr
 
-from refineNCBF.dynamic_systems.implementations.active_cruise_control import ActiveCruiseControl, simplified_active_cruise_control_params
-from refineNCBF.refining.optimized_dp_interface.odp_dynamics import OdpDynamics
+from refineNCBF.optimized_dp_interface.odp_dynamics import OdpDynamics
 
 import heterocl as hcl
 

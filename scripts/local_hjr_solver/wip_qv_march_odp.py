@@ -5,14 +5,14 @@ from jax import numpy as jnp
 
 import hj_reachability
 from odp.dynamics.quad4d import Quad4D
-from refineNCBF.refining.local_hjr_solver.solver_odp import create_marching_solver_odp
+from refineNCBF.local_hjr_solver.solver_odp import create_marching_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def wip_acc_march_odp(save_result: bool = False):
+def acc_march_odp(save_result: bool = False):
     dynamics = Quad4D()
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
@@ -20,8 +20,7 @@ def wip_acc_march_odp(save_result: bool = False):
             [0, -8, -np.pi, -10],
             [10, 8, np.pi, 10]
         ),
-        # shape=(101, 51, 61, 51)
-        shape=(101, 101, 101, 101)
+        shape=(51, 51, 51, 51)
     )
 
     avoid_set = (
@@ -59,4 +58,4 @@ def wip_acc_march_odp(save_result: bool = False):
 
 
 if __name__ == '__main__':
-    wip_acc_march_odp(save_result=True)
+    acc_march_odp(save_result=True)

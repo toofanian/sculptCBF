@@ -5,8 +5,8 @@ import attr
 import hj_reachability
 from hj_reachability.solver import backwards_reachable_tube
 
-from refineNCBF.refining.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
-from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
+from refineNCBF.hj_reachability_interface.hj_value_postprocessors import ReachAvoid
+from refineNCBF.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.utils.sets import compute_signed_distance
 from refineNCBF.utils.types import MaskNd, ArrayNd
 

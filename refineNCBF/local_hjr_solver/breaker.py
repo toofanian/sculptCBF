@@ -5,7 +5,7 @@ from typing import List, Callable
 import attr
 import jax.numpy as jnp
 
-from refineNCBF.refining.local_hjr_solver.result import LocalUpdateResult
+from refineNCBF.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.utils.visuals import make_configured_logger
 
 
