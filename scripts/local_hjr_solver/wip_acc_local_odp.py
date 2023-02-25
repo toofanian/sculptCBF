@@ -4,7 +4,7 @@ from jax import numpy as jnp
 
 import hj_reachability
 from refineNCBF.dynamic_systems.active_cruise_control_odp import ActiveCruiseControlOdp
-from refineNCBF.local_hjr_solver.solver_odp import create_local_solver_odp
+from refineNCBF.local_hjr_solver.solve_odp import create_local_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance
 

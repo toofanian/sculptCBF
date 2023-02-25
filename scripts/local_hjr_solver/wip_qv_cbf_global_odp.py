@@ -8,7 +8,7 @@ from odp.dynamics.quad4d import Quad4D
 from scripts.pre_constructed_stuff.quadcopter_cbf import load_cbf_feb24
 from refineNCBF.neural_barrier_kinematic_model_interface.certification import load_uncertified_states, \
     load_certified_states
-from refineNCBF.local_hjr_solver.solver_odp import create_global_solver_odp
+from refineNCBF.local_hjr_solver.solve_odp import create_global_solver_odp
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_on_both_sides_by_signed_distance
 from refineNCBF.utils.tables import flag_states_on_grid, tabularize_dnn
