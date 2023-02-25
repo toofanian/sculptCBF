@@ -1,3 +1,5 @@
+from typing import List
+
 import hj_reachability
 import numpy as np
 
@@ -14,7 +16,7 @@ from refineNCBF.utils.types import MaskNd, ArrayNd
 def create_global_solver_odp(
         dynamics: OdpDynamics,
         grid: hj_reachability.Grid,
-        periodic_dims,
+        periodic_dims: List[int],
         avoid_set: MaskNd,
         reach_set: MaskNd,
         terminal_values: ArrayNd,
@@ -24,12 +26,6 @@ def create_global_solver_odp(
 
         verbose: bool = False,
 ) -> LocalHjrSolver:
-    """
-    NOTE: see readme for more details, info here may be inaccurate.
-
-    classic solver with no pre-filtering, "signed distance" neighbors, "classic" local hjr stepper, and "no change" post-filtering.
-    with appropriate initialization, should return the same values as vanilla/global hjr for regions connected by value to the initial active set.
-    """
     active_set_pre_filter = NoPreFilter.from_parts(
     )
     neighbor_expander = SignedDistanceNeighbors.from_parts(
@@ -71,7 +67,7 @@ def create_global_solver_odp(
 def create_local_solver_odp(
         dynamics: OdpDynamics,
         grid: hj_reachability.Grid,
-        periodic_dims,
+        periodic_dims: List[int],
         avoid_set: MaskNd,
         reach_set: MaskNd,
         terminal_values: ArrayNd,
@@ -84,15 +80,6 @@ def create_local_solver_odp(
 
         verbose: bool = False,
 ) -> LocalHjrSolver:
-    """
-    NOTE: see readme for more details, info here may be inaccurate.
-
-    classic solver with "boundary" pre-filtering, "signed distance" neighbors, "only decrease" local hjr stepper, and "no change" post-filtering.
-    """
-    assert solver_timestep < 0, "solver_timestep must be negative"
-
-    # TODO: Prefilter is only relevant for the first iteration to protect against bad seed sets.
-    #       Redundant with neighbor expander after first iteration.
     active_set_pre_filter = NoPreFilter()
     neighbor_expander = SignedDistanceNeighbors.from_parts(
         distance=neighbor_distance
@@ -130,64 +117,10 @@ def create_local_solver_odp(
     )
 
 
-def create_local_decrease_solver_odp(
-        dynamics: OdpDynamics,
-        grid: hj_reachability.Grid,
-        avoid_set: MaskNd,
-        reach_set: MaskNd,
-        terminal_values: ArrayNd,
-
-        neighbor_distance: float = 2,
-        solver_timestep: float = -0.1,
-        change_atol: float = 1e-3,
-        change_rtol: float = 1e-3,
-        max_iterations: int = 100,
-
-        verbose: bool = False,
-) -> LocalHjrSolver:
-    assert solver_timestep < 0, "solver_timestep must be negative"
-
-    # TODO: Prefilter is only relevant for the first iteration to protect against bad seed sets.
-    #       Redundant with neighbor expander after first iteration.
-    active_set_pre_filter = NoPreFilter()
-    neighbor_expander = SignedDistanceNeighbors.from_parts(
-        distance=neighbor_distance
-    )
-    local_hjr_stepper = DecreaseLocalHjrStepperOdp.from_parts(
-        dynamics=dynamics,
-        grid=grid,
-        time_step=solver_timestep,
-    )
-    active_set_post_filter = RemoveWhereNonNegativeHamiltonian.from_parts(
-        hamiltonian_atol=change_atol,
-    )
-    break_criteria_checker = BreakCriteriaChecker.from_criteria(
-        [
-            MaxIterations.from_parts(max_iterations=max_iterations),
-            PostFilteredActiveSetEmpty.from_parts(),
-        ],
-        verbose=verbose
-    )
-
-    return LocalHjrSolver(
-        dynamics=dynamics,
-        grid=grid,
-        avoid_set=avoid_set,
-        reach_set=reach_set,
-        terminal_values=terminal_values,
-        active_set_pre_filter=active_set_pre_filter,
-        neighbor_expander=neighbor_expander,
-        local_hjr_stepper=local_hjr_stepper,
-        active_set_post_filter=active_set_post_filter,
-        break_criteria_checker=break_criteria_checker,
-        verbose=verbose,
-    )
-
-
 def create_marching_solver_odp(
         dynamics: OdpDynamics,
         grid: hj_reachability.Grid,
-        periodic_dims,
+        periodic_dims: List[int],
         avoid_set: MaskNd,
         reach_set: MaskNd,
         terminal_values: ArrayNd,
