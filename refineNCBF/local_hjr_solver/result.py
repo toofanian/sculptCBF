@@ -273,6 +273,68 @@ class LocalUpdateResult:
         if verbose:
             plt.show(block=False)
 
+    def create_gif_3d(
+            self,
+            reference_slice: Union[ArraySlice2D, ArraySlice1D],
+            verbose: bool = True,
+            save_path: Optional[FilePathRelative] = None
+    ):
+        if isinstance(reference_slice, ArraySlice1D):
+            reference_slice = ArraySlice2D.from_array_slice_1d(reference_slice)
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.5),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='b', alpha=1),
+        ]
+
+        legend_for_labels = [
+            'result',
+            'result viability kernel',
+        ]
+
+        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
+
+        def render_iteration(i: int):
+            values = self.iterations[i].computed_values
+
+            x1, x2 = np.meshgrid(
+                self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+                self.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+            )
+            ax.set(title='value function')
+
+            ax.plot_surface(
+                x1, x2, reference_slice.get_sliced_array(values).T,
+                cmap='Blues', edgecolor='none', alpha=.5
+            )
+            ax.contour3D(
+                x1, x2, reference_slice.get_sliced_array(values).T,
+                levels=[0], colors=['b']
+            )
+
+            ax.contour3D(
+                x1, x2, reference_slice.get_sliced_array(self.initial_values).T,
+                levels=[0], colors=['k'], linestyles=['--']
+            )
+
+            ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+            ax.set_xlabel(reference_slice.free_dim_1.name)
+            ax.set_ylabel(reference_slice.free_dim_2.name)
+
+            return ax
+
+        fig, ax = plt.subplots(figsize=(9, 7))
+        anim = animation.FuncAnimation(fig, render_iteration, frames=len(self), interval=100)
+
+        if save_path is not None:
+            if not check_if_file_exists(save_path):
+                anim.save(construct_refine_ncbf_path(save_path), writer='imagemagick', fps=4)
+            else:
+                print(f"file {save_path} already exists, not saving animation")
+
+        if verbose:
+            plt.show(block=False)
+
     def render_iteration(self, iteration: int, reference_slice: ArraySlice2D, verbose: bool = True,
                          save_path: str = None):
         fig, ax = plt.subplots(figsize=(9, 7))

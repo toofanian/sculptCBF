@@ -39,7 +39,7 @@ def acc_global_odp(save_result: bool = False):
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=100,
+        max_iterations=200,
         solver_timestep=-.1,
         verbose=True
     )
