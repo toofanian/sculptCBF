@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 import attr
 import dill
@@ -92,6 +92,9 @@ class LocalUpdateResult:
         check_if_file_exists(full_path)
         with open(full_path, "wb") as f:
             dill.dump(self, f)
+
+    def get_middle_index(self) -> Tuple[int, ...]:
+        return tuple([pts//2 for pts in self.grid.shape])
 
     @staticmethod
     def load(file_path: FilePathRelative) -> "LocalUpdateResult":
@@ -257,7 +260,7 @@ class LocalUpdateResult:
                 levels=[0], colors=['k'], linestyles=['--']
             )
 
-            ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+            ax.legend(proxies_for_labels, legend_for_labels, loc='upper left')
 
             return ax
 
