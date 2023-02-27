@@ -1,7 +1,7 @@
 import numpy as np
 
 from neural_barrier_kinematic_model.standardizer import Standardizer
-from refineNCBF.utils.types import VectorBatch
+from refineNCBF.utils.types import VectorBatch, NnCertifiedDict
 
 
 def load_uncertified_states(certified_dict: NnCertifiedDict, standardizer: Standardizer) -> VectorBatch:
