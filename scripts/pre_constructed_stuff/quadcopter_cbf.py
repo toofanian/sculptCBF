@@ -28,7 +28,7 @@ def load_cbf_feb24() -> (CBFTanh2Layer, Standardizer, NnCertifiedDict):
     standardizer.initialize_from_file()
 
     with open(construct_nbkm_path(
-            'neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cert_results.json')) as f:
+            'neural_barrier_kinematic_model/experiments/tanh_barrier_2_layers/cert_results-2.json')) as f:
         certified_dict: NnCertifiedDict = json.load(f)
 
     return cbf, standardizer, certified_dict
