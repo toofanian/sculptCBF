@@ -54,6 +54,7 @@ class LocalUpdateResult:
     seed_set: MaskNd
 
     iterations: List[LocalUpdateResultIteration] = attr.ib(factory=list)
+    blurbs: List[str] = attr.ib(factory=list)
 
     @classmethod
     def from_parts(
@@ -84,8 +85,9 @@ class LocalUpdateResult:
     def __len__(self):
         return len(self.iterations)
 
-    def add_iteration(self, iteration: LocalUpdateResultIteration):
+    def add_iteration(self, iteration: LocalUpdateResultIteration, blurb: str = ''):
         self.iterations.append(iteration)
+        self.blurbs.append(blurb)
 
     def save(self, file_path: FilePathRelative):
         full_path = construct_refine_ncbf_path(file_path)

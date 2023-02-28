@@ -59,13 +59,13 @@ class LocalHjrSolver(Callable):
         local_update_result = self._initialize_local_result(active_set, initial_values)
         while True:
             iteration = self._perform_local_update_iteration(local_update_result)
-            local_update_result.add_iteration(iteration)
+            max_diff = local_update_result.max_diff()
+            cells_updated = local_update_result.get_recent_set_for_compute().sum()
+            share = cells_updated / self._avoid_set.size
+            blurb = f'iteration {len(local_update_result)} complete, \trunning duration is {(time.time() - start_time):.2f} seconds, \tcomputed over {cells_updated} of {self._avoid_set.size} cells ({(share * 100):.2f}%), \tmax diff: {max_diff:.2f}'
+            local_update_result.add_iteration(iteration, blurb)
             if self._verbose:
-                max_diff = local_update_result.max_diff()
-                cells_updated = local_update_result.get_recent_set_for_compute().sum()
-                share = cells_updated / self._avoid_set.size
-                self._logger.info(
-                    f'iteration {len(local_update_result)} complete, \trunning duration is {(time.time() - start_time):.2f} seconds, \tcomputed over {cells_updated} of {self._avoid_set.size} cells ({(share * 100):.2f}%), \tmax diff: {max_diff:.2f}')
+                self._logger.info(blurb)
             if self._check_for_break(local_update_result):
                 break
         return local_update_result
