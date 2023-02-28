@@ -3,7 +3,8 @@ from typing import List
 import numpy as np
 
 import hj_reachability
-from refineNCBF.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
+from refineNCBF.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty, \
+    BarrierNotMarching
 from refineNCBF.local_hjr_solver.expand import SignedDistanceNeighbors, SignedDistanceNeighborsNearBoundaryDilation
 from refineNCBF.local_hjr_solver.postfilter import RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
 from refineNCBF.local_hjr_solver.prefilter import NoPreFilter, PreFilterWhereFarFromBoundarySplitOnce
@@ -22,6 +23,10 @@ def create_global_solver_odp(
         terminal_values: ArrayNd,
 
         solver_timestep: float = -0.1,
+        hamiltonian_atol: float = 1e-3,
+        hamiltonian_rtol: float = 1e-3,
+        integration_scheme: str = 'first',
+        change_fraction: float = 1,
         max_iterations: int = 100,
 
         verbose: bool = False,
@@ -35,16 +40,18 @@ def create_global_solver_odp(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=periodic_dims,
+        integration_scheme=integration_scheme,
         time_step=solver_timestep,
     )
     active_set_post_filter = RemoveWhereUnchanged.from_parts(
-        atol=1e-3,
-        rtol=1e-3,
+        atol=hamiltonian_atol,
+        rtol=hamiltonian_rtol,
     )
     break_criteria_checker = BreakCriteriaChecker.from_criteria(
         [
             MaxIterations.from_parts(max_iterations=max_iterations),
             PostFilteredActiveSetEmpty.from_parts(),
+            BarrierNotMarching.from_parts(change_fraction=change_fraction)
         ],
         verbose=verbose
     )
@@ -74,6 +81,7 @@ def create_local_solver_odp(
 
         neighbor_distance: float = 2,
         solver_timestep: float = -0.1,
+        integration_scheme: str = 'first',
         change_atol: float = 1e-3,
         change_rtol: float = 1e-3,
         max_iterations: int = 100,
@@ -88,6 +96,7 @@ def create_local_solver_odp(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=periodic_dims,
+        integration_scheme=integration_scheme,
         time_step=solver_timestep,
     )
     active_set_post_filter = RemoveWhereUnchanged.from_parts(
@@ -125,11 +134,13 @@ def create_marching_solver_odp(
         reach_set: MaskNd,
         terminal_values: ArrayNd,
 
-        boundary_distance_inner: float = 2,
-        boundary_distance_outer: float = 2,
+        boundary_distance_inner: int = 2,
+        boundary_distance_outer: int = 2,
         neighbor_distance: int = 2,
         solver_timestep: float = -0.1,
         hamiltonian_atol: float = 1e-3,
+        integration_scheme: str = 'first',
+        change_fraction: float = 1,
         max_iterations: int = 100,
 
         verbose: bool = False,
@@ -156,8 +167,8 @@ def create_marching_solver_odp(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=periodic_dims,
-        time_step=solver_timestep,
-    )
+        integration_scheme=integration_scheme,
+        time_step=solver_timestep)
 
     active_set_post_filter = RemoveWhereNonNegativeHamiltonian.from_parts(
         hamiltonian_atol=hamiltonian_atol
@@ -167,6 +178,7 @@ def create_marching_solver_odp(
         [
             MaxIterations.from_parts(max_iterations=max_iterations),
             PostFilteredActiveSetEmpty.from_parts(),
+            BarrierNotMarching.from_parts(change_fraction=change_fraction)
         ],
         verbose=verbose
     )
