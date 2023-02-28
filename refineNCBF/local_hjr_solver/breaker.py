@@ -4,8 +4,10 @@ from typing import List, Callable
 
 import attr
 import jax.numpy as jnp
+import numpy as np
 
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult
+from refineNCBF.utils.sets import get_mask_boundary_by_dilation
 from refineNCBF.utils.visuals import make_configured_logger
 
 
@@ -72,3 +74,28 @@ class PostFilteredActiveSetEmpty(BreakCriterion):
 
     def get_descriptor(self) -> str:
         return f'criterion of empty post-filtered active set has been met'
+
+
+@attr.s(auto_attribs=True)
+class BarrierNotMarching(BreakCriterion):
+    change_fraction: float
+
+    @classmethod
+    def from_parts(cls, change_fraction: float):
+        return cls(change_fraction)
+
+    def __call__(self, data: LocalUpdateResult) -> bool:
+        if len(data) < 1:
+            return False
+        elif len(data) == 1:
+            current_boundary = get_mask_boundary_by_dilation(data.iterations[-1].computed_values >= 0)
+            previous_boundary = get_mask_boundary_by_dilation(data.initial_values >= 0)
+        else:
+            current_boundary = get_mask_boundary_by_dilation(data.iterations[-1].computed_values >= 0)
+            previous_boundary = get_mask_boundary_by_dilation(data.iterations[-2].computed_values >= 0)
+
+        boundary_overlap = current_boundary & previous_boundary
+        return np.count_nonzero(boundary_overlap)/np.count_nonzero(current_boundary) > self.change_fraction
+
+    def get_descriptor(self) -> str:
+        return f'criterion of less than {self.change_fraction*100} percent change in boundary cells has been met.'
