@@ -104,15 +104,15 @@ class SignedDistanceNeighborsNearBoundary(NeighborExpander):
 @attr.s(auto_attribs=True)
 class SignedDistanceNeighborsNearBoundaryDilation(NeighborExpander):
     _neighbor_distance: int
-    _boundary_distance_inner: float
-    _boundary_distance_outer: float
+    _boundary_distance_inner: int
+    _boundary_distance_outer: int
 
     @classmethod
     def from_parts(
             cls,
             neighbor_distance: int,
-            boundary_distance_inner: float,
-            boundary_distance_outer: float
+            boundary_distance_inner: int,
+            boundary_distance_outer: int
     ):
         return cls(
             neighbor_distance=neighbor_distance,
