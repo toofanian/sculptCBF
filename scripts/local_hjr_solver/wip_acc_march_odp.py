@@ -20,7 +20,7 @@ def wip_acc_marching_odp(save_result: bool = False):
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 101, 101)
+        shape=(3, 201, 201)
     )
 
     avoid_set = (
@@ -39,10 +39,15 @@ def wip_acc_marching_odp(save_result: bool = False):
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=100,
-        hamiltonian_atol=5e-2,
+        max_iterations=200,
+        hamiltonian_atol=1e-2,
+        boundary_distance_inner=2,
+        boundary_distance_outer=2,
+        neighbor_distance=2,
         solver_timestep=-.1,
         verbose=True,
+        change_fraction=.999,
+        integration_scheme='second',
         periodic_dims=[]
     )
 

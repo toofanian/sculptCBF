@@ -20,7 +20,7 @@ def wip_qv_global_odp(save_result: bool = False):
             [0, -8, -np.pi, -10],
             [10, 8, np.pi, 10]
         ),
-        shape=(51, 25, 51, 25)
+        shape=(75, 41, 75, 41)
     )
 
     avoid_set = (
@@ -40,8 +40,10 @@ def wip_qv_global_odp(save_result: bool = False):
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=30,
-        solver_timestep=-.1,
+        integration_scheme='third',
+        hamiltonian_atol=.5,
+        max_iterations=50,
+        solver_timestep=-.2,
         verbose=True
     )
 
@@ -51,7 +53,7 @@ def wip_qv_global_odp(save_result: bool = False):
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/wip_qv_global_odp_300iters', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/wip_qv_global_odp', 'dill'))
 
     return result
 

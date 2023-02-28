@@ -12,7 +12,7 @@ from refineNCBF.utils.sets import compute_signed_distance
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def acc_march_odp(save_result: bool = False):
+def qv_march_odp(save_result: bool = False):
     dynamics = Quad4D()
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
@@ -20,7 +20,7 @@ def acc_march_odp(save_result: bool = False):
             [0, -8, -np.pi, -10],
             [10, 8, np.pi, 10]
         ),
-        shape=(51, 51, 51, 51)
+        shape=(75, 41, 75, 41)
     )
 
     avoid_set = (
@@ -40,9 +40,11 @@ def acc_march_odp(save_result: bool = False):
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=50,
-        solver_timestep=-.25,
-        hamiltonian_atol=1,
+        max_iterations=200,
+        solver_timestep=-.2,
+        integration_scheme='second',
+        change_fraction=.999,
+        hamiltonian_atol=.5,
         verbose=True
     )
 
@@ -58,4 +60,4 @@ def acc_march_odp(save_result: bool = False):
 
 
 if __name__ == '__main__':
-    acc_march_odp(save_result=True)
+    qv_march_odp(save_result=True)
