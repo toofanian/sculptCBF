@@ -1,3 +1,5 @@
+from typing import List
+
 import attr
 import jax
 import numpy as np
@@ -19,6 +21,7 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
     dynamics: OdpDynamics
     time_step: float
     system_objectives: dict
+    integration_scheme: str
     hj_solver: HJSolverClass
 
     @classmethod
@@ -26,7 +29,8 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             cls,
             dynamics: OdpDynamics,
             grid: hj_reachability.Grid,
-            periodic_dims,
+            periodic_dims: List[int],
+            integration_scheme: str,
             time_step: float,
     ):
         grid_odp = odp.Grid.Grid(
@@ -39,7 +43,7 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
         system_objectives = {"TargetSetMode": "minVWithV0"}
         hj_solver = HJSolverClass()
         return cls(grid=grid_odp, dynamics=dynamics, time_step=time_step, system_objectives=system_objectives,
-                   hj_solver=hj_solver)
+                   integration_scheme=integration_scheme, hj_solver=hj_solver)
 
     def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
         values = data.get_recent_values()
@@ -51,6 +55,7 @@ class ClassicLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             self.system_objectives,
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
             accuracy='medium',
+            int_scheme=self.integration_scheme,
             active_set=active_set_expanded,
             verbose=False,
             untilConvergent=True,
@@ -64,6 +69,7 @@ class DecreaseLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
     dynamics: OdpDynamics
     time_step: float
     system_objectives: dict
+    integration_scheme: str
     hj_solver: HJSolverClass
 
     @classmethod
@@ -71,7 +77,8 @@ class DecreaseLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             cls,
             dynamics: OdpDynamics,
             grid: hj_reachability.Grid,
-            periodic_dims,
+            periodic_dims: List[int],
+            integration_scheme: str,
             time_step: float,
     ):
         grid_odp = odp.Grid.Grid(
@@ -84,7 +91,7 @@ class DecreaseLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
         system_objectives = {"TargetSetMode": "minVWithV0"}
         hj_solver = HJSolverClass()
         return cls(grid=grid_odp, dynamics=dynamics, time_step=time_step, system_objectives=system_objectives,
-                   hj_solver=hj_solver)
+                   integration_scheme=integration_scheme, hj_solver=hj_solver)
 
     def __call__(self, data: LocalUpdateResult, active_set_prefiltered: MaskNd, active_set_expanded: MaskNd) -> ArrayNd:
         values = data.get_recent_values()
@@ -96,11 +103,17 @@ class DecreaseLocalHjrStepperOdp(LocalHjrStepper, OdpStepper):
             self.system_objectives,
             PlotOptions(do_plot=False, plot_type="3d_plot", plotDims=[0, 1, 3], slicesCut=[]),
             accuracy='medium',
+            int_scheme=self.integration_scheme,
             active_set=active_set_expanded,
             verbose=False
         )
         next_result = jax.numpy.array(next_result)
-        where_decrease = (next_result < values) & active_set_expanded
+        where_decrease = (next_result < (values - 1e-3))
+        # print(jax.numpy.count_nonzero(where_decrease), jax.numpy.count_nonzero(active_set_expanded))
+
+        # NOTE: there is minor solver noise that requires us to redundantly filter on active_set_expanded. otherwise
+        #  over each iteration we will introduce a very small negative drift to the value function
+        where_decrease_and_active = where_decrease & active_set_expanded
         thing = jax.numpy.array(values)
-        thing = thing.at[where_decrease].set(next_result[where_decrease])
+        thing = thing.at[where_decrease_and_active].set(next_result[where_decrease_and_active])
         return thing
