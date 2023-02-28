@@ -1,3 +1,4 @@
+
 import os
 
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult
@@ -6,14 +7,15 @@ from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 
 def replay():
-    result = LocalUpdateResult.load("data/local_update_results/wip_qv_march_odp_20230227_234704.dill")
+    result = LocalUpdateResult.load("data/local_update_results/wip_qv_cbf_global_odp_20230228_025337.dill")
     # ref_index = ArraySlice2D.from_reference_index(
     #     reference_index=(1, 0, 0),
     #     free_dim_1=DimName(1, 'rel_vel'),
     #     free_dim_2=DimName(2, 'rel_dis')
     # )
     ref_index = ArraySlice2D.from_reference_index(
-        reference_index=result.get_middle_index(),
+        # reference_index=result.get_middle_index(),
+        reference_index=(0, 15, 0, 26),
         free_dim_1=DimName(0, 'y'),
         free_dim_2=DimName(2, 'theta')
     )
@@ -22,7 +24,7 @@ def replay():
         verbose=False,
         save_path=os.path.join(
             visuals_data_directory,
-            f'{generate_unique_filename("wip_qv_march_odp_20230227_234704", "gif")}')
+            f'{generate_unique_filename("wip_qv_cbf_global_odp_20230228_025337", "gif")}')
     )
     #
     # result.render_iteration(

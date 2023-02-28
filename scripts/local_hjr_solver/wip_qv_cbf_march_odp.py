@@ -48,7 +48,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
         solver_timestep=-.2,
         change_fraction=.999,
         integration_scheme='third',
-        hamiltonian_atol=.1,
+        hamiltonian_atol=.01,
         verbose=True
     )
 

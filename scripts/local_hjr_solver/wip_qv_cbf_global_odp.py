@@ -26,7 +26,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
             [0, -8, -np.pi, -10],
             [10, 8, np.pi, 10]
         ),
-        shape=(101, 51, 101, 51)
+        shape=(75, 41, 75, 41)
     )
 
     cbf, standardizer, certified_dict = load_cbf_feb24()
@@ -44,8 +44,10 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
         avoid_set=avoid_set,
         reach_set=reach_set,
         terminal_values=terminal_values,
-        max_iterations=40,
+        max_iterations=20,
         solver_timestep=-.25,
+        integration_scheme="third",
+        change_fraction=.999,
         verbose=True
     )
 
