@@ -70,16 +70,6 @@ def flag_states_on_grid(
     return bool_grid
 
 
-def snap_state_to_grid_index(
-        state: Vector,
-        grid: hj_reachability.Grid
-) -> Tuple[int, ...]:
-    state_in_grid_frame = state + np.array(grid.spacings) / 2 - np.array(grid.domain.lo)
-    grid_index = state_in_grid_frame // jnp.array(grid.spacings)
-    tuple_output = tuple(grid_index.astype(int))
-    return tuple_output
-
-
 @attr.s(auto_attribs=True)
 class TabularizedDnn(Callable):
     _table: ArrayNd
@@ -91,6 +81,6 @@ class TabularizedDnn(Callable):
         return cls(table, grid)
 
     def __call__(self, state: Vector) -> Vector:
-        index = snap_state_to_grid_index(state, self._grid)
+        index = self._grid.nearest_index(state)
         controls = self._table[index].reshape((self._table.shape[-1], 1))
         return controls

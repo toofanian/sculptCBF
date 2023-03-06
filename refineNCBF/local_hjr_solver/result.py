@@ -54,6 +54,7 @@ class LocalUpdateResult:
     seed_set: MaskNd
 
     iterations: List[LocalUpdateResultIteration] = attr.ib(factory=list)
+    # blurbs: List[str] = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(list)))
     blurbs: List[str] = attr.ib(factory=list)
 
     @classmethod
@@ -87,6 +88,8 @@ class LocalUpdateResult:
 
     def add_iteration(self, iteration: LocalUpdateResultIteration, blurb: str = ''):
         self.iterations.append(iteration)
+        if self.blurbs is None:
+            self.blurbs = []
         self.blurbs.append(blurb)
 
     def save(self, file_path: FilePathRelative):
@@ -109,9 +112,9 @@ class LocalUpdateResult:
         max_diff = jnp.max(jnp.abs(self.get_recent_values() - self.get_previous_values()))
         return max_diff
 
-    def get_previous_values(self):
+    def get_previous_values(self, iteration: int = -1):
         if len(self) > 1:
-            return self.iterations[-2].computed_values
+            return self.iterations[iteration-1].computed_values
         else:
             return self.initial_values
 
@@ -745,3 +748,195 @@ class LocalUpdateResult:
         ax.imshow(image, origin='lower')
         if verbose:
             plt.show(block=False)
+
+    def plot_algorithm(self, iteration: int, reference_slice: ArraySlice2D):
+        plt.rcParams['text.usetex'] = True
+
+        # show active set Q_k and boundary of V_k before update
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.avoid_set).T,
+            levels=[0, .5], colors=['r'], alpha=.3
+        )
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.iterations[iteration].active_set_expanded).T,
+            levels=[0, .5], colors=['b'], alpha=.3
+        )
+
+        ax.contour(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            reference_slice.get_sliced_array(self.get_previous_values(iteration)).T,
+            levels=[0], colors=['k'], alpha=.7
+        )
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='-'),
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.3),
+
+        ]
+        legend_for_labels = [
+            r'$L$, failure set',
+            r'$V_{k} \approx 0$, unsafe boundary',
+            r'$Q_k$, active set'
+        ]
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+
+        # Hide X and Y axes label marks
+        ax.xaxis.set_tick_params(labelbottom=False)
+        ax.yaxis.set_tick_params(labelleft=False)
+
+        # Hide X and Y axes tick marks
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_1', 'png')))
+
+        # show active set Q_k and boundary V_k+1 after update
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.avoid_set).T,
+            levels=[0, .5], colors=['r'], alpha=.3
+        )
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.iterations[iteration].active_set_expanded).T,
+            levels=[0, .5], colors=['b'], alpha=.2
+        )
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.iterations[iteration].active_set_post_filtered).T,
+            levels=[0, .5], colors=['b'], alpha=.2
+        )
+
+        ax.contour(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            reference_slice.get_sliced_array(self.get_previous_values(iteration)).T,
+            levels=[0], colors=['k'], alpha=.7
+        )
+
+        ax.contour(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            reference_slice.get_sliced_array(self.iterations[iteration].computed_values).T,
+            levels=[0], colors=['k'], alpha=.7, linestyles=['--']
+        )
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='-'),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='--'),
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.4),
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.2),
+
+        ]
+        legend_for_labels = [
+            r'$L$, failure set',
+            r'$V_{k} \approx 0$, unsafe boundary',
+            r'$V_{k+1} \approx 0$, updated unsafe boundary',
+            r'$Q_k$, active set',
+            r'$Q_k^-$, leaky active set'
+        ]
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+
+        # Hide X and Y axes label marks
+        ax.xaxis.set_tick_params(labelbottom=False)
+        ax.yaxis.set_tick_params(labelleft=False)
+
+        # Hide X and Y axes tick marks
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_2', 'png')))
+
+        # show active set Q_k and neighbor cells on boundary and boundary V_k+1 after update
+        fig, ax = plt.subplots(figsize=(9, 7))
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.avoid_set).T,
+            levels=[0, .5], colors=['r'], alpha=.3
+        )
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.iterations[iteration].active_set_expanded & ~(~self.iterations[iteration].active_set_expanded & self.iterations[iteration+1].active_set_expanded) & ~(self.iterations[iteration].active_set_expanded & ~self.iterations[iteration+1].active_set_expanded)).T,
+            levels=[0, .5], colors=['b'], alpha=.3
+        )
+
+        # added cells
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(
+                (~self.iterations[iteration].active_set_expanded & self.iterations[iteration+1].active_set_expanded)
+            ).T,
+            levels=[0, .5], colors=['g'], alpha=.3
+        )
+
+        # removed cells
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(
+                (self.iterations[iteration].active_set_expanded & ~self.iterations[iteration+1].active_set_expanded)
+            ).T,
+            levels=[0, .5], colors=['y'], alpha=.3
+        )
+
+        ax.contour(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            reference_slice.get_sliced_array(self.get_previous_values(iteration)).T,
+            levels=[0], colors=['k'], alpha=.7
+        )
+        ax.contour(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            reference_slice.get_sliced_array(self.iterations[iteration].computed_values).T,
+            levels=[0], colors=['k'], alpha=.7, linestyles=['--']
+        )
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='-'),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='--'),
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='g', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='y', ec='w', alpha=.3),
+        ]
+        legend_for_labels = [
+            r'$L$, failure set',
+            r'$V_{k} \approx 0$, unsafe boundary',
+            r'$V_{k+1} \approx 0$, updated unsafe boundary',
+            r'cells carried over from active set $Q_{k+1}$',
+            r'cells added to active set $Q_{k+1}$',
+            r'cells removed from active set $Q_{k+1}$'
+        ]
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+
+        # Hide X and Y axes label marks
+        ax.xaxis.set_tick_params(labelbottom=False)
+        ax.yaxis.set_tick_params(labelleft=False)
+
+        # Hide X and Y axes tick marks
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_3', 'png')))

@@ -4,14 +4,14 @@ import attr
 import jax
 import numpy as np
 from jax import numpy as jnp
-from refineNCBF.pre_constrcuted_stuff.quadcopter_cbf import load_tabularized_sac
 
 import hj_reachability
 from refineNCBF.dynamic_systems.dynamic_systems import ControlAffineDynamicSystemFixedPolicy
 from refineNCBF.dynamic_systems.quadcopter import QuadcopterVerticalParams, default_quadcopter_vertical_params
-from refineNCBF.hj_reachability_interface import HJControlAffineDynamicsFixedPolicy, ActorModes
+from refineNCBF.hj_reachability_interface.hj_dynamics import HJControlAffineDynamicsFixedPolicy, ActorModes
 from refineNCBF.utils.files import FilePathRelative
 from refineNCBF.utils.types import VectorBatch
+from scripts.pre_constructed_stuff.quadcopter_cbf import load_tabularized_sac
 
 
 @attr.s(auto_attribs=True, eq=False)

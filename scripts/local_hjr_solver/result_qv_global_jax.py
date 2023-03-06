@@ -21,7 +21,7 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(save_result: bool = F
             [0, -8, -jnp.pi, -10],
             [10, 8, jnp.pi, 10]
         ),
-        shape=(31, 25, 41, 25)
+        shape=(75, 41, 75, 41)
     )
 
     # define reach and avoid targets
@@ -42,10 +42,8 @@ def demo_local_hjr_classic_solver_on_active_cruise_control(save_result: bool = F
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=100,
-        atol=5e-2,
-        rtol=5e-2,
+        change_fraction=.999,
         verbose=True,
-
     )
 
     initial_values = terminal_values.copy()

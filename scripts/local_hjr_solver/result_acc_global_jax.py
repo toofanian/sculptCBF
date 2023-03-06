@@ -45,6 +45,7 @@ def acc_global_jax(save_result: bool = False):
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=100,
+        change_fraction=.999,
         verbose=True
     )
 

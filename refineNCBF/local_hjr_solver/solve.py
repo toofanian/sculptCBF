@@ -6,7 +6,8 @@ import attr
 import numpy as np
 
 import hj_reachability
-from refineNCBF.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty
+from refineNCBF.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty, \
+    BarrierNotMarching
 from refineNCBF.local_hjr_solver.expand import NeighborExpander, SignedDistanceNeighbors, \
     InnerSignedDistanceNeighbors, \
     SignedDistanceNeighborsNearBoundary, SignedDistanceNeighborsNearBoundaryDilation
@@ -157,6 +158,7 @@ class LocalHjrSolver(Callable):
 
             solver_timestep: float = -0.1,
             max_iterations: int = 100,
+            change_fraction: float = 1,
             atol: float = 1e-3,
             rtol: float = 1e-3,
 
@@ -188,6 +190,7 @@ class LocalHjrSolver(Callable):
             [
                 MaxIterations.from_parts(max_iterations=max_iterations),
                 PostFilteredActiveSetEmpty.from_parts(),
+                BarrierNotMarching.from_parts(change_fraction=change_fraction)
             ],
             verbose=verbose
         )

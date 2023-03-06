@@ -15,12 +15,20 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 def wip_acc_marching_odp(save_result: bool = False):
     dynamics = ActiveCruiseControlOdp()
 
+    # grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
+    #     domain=hj_reachability.sets.Box(
+    #         [0, -20, 20],
+    #         [1e3, 20, 80]
+    #     ),
+    #     shape=(3, 151, 151)
+    # )
+
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            [0, -20, 20],
-            [1e3, 20, 80]
+            [0, -15, 30],
+            [1e3, 15, 70]
         ),
-        shape=(3, 201, 201)
+        shape=(3, 31, 31)
     )
 
     avoid_set = (
@@ -47,7 +55,7 @@ def wip_acc_marching_odp(save_result: bool = False):
         solver_timestep=-.1,
         verbose=True,
         change_fraction=.999,
-        integration_scheme='second',
+        integration_scheme='third',
         periodic_dims=[]
     )
 

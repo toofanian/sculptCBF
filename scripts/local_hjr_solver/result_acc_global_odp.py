@@ -19,7 +19,7 @@ def acc_global_odp(save_result: bool = False):
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 101, 101)
+        shape=(3, 201, 201)
     )
 
     avoid_set = (
@@ -40,6 +40,8 @@ def acc_global_odp(save_result: bool = False):
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=100,
+        change_fraction=.999,
+        integration_scheme='third',
         solver_timestep=-.1,
         verbose=True
     )
@@ -50,7 +52,7 @@ def acc_global_odp(save_result: bool = False):
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/acc_global_odp', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/result_acc_global', 'dill'))
 
     return result
 
