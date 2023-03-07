@@ -109,12 +109,12 @@ class PreFilterWhereFarFromBoundarySplitOnce(ActiveSetPreFilter):
                                                                 distance=self._distance_outer)
 
             active_set_filtered = (
-                    data.get_pending_seed_set()
+                    data.seed_set
                     & ~
                     (
-                            where_far_exterior
-                            |
-                            where_far_interior
+                        where_far_exterior
+                        |
+                        where_far_interior
                     )
             )
             return active_set_filtered

@@ -126,7 +126,7 @@ class LocalUpdateResult:
 
     def get_recent_set_for_compute(self) -> MaskNd:
         if len(self) == 0:
-            return jnp.ones_like(self.seed_set, dtype=bool)
+            return self.seed_set
         else:
             return self.iterations[-1].active_set_expanded
 
