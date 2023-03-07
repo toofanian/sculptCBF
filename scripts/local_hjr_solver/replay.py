@@ -8,7 +8,8 @@ from refineNCBF.utils.visuals import ArraySlice2D, DimName
 
 def replay():
     # result = LocalUpdateResult.load("data/local_update_results/wip_qv_cbf_march_odp_20230228_003139.dill")
-    result = LocalUpdateResult.load("data/local_update_results/acc_test_20230306_185158.dill")
+    result = LocalUpdateResult.load("data/local_update_results/result_acc_global_odp_3x75x75.dill")
+
     ref_index = ArraySlice2D.from_reference_index(
         reference_index=(1, 0, 0),
         free_dim_1=DimName(1, 'rel_vel'),
@@ -29,16 +30,35 @@ def replay():
     #         f'{generate_unique_filename("wip_qv_cbf_global_odp_20230228_025337", "gif")}')
     # )
 
-    result.render_iteration(
-        iteration=-1,
-        reference_slice=ref_index,
-        verbose=True,
-    )
+    # result.render_iteration(
+    #     iteration=-1,
+    #     reference_slice=ref_index,
+    #     verbose=False,
+    #     save_fig=True
+    # )
 
-    result.plot_algorithm(iteration=3, reference_slice=ref_index)
+    compare_result = LocalUpdateResult.load("data/local_update_results/wip_acc_marching_odp_20230227_233418.dill")
+
+    # result.plot_algorithm(iteration=3, reference_slice=ref_index)
 
     # plt.pause(0)
 
 
+def plot_acc_hammy_comparison():
+    global_acc_result = LocalUpdateResult.load("data/local_update_results/result_acc_global_odp_3x75x75.dill")
+    march_acc_result = LocalUpdateResult.load("data/local_update_results/result_acc_march_odp_3x75x75.dill")
+
+    global_acc_result.plot_kernel_accuracy_vs_hammys(
+        title='Active Cruise Control Kernel Compute Costs',
+        label='Vanilla Reachability',
+        compare_results=[march_acc_result],
+        compare_labels=['Boundary March'],
+        x_scale='log',
+        y_scale='log',
+        ignore_dim=(0,)
+    )
+
+
 if __name__ == '__main__':
-    replay()
+    # replay()
+    plot_acc_hammy_comparison()

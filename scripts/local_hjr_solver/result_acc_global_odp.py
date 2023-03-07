@@ -19,7 +19,7 @@ def acc_global_odp(save_result: bool = False):
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 201, 201)
+        shape=(3, 51, 51)
     )
 
     avoid_set = (
@@ -41,7 +41,7 @@ def acc_global_odp(save_result: bool = False):
         terminal_values=terminal_values,
         max_iterations=100,
         change_fraction=.999,
-        integration_scheme='third',
+        integration_scheme='first',
         solver_timestep=-.1,
         verbose=True
     )

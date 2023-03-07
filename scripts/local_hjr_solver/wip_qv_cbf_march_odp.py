@@ -21,8 +21,6 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            # [-1.25, -13.7, -3.65, -7.52],
-            # [11.25, 8.3, 3.26, 5.62]
             [0, -8, -np.pi, -10],
             [10, 8, np.pi, 10]
         ),

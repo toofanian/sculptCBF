@@ -5,7 +5,7 @@ from jax import numpy as jnp
 
 import hj_reachability
 from odp.dynamics.quad4d import Quad4D
-from refineNCBF.local_hjr_solver.solve_odp import create_global_solver_odp
+from refineNCBF.local_hjr_solver.solve_odp import create_global_solver_odp, create_decrease_global_solver_odp
 from refineNCBF.neural_barrier_kinematic_model_interface.certification import load_uncertified_states, \
     load_certified_states
 from refineNCBF.utils.files import generate_unique_filename
@@ -37,7 +37,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
 
     terminal_values = compute_signed_distance(~avoid_set)
 
-    solver = create_global_solver_odp(
+    solver = create_decrease_global_solver_odp(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=[2],
@@ -76,7 +76,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/wip_qv_cbf_global_odp', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/', 'dill'))
 
     return result
 

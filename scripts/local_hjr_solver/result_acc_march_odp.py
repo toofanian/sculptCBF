@@ -20,16 +20,8 @@ def wip_acc_marching_odp(save_result: bool = False):
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 51, 51)
+        shape=(3, 75, 75)
     )
-    #
-    # grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
-    #     domain=hj_reachability.sets.Box(
-    #         [0, -15, 30],
-    #         [1e3, 15, 70]
-    #     ),
-    #     shape=(3, 31, 31)
-    # )
 
     avoid_set = (
             (grid.states[..., 2] > 60)
@@ -48,7 +40,7 @@ def wip_acc_marching_odp(save_result: bool = False):
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=200,
-        hamiltonian_atol=1e-3,
+        hamiltonian_atol=1e-2,
         boundary_distance_inner=2,
         boundary_distance_outer=2,
         neighbor_distance=2,
