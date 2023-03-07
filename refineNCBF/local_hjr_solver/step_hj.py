@@ -38,10 +38,11 @@ class ClassicLocalHjrStepper(LocalHjrStepper):
             grid: hj_reachability.Grid,
             terminal_values: ArrayNd,
             time_step: float,
-            verbose: bool
+            verbose: bool, 
+            accuracy: hj_reachability.solver.SolverAccuracyEnum = hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH
     ):
         solver_settings = hj_reachability.SolverSettings.with_accuracy(
-            hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            accuracy,
             value_postprocessor=ReachAvoid.from_array(
                 values=terminal_values,
             ),
@@ -83,10 +84,11 @@ class DecreaseLocalHjrStepper(LocalHjrStepper):
             grid: hj_reachability.Grid,
             terminal_values: ArrayNd,
             time_step: float,
-            verbose: bool
+            verbose: bool,
+            accuracy: hj_reachability.solver.SolverAccuracyEnum = hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH
     ):
         solver_settings = hj_reachability.SolverSettings.with_accuracy(
-            hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            accuracy,
             value_postprocessor=ReachAvoid.from_array(
                 values=terminal_values,
             ),
@@ -134,10 +136,11 @@ class DecreaseReplaceLocalHjrStepper(LocalHjrStepper):
             grid: hj_reachability.Grid,
             terminal_values: ArrayNd,
             time_step: float,
-            verbose: bool
+            verbose: bool,
+            accuracy: hj_reachability.solver.SolverAccuracyEnum = hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH
     ):
         solver_settings = hj_reachability.SolverSettings.with_accuracy(
-            hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            accuracy,
             value_postprocessor=ReachAvoid.from_array(
                 values=terminal_values,
             ),

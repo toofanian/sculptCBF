@@ -161,7 +161,8 @@ class LocalHjrSolver(Callable):
             change_fraction: float = 1,
             atol: float = 1e-3,
             rtol: float = 1e-3,
-
+            solver_accuracy = hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            
             verbose: bool = False,
     ):
         """
@@ -180,6 +181,7 @@ class LocalHjrSolver(Callable):
             grid=grid,
             terminal_values=terminal_values,
             time_step=solver_timestep,
+            accuracy=solver_accuracy,
             verbose=verbose
         )
         active_set_post_filter = RemoveWhereUnchanged.from_parts(
@@ -222,7 +224,9 @@ class LocalHjrSolver(Callable):
             solver_timestep: float = -0.1,
             value_change_atol: float = 1e-3,
             value_change_rtol: float = 1e-3,
+            change_fraction: float = 1,
             max_iterations: int = 100,
+            solver_accuracy = hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
 
             verbose: bool = False,
     ):
@@ -242,7 +246,8 @@ class LocalHjrSolver(Callable):
             grid=grid,
             terminal_values=terminal_values,
             time_step=solver_timestep,
-            verbose=verbose
+            accuracy=solver_accuracy,
+            verbose=verbose,
         )
         active_set_post_filter = RemoveWhereUnchanged.from_parts(
             atol=value_change_atol,
@@ -252,6 +257,7 @@ class LocalHjrSolver(Callable):
             [
                 MaxIterations.from_parts(max_iterations=max_iterations),
                 PostFilteredActiveSetEmpty.from_parts(),
+                BarrierNotMarching.from_parts(change_fraction=change_fraction)
             ],
             verbose=verbose
         )
@@ -284,7 +290,9 @@ class LocalHjrSolver(Callable):
             neighbor_distance: float = 2,
             solver_timestep: float = -0.1,
             hamiltonian_atol: float = 1e-3,
+            change_fraction: float = 1,
             max_iterations: int = 100,
+            solver_accuracy = hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
 
             verbose: bool = False,
     ):
@@ -311,6 +319,7 @@ class LocalHjrSolver(Callable):
             grid=grid,
             terminal_values=terminal_values,
             time_step=solver_timestep,
+            accuracy=solver_accuracy,
             verbose=verbose
         )
         active_set_post_filter = RemoveWhereNonNegativeHamiltonian.from_parts(
@@ -320,6 +329,7 @@ class LocalHjrSolver(Callable):
             [
                 MaxIterations.from_parts(max_iterations=max_iterations),
                 PostFilteredActiveSetEmpty.from_parts(),
+                BarrierNotMarching.from_parts(change_fraction=change_fraction),
             ],
             verbose=verbose
         )
