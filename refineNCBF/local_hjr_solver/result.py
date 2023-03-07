@@ -949,8 +949,12 @@ class LocalUpdateResult:
             self,
             label: str,
             title: str,
-            compare_result: Optional["LocalUpdateResult"] = None,
-            compare_label: Optional[str] = None):
+            x_scale: str = 'log',
+            y_scale: str = 'log',
+            compare_results: Optional[List["LocalUpdateResult"]] = None,
+            compare_labels: Optional[List[str]] = None,
+            ignore_dim: Tuple[int] = (),
+    ):
         """
         assumes final result is the converged kernel
         """
@@ -965,7 +969,10 @@ class LocalUpdateResult:
         hammies = [1]
         for iteration in self.iterations:
             inaccurate_unsafe_counts.append(np.count_nonzero((iteration.computed_values >= 0) & ~final_kernel))
-            hammies.append(np.count_nonzero(iteration.active_set_expanded))
+            hammies_at_iteration = np.count_nonzero(iteration.active_set_expanded)
+            for dim in ignore_dim:
+                hammies_at_iteration = hammies_at_iteration/self.grid.shape[dim]
+            hammies.append(hammies_at_iteration)
 
         inaccurate_unsafe_fractions = [
             inaccurate_unsafe_count/viable_count
@@ -974,50 +981,55 @@ class LocalUpdateResult:
         ]
 
         running_hammies = [
-            sum(hammies[:i])
+            sum(hammies[:i+1])
             for i
             in range(len(hammies))
         ]
 
-        ax.plot(running_hammies, inaccurate_unsafe_fractions, label=label)
+        ax.plot(running_hammies, inaccurate_unsafe_fractions, label=label, marker='x')
 
-        if compare_result is not None:
-            final_kernel = compare_result.get_viability_kernel()
-            initial_kernel = compare_result.initial_values >= 0
-            viable_count = np.count_nonzero(initial_kernel & ~final_kernel)
+        if compare_results is not None:
+            for compare_result, compare_label in zip(compare_results, compare_labels):
+                final_kernel = compare_result.get_viability_kernel()
+                initial_kernel = compare_result.initial_values >= 0
+                viable_count = np.count_nonzero(initial_kernel & ~final_kernel)
 
-            inaccurate_unsafe_counts = [
-                np.count_nonzero((iteration.computed_values >= 0) & ~final_kernel)
-                for iteration
-                in compare_result.iterations
-            ]
-            inaccurate_unsafe_fractions = [
-                inaccurate_unsafe_count / viable_count
-                for inaccurate_unsafe_count
-                in inaccurate_unsafe_counts
-            ]
+                inaccurate_unsafe_counts = [viable_count]
+                hammies = [1]
+                for iteration in compare_result.iterations:
+                    inaccurate_unsafe_counts.append(np.count_nonzero((iteration.computed_values >= 0) & ~final_kernel))
+                    hammies_at_iteration = np.count_nonzero(iteration.active_set_expanded)
+                    for dim in ignore_dim:
+                        hammies_at_iteration = hammies_at_iteration / self.grid.shape[dim]
+                    hammies.append(hammies_at_iteration)
 
-            hammies = [
-                np.count_nonzero(iteration.active_set_expanded)
-                for iteration
-                in compare_result.iterations
-            ]
+                inaccurate_unsafe_fractions = [
+                    inaccurate_unsafe_count / viable_count
+                    for inaccurate_unsafe_count
+                    in inaccurate_unsafe_counts
+                ]
 
-            running_hammies = [
-                sum(hammies[:i])
-                for i
-                in range(len(hammies))
-            ]
+                running_hammies = [
+                    sum(hammies[:i+1])
+                    for i
+                    in range(len(hammies))
+                ]
 
-        ax.plot(running_hammies, inaccurate_unsafe_fractions, label=compare_label)
+                ax.plot(running_hammies, inaccurate_unsafe_fractions, label=compare_label, marker='x')
 
         ax.set_title(title)
-        ax.set_xscale('log')
-        ax.set_ylim(bottom=0, top=1)
+        ax.set_xscale(x_scale)
+        ax.set_xlim(left=100) if y_scale == 'log' else ax.set_xlim(left=1)
+        ax.set_yscale(y_scale)
+        ax.set_ylim(bottom=.001, top=1)
         ax.set_xlabel('Total Hamiltonians Computed')
         ax.set_ylabel('Fraction of Unsafe States in Running Kernel')
-
         ax.legend()
 
-        print('saving!')
-        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_kernel_accuracy_vs_hammys', 'png')))
+        save_location = construct_refine_ncbf_path(
+            generate_unique_filename(
+                f'data/visuals/{title.replace(" ","_")}', 'png'
+            )
+        )
+        print(f'saving at {save_location}')
+        plt.savefig(save_location)
