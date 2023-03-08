@@ -25,7 +25,7 @@ def result_acc_march_jax(save_result: bool = False):
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 201, 201)
+        shape=(3, 75, 75)
     )
 
     avoid_set = (

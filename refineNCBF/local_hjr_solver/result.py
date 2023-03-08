@@ -54,7 +54,6 @@ class LocalUpdateResult:
     seed_set: MaskNd
 
     iterations: List[LocalUpdateResultIteration] = attr.ib(factory=list)
-    # blurbs: List[str] = attr.ib(default=None, validator=attr.validators.optional(attr.validators.instance_of(list)))
     blurbs: List[str] = attr.ib(factory=list)
 
     @classmethod
@@ -343,31 +342,29 @@ class LocalUpdateResult:
         if verbose:
             plt.show(block=False)
 
-    def render_iteration(self, iteration: int, reference_slice: ArraySlice2D, verbose: bool = True,
+    def render_iteration(self, iteration: int, reference_slice: ArraySlice2D, legend: bool = True, verbose: bool = True,
                          save_fig: bool = False):
-        fig, ax = plt.subplots(figsize=(9, 7))
+        plt.rcParams['text.usetex'] = True
+
+        fig, ax = plt.subplots(figsize=(5, 3.888))
 
         proxies_for_labels = [
             plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.3),
-            plt.Rectangle((0, 0), 1, 1, fc='g', ec='w', alpha=.3),
-            plt.Rectangle((0, 0), 1, 1, fc='k', ec='w', alpha=.3),
-            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', alpha=.7),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', alpha=1),
             plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.2),
             plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.4),
             plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='--'),
         ]
 
         legend_for_labels = [
-            'avoid set',
-            'reach set',
-            'seed set',
-            'initial zero levelset',
-            'active set',
-            'changed set',
-            'running viability kernel',
+            r'$L$, Failure Set',
+            r'$V_0(x) \approx 0$, Initial Kernel',
+            r'$Q_k$, Active Set',
+            r'$Q_k^-$, Decreased Set',
+            r'$V_k(x) \approx 0$, Running Kernel',
         ]
 
-        ax.set(title=f"iteration: {iteration} of {len(self)}")
+        ax.set(title=f"iteration: {iteration if iteration != -1 else len(self)} of {len(self)}")
 
         ax.set_xlabel(reference_slice.free_dim_1.name)
         ax.set_ylabel(reference_slice.free_dim_2.name)
@@ -387,13 +384,13 @@ class LocalUpdateResult:
             levels=[0, .5], colors=['g'], alpha=.3
         )
 
-        # always have seed set up
-        ax.contourf(
-            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
-            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
-            ~reference_slice.get_sliced_array(self.seed_set).T,
-            levels=[0, .5], colors=['k'], alpha=.3
-        )
+        # # always have seed set up
+        # ax.contourf(
+        #     self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+        #     self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+        #     ~reference_slice.get_sliced_array(self.seed_set).T,
+        #     levels=[0, .5], colors=['k'], alpha=.3
+        # )
 
         # always have initial zero levelset up
         ax.contour(
@@ -425,11 +422,18 @@ class LocalUpdateResult:
             levels=[0], colors=['k'], linestyles=['--']
         )
 
-        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                         box.width, box.height * 0.9])
+
+        # Put a legend below current axis
+        if legend:
+            ax.legend(proxies_for_labels, legend_for_labels, loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                      fancybox=True, shadow=True, ncol=3)
 
         if save_fig:
             plt.savefig(construct_refine_ncbf_path(
-                generate_unique_filename(f'data/visuals/render_iteration_{iteration}', 'png')))
+                generate_unique_filename(f'data/visuals/render_iteration_{iteration}', 'png')), bbox_inches='tight')
 
         if verbose:
             plt.show(block=False)
@@ -659,11 +663,8 @@ class LocalUpdateResult:
             reference_slice: ArraySlice2D,
             iteration: int = -1,
             verbose: bool = False,
-            save_path: Optional[FilePathRelative] = None
+            save_fig: bool = False
     ):
-        if save_path is not None:
-            raise NotImplementedError('saving not implemented yet')
-
         values = self.iterations[iteration].computed_values
 
         x1, x2 = np.meshgrid(
@@ -701,6 +702,9 @@ class LocalUpdateResult:
         ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
         ax.set_xlabel(reference_slice.free_dim_1.name)
         ax.set_ylabel(reference_slice.free_dim_2.name)
+
+        if save_fig:
+            plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_value_function', 'png')))
 
         if verbose:
             plt.show(block=False)
@@ -757,7 +761,7 @@ class LocalUpdateResult:
         plt.rcParams['text.usetex'] = True
 
         # show active set Q_k and boundary of V_k before update
-        fig, ax = plt.subplots(figsize=(9, 7))
+        fig, ax = plt.subplots(figsize=(5, 3.888))
 
         ax.contourf(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
@@ -791,7 +795,16 @@ class LocalUpdateResult:
             r'$V_{k} \approx 0$, unsafe boundary',
             r'$Q_k$, active set'
         ]
-        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                         box.width, box.height * 0.9])
+
+        # Put a legend below current axis
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=3)
+
+        # ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
 
         # Hide X and Y axes label marks
         ax.xaxis.set_tick_params(labelbottom=False)
@@ -801,10 +814,10 @@ class LocalUpdateResult:
         ax.set_xticks([])
         ax.set_yticks([])
 
-        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_1', 'png')))
+        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_1', 'png')), bbox_inches='tight')
 
         # show active set Q_k and boundary V_k+1 after update
-        fig, ax = plt.subplots(figsize=(9, 7))
+        fig, ax = plt.subplots(figsize=(5, 3.888))
 
         ax.contourf(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
@@ -855,7 +868,15 @@ class LocalUpdateResult:
             r'$Q_k$, active set',
             r'$Q_k^-$, leaky active set'
         ]
-        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                         box.width, box.height * 0.9])
+
+        # Put a legend below current axis
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=3)
+        # ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
 
         # Hide X and Y axes label marks
         ax.xaxis.set_tick_params(labelbottom=False)
@@ -865,10 +886,10 @@ class LocalUpdateResult:
         ax.set_xticks([])
         ax.set_yticks([])
 
-        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_2', 'png')))
+        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_2', 'png')), bbox_inches='tight')
 
         # show active set Q_k and neighbor cells on boundary and boundary V_k+1 after update
-        fig, ax = plt.subplots(figsize=(9, 7))
+        fig, ax = plt.subplots(figsize=(5, 3.888))
 
         ax.contourf(
             self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
@@ -933,7 +954,15 @@ class LocalUpdateResult:
             r'cells added to active set $Q_{k+1}$',
             r'cells removed from active set $Q_{k+1}$'
         ]
-        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                         box.width, box.height * 0.9])
+
+        # Put a legend below current axis
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=3)
+
+        # ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
 
         # Hide X and Y axes label marks
         ax.xaxis.set_tick_params(labelbottom=False)
@@ -943,7 +972,7 @@ class LocalUpdateResult:
         ax.set_xticks([])
         ax.set_yticks([])
 
-        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_3', 'png')))
+        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_algorithm_3', 'png')), bbox_inches='tight')
 
     def plot_kernel_accuracy_vs_hammys(
             self,
@@ -1033,3 +1062,169 @@ class LocalUpdateResult:
         )
         print(f'saving at {save_location}')
         plt.savefig(save_location)
+
+    def plot_failure_set(self, reference_slice: ArraySlice2D):
+        plt.rcParams['text.usetex'] = True
+
+        # show active set Q_k and boundary of V_k before update
+        fig, ax = plt.subplots(figsize=(5, 3.888))
+
+        ax.contourf(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            ~reference_slice.get_sliced_array(self.avoid_set).T,
+            levels=[0, .5], colors=['r'], alpha=.3
+        )
+
+        ax.contour(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
+            reference_slice.get_sliced_array(self.initial_values).T,
+            levels=[0], colors=['k'], alpha=.7
+        )
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='r', ec='w', alpha=.3),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', linestyle='-'),
+
+        ]
+        legend_for_labels = [
+            r'$L$, failure set',
+            r'$V_{0} \approx 0$, unsafe boundary',
+        ]
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper left')
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
+
+        plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_failure_set', 'png')), bbox_inches='tight')
+
+    def plot_initial_values(
+            self,
+            reference_slice: ArraySlice2D,
+            verbose: bool = False,
+            save_fig: bool = False
+    ):
+        plt.rcParams['text.usetex'] = True
+        fig, ax = plt.figure(figsize=(5, 3.888)), plt.axes(projection='3d')
+
+        values = self.initial_values
+
+        x1, x2 = np.meshgrid(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+        )
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='k', ec='w', alpha=.5),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='k', alpha=1),
+        ]
+
+        legend_for_labels = [
+            r'$V_0(x)$',
+            r'$V_0(x)\approx 0$',
+        ]
+
+        ax.plot_surface(
+            x1, x2, reference_slice.get_sliced_array(values).T,
+            cmap='Greys', edgecolor='none', alpha=.5
+        )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(values).T,
+            levels=[0], colors=['k'], alpha=1
+        )
+
+        # ax.set(title='Initial Value Function')
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper right')
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
+
+        if save_fig:
+            plt.savefig(construct_refine_ncbf_path(generate_unique_filename('data/visuals/plot_initial_values', 'png')), bbox_inches='tight')
+
+        if verbose:
+            plt.show(block=False)
+
+        return fig, ax
+
+    def plot_value_function_comparison(
+            self,
+            reference_slice: ArraySlice2D,
+            title: str,
+            label: str,
+            iteration: int = -1,
+
+            comparison_result: Optional["LocalUpdateResult"] = None,
+            comparison_iteration: int = -1,
+            comparison_label: Optional[str] = None,
+
+            verbose: bool = False,
+            save_fig: bool = False
+    ):
+        plt.rcParams['text.usetex'] = True
+
+        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection='3d')
+        # ax.set(title=title)
+
+        values = self.iterations[iteration].computed_values
+
+        x1, x2 = np.meshgrid(
+            self.grid.coordinate_vectors[reference_slice.free_dim_1.dim],
+            self.grid.coordinate_vectors[reference_slice.free_dim_2.dim]
+        )
+
+        ax.plot_surface(
+            x1, x2, reference_slice.get_sliced_array(values).T,
+            cmap='Blues', edgecolor='none', alpha=.7
+        )
+        ax.contour3D(
+            x1, x2, reference_slice.get_sliced_array(values).T,
+            levels=[0], colors=['b'], linestyles=['--']
+        )
+
+        proxies_for_labels = [
+            plt.Rectangle((0, 0), 1, 1, fc='b', ec='w', alpha=.5),
+            plt.Rectangle((0, 0), 1, 1, fc='w', ec='b', alpha=1),
+        ]
+        legend_for_labels = [
+            r'$V_\infty(x)$, '+label,
+            r'$V_\infty(x)\approx 0$, '+label,
+        ]
+
+        if comparison_result is not None:
+            comparison_values = comparison_result.iterations[comparison_iteration].computed_values
+
+            ax.plot_surface(
+                x1, x2, reference_slice.get_sliced_array(comparison_values).T,
+                cmap='Greens', edgecolor='none', alpha=.3
+            )
+            ax.contour3D(
+                x1, x2, reference_slice.get_sliced_array(comparison_values).T,
+                levels=[0], colors=['g']
+            )
+
+            proxies_for_labels.extend([
+                plt.Rectangle((0, 0), 1, 1, fc='g', ec='w', alpha=.5),
+                plt.Rectangle((0, 0), 1, 1, fc='w', ec='g', alpha=1),
+            ])
+            legend_for_labels.extend([
+                r'$V_\infty(x)$, ' + comparison_label,
+                r'$V_\infty(x)\approx 0$, ' + comparison_label,
+            ])
+
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                         box.width, box.height * 0.9])
+
+        # Put a legend below current axis
+        ax.legend(proxies_for_labels, legend_for_labels, loc='upper center', bbox_to_anchor=(0.5, -0.05),
+                  fancybox=True, shadow=True, ncol=3)
+        ax.set_xlabel(reference_slice.free_dim_1.name)
+        ax.set_ylabel(reference_slice.free_dim_2.name)
+
+        if save_fig:
+            plt.savefig(construct_refine_ncbf_path(generate_unique_filename(f'data/visuals/{title.replace(",","").replace(" ", "_")}', 'png')), bbox_inches='tight')
+
+        if verbose:
+            plt.show(block=False)
+
+        return fig, ax

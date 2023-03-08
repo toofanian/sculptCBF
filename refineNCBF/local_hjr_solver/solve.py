@@ -212,6 +212,70 @@ class LocalHjrSolver(Callable):
         )
 
     @classmethod
+    def as_global_decrease_solver(
+            cls,
+            dynamics: hj_reachability.Dynamics,
+            grid: hj_reachability.Grid,
+            avoid_set: MaskNd,
+            reach_set: MaskNd,
+            terminal_values: ArrayNd,
+
+            solver_timestep: float = -0.1,
+            max_iterations: int = 100,
+            change_fraction: float = 1,
+            atol: float = 1e-3,
+            rtol: float = 1e-3,
+            solver_accuracy = hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
+            
+            verbose: bool = False,
+    ):
+        """
+        NOTE: see readme for more details, info here may be inaccurate.
+
+        classic solver with no pre-filtering, "signed distance" neighbors, "classic" local hjr stepper, and "no change" post-filtering.
+        with appropriate initialization, should return the same values as vanilla/global hjr for regions connected by value to the initial active set.
+        """
+        active_set_pre_filter = NoPreFilter.from_parts(
+        )
+        neighbor_expander = SignedDistanceNeighbors.from_parts(
+            distance=np.inf
+        )
+        local_hjr_stepper = DecreaseLocalHjrStepper.from_parts(
+            dynamics=dynamics,
+            grid=grid,
+            terminal_values=terminal_values,
+            time_step=solver_timestep,
+            accuracy=solver_accuracy,
+            verbose=verbose
+        )
+        active_set_post_filter = RemoveWhereUnchanged.from_parts(
+            atol=atol,
+            rtol=rtol,
+        )
+        break_criteria_checker = BreakCriteriaChecker.from_criteria(
+            [
+                MaxIterations.from_parts(max_iterations=max_iterations),
+                PostFilteredActiveSetEmpty.from_parts(),
+                BarrierNotMarching.from_parts(change_fraction=change_fraction)
+            ],
+            verbose=verbose
+        )
+
+        return cls(
+            dynamics=dynamics,
+            grid=grid,
+            avoid_set=avoid_set,
+            reach_set=reach_set,
+            terminal_values=terminal_values,
+            active_set_pre_filter=active_set_pre_filter,
+            neighbor_expander=neighbor_expander,
+            local_hjr_stepper=local_hjr_stepper,
+            active_set_post_filter=active_set_post_filter,
+            break_criteria_checker=break_criteria_checker,
+            verbose=verbose,
+        )
+
+    @classmethod
     def as_local_solver(
             cls,
             dynamics: hj_reachability.Dynamics,

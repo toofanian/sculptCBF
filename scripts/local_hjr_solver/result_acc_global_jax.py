@@ -25,7 +25,7 @@ def acc_global_jax(save_result: bool = False):
             [0, -20, 20],
             [1e3, 20, 80]
         ),
-        shape=(3, 201, 201)
+        shape=(3, 75, 75)
     )
 
     avoid_set = (
@@ -45,7 +45,7 @@ def acc_global_jax(save_result: bool = False):
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=100,
-        change_fraction=.999,
+        change_fraction=1,
         verbose=True
     )
 
@@ -56,7 +56,7 @@ def acc_global_jax(save_result: bool = False):
 
     if save_result:
         result.save(
-            generate_unique_filename('data/local_update_results/demo_local_hjr_classic_solver_on_active_cruise_control',
+            generate_unique_filename('data/local_update_results/wip_acc_global_jax',
                                      'dill'))
 
     return result

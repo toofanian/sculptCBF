@@ -21,8 +21,6 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
 
     grid = hj_reachability.Grid.from_lattice_parameters_and_boundary_conditions(
         domain=hj_reachability.sets.Box(
-            # [-1.25, -13.7, -3.65, -7.52],
-            # [11.25, 8.3, 3.26, 5.62]
             [0, -8, -np.pi, -10],
             [10, 8, np.pi, 10]
         ),
@@ -45,7 +43,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
         reach_set=reach_set,
         terminal_values=terminal_values,
         max_iterations=20,
-        solver_timestep=-.25,
+        solver_timestep=-.2,
         integration_scheme="third",
         change_fraction=.999,
         verbose=True
@@ -76,7 +74,7 @@ def wip_qv_cbf_global_odp(save_result: bool = False):
     result = solver(active_set=active_set, initial_values=initial_values)
 
     if save_result:
-        result.save(generate_unique_filename('data/local_update_results/', 'dill'))
+        result.save(generate_unique_filename('data/local_update_results/wip_qv_cbf_global_odp', 'dill'))
 
     return result
 
