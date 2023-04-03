@@ -3,8 +3,12 @@ from typing import List
 import numpy as np
 
 import hj_reachability
-from refineNCBF.local_hjr_solver.breaker import BreakCriteriaChecker, MaxIterations, PostFilteredActiveSetEmpty, \
-    BarrierNotMarching
+from refineNCBF.local_hjr_solver.breaker import (
+    BreakCriteriaChecker,
+    MaxIterations,
+    PostFilteredActiveSetEmpty,
+    BarrierNotMarching,
+)
 from refineNCBF.local_hjr_solver.expand import SignedDistanceNeighbors, SignedDistanceNeighborsNearBoundaryDilation
 from refineNCBF.local_hjr_solver.postfilter import RemoveWhereUnchanged, RemoveWhereNonNegativeHamiltonian
 from refineNCBF.local_hjr_solver.prefilter import NoPreFilter, PreFilterWhereFarFromBoundarySplitOnce
@@ -15,33 +19,30 @@ from refineNCBF.utils.types import MaskNd, ArrayNd
 
 
 def create_global_solver_odp(
-        dynamics: OdpDynamics,
-        grid: hj_reachability.Grid,
-        periodic_dims: List[int],
-        avoid_set: MaskNd,
-        reach_set: MaskNd,
-        terminal_values: ArrayNd,
-
-        solver_timestep: float = -0.1,
-        hamiltonian_atol: float = 1e-3,
-        hamiltonian_rtol: float = 1e-3,
-        integration_scheme: str = 'first',
-        change_fraction: float = 1,
-        max_iterations: int = 100,
-
-        verbose: bool = False,
+    dynamics: OdpDynamics,
+    grid: hj_reachability.Grid,
+    periodic_dims: List[int],
+    avoid_set: MaskNd,
+    reach_set: MaskNd,
+    terminal_values: ArrayNd,
+    solver_timestep: float = -0.1,
+    hamiltonian_atol: float = 1e-3,
+    hamiltonian_rtol: float = 1e-3,
+    integration_scheme: str = "first",
+    change_fraction: float = 1,
+    max_iterations: int = 100,
+    solver_global_minimizing: bool = False,
+    verbose: bool = False,
 ) -> LocalHjrSolver:
-    active_set_pre_filter = NoPreFilter.from_parts(
-    )
-    neighbor_expander = SignedDistanceNeighbors.from_parts(
-        distance=np.inf
-    )
+    active_set_pre_filter = NoPreFilter.from_parts()
+    neighbor_expander = SignedDistanceNeighbors.from_parts(distance=np.inf)
     local_hjr_stepper = ClassicLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=periodic_dims,
         integration_scheme=integration_scheme,
         time_step=solver_timestep,
+        global_minimizing=solver_global_minimizing,
     )
     active_set_post_filter = RemoveWhereUnchanged.from_parts(
         atol=hamiltonian_atol,
@@ -51,9 +52,9 @@ def create_global_solver_odp(
         [
             MaxIterations.from_parts(max_iterations=max_iterations),
             PostFilteredActiveSetEmpty.from_parts(),
-            BarrierNotMarching.from_parts(change_fraction=change_fraction)
+            BarrierNotMarching.from_parts(change_fraction=change_fraction),
         ],
-        verbose=verbose
+        verbose=verbose,
     )
 
     return LocalHjrSolver(
@@ -72,33 +73,30 @@ def create_global_solver_odp(
 
 
 def create_decrease_global_solver_odp(
-        dynamics: OdpDynamics,
-        grid: hj_reachability.Grid,
-        periodic_dims: List[int],
-        avoid_set: MaskNd,
-        reach_set: MaskNd,
-        terminal_values: ArrayNd,
-
-        solver_timestep: float = -0.1,
-        hamiltonian_atol: float = 1e-3,
-        hamiltonian_rtol: float = 1e-3,
-        integration_scheme: str = 'first',
-        change_fraction: float = 1,
-        max_iterations: int = 100,
-
-        verbose: bool = False,
+    dynamics: OdpDynamics,
+    grid: hj_reachability.Grid,
+    periodic_dims: List[int],
+    avoid_set: MaskNd,
+    reach_set: MaskNd,
+    terminal_values: ArrayNd,
+    solver_timestep: float = -0.1,
+    hamiltonian_atol: float = 1e-3,
+    hamiltonian_rtol: float = 1e-3,
+    integration_scheme: str = "first",
+    change_fraction: float = 1,
+    max_iterations: int = 100,
+    solver_global_minimizing: bool = False,
+    verbose: bool = False,
 ) -> LocalHjrSolver:
-    active_set_pre_filter = NoPreFilter.from_parts(
-    )
-    neighbor_expander = SignedDistanceNeighbors.from_parts(
-        distance=np.inf
-    )
+    active_set_pre_filter = NoPreFilter.from_parts()
+    neighbor_expander = SignedDistanceNeighbors.from_parts(distance=np.inf)
     local_hjr_stepper = DecreaseLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=periodic_dims,
         integration_scheme=integration_scheme,
         time_step=solver_timestep,
+        global_minimizing=solver_global_minimizing,
     )
     active_set_post_filter = RemoveWhereUnchanged.from_parts(
         atol=hamiltonian_atol,
@@ -108,9 +106,9 @@ def create_decrease_global_solver_odp(
         [
             MaxIterations.from_parts(max_iterations=max_iterations),
             PostFilteredActiveSetEmpty.from_parts(),
-            BarrierNotMarching.from_parts(change_fraction=change_fraction)
+            BarrierNotMarching.from_parts(change_fraction=change_fraction),
         ],
-        verbose=verbose
+        verbose=verbose,
     )
     return LocalHjrSolver(
         dynamics=dynamics,
@@ -128,32 +126,30 @@ def create_decrease_global_solver_odp(
 
 
 def create_local_solver_odp(
-        dynamics: OdpDynamics,
-        grid: hj_reachability.Grid,
-        periodic_dims: List[int],
-        avoid_set: MaskNd,
-        reach_set: MaskNd,
-        terminal_values: ArrayNd,
-
-        neighbor_distance: float = 2,
-        solver_timestep: float = -0.1,
-        integration_scheme: str = 'first',
-        change_atol: float = 1e-3,
-        change_rtol: float = 1e-3,
-        max_iterations: int = 100,
-
-        verbose: bool = False,
+    dynamics: OdpDynamics,
+    grid: hj_reachability.Grid,
+    periodic_dims: List[int],
+    avoid_set: MaskNd,
+    reach_set: MaskNd,
+    terminal_values: ArrayNd,
+    neighbor_distance: float = 2,
+    solver_timestep: float = -0.1,
+    integration_scheme: str = "first",
+    change_atol: float = 1e-3,
+    change_rtol: float = 1e-3,
+    max_iterations: int = 100,
+    solver_global_minimizing: bool = False,
+    verbose: bool = False,
 ) -> LocalHjrSolver:
     active_set_pre_filter = NoPreFilter()
-    neighbor_expander = SignedDistanceNeighbors.from_parts(
-        distance=neighbor_distance
-    )
+    neighbor_expander = SignedDistanceNeighbors.from_parts(distance=neighbor_distance)
     local_hjr_stepper = ClassicLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
         periodic_dims=periodic_dims,
         integration_scheme=integration_scheme,
         time_step=solver_timestep,
+        global_minimizing=solver_global_minimizing,
     )
     active_set_post_filter = RemoveWhereUnchanged.from_parts(
         atol=change_atol,
@@ -164,7 +160,7 @@ def create_local_solver_odp(
             MaxIterations.from_parts(max_iterations=max_iterations),
             PostFilteredActiveSetEmpty.from_parts(),
         ],
-        verbose=verbose
+        verbose=verbose,
     )
 
     return LocalHjrSolver(
@@ -183,23 +179,22 @@ def create_local_solver_odp(
 
 
 def create_marching_solver_odp(
-        dynamics: OdpDynamics,
-        grid: hj_reachability.Grid,
-        periodic_dims: List[int],
-        avoid_set: MaskNd,
-        reach_set: MaskNd,
-        terminal_values: ArrayNd,
-
-        boundary_distance_inner: int = 2,
-        boundary_distance_outer: int = 2,
-        neighbor_distance: int = 2,
-        solver_timestep: float = -0.1,
-        hamiltonian_atol: float = 1e-3,
-        integration_scheme: str = 'first',
-        change_fraction: float = 1,
-        max_iterations: int = 100,
-
-        verbose: bool = False,
+    dynamics: OdpDynamics,
+    grid: hj_reachability.Grid,
+    periodic_dims: List[int],
+    avoid_set: MaskNd,
+    reach_set: MaskNd,
+    terminal_values: ArrayNd,
+    boundary_distance_inner: int = 2,
+    boundary_distance_outer: int = 2,
+    neighbor_distance: int = 2,
+    solver_timestep: float = -0.1,
+    hamiltonian_atol: float = 1e-3,
+    integration_scheme: str = "first",
+    change_fraction: float = 1,
+    max_iterations: int = 100,
+    solver_global_minimizing: bool = False,
+    verbose: bool = False,
 ) -> LocalHjrSolver:
     """
     NOTE: see readme for more details, info here may be inaccurate.
@@ -224,19 +219,19 @@ def create_marching_solver_odp(
         grid=grid,
         periodic_dims=periodic_dims,
         integration_scheme=integration_scheme,
-        time_step=solver_timestep)
-
-    active_set_post_filter = RemoveWhereNonNegativeHamiltonian.from_parts(
-        hamiltonian_atol=hamiltonian_atol
+        time_step=solver_timestep,
+        global_minimizing=solver_global_minimizing,
     )
+
+    active_set_post_filter = RemoveWhereNonNegativeHamiltonian.from_parts(hamiltonian_atol=hamiltonian_atol)
 
     break_criteria_checker = BreakCriteriaChecker.from_criteria(
         [
             MaxIterations.from_parts(max_iterations=max_iterations),
             PostFilteredActiveSetEmpty.from_parts(),
-            BarrierNotMarching.from_parts(change_fraction=change_fraction)
+            BarrierNotMarching.from_parts(change_fraction=change_fraction),
         ],
-        verbose=verbose
+        verbose=verbose,
     )
 
     return LocalHjrSolver(
