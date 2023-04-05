@@ -320,7 +320,7 @@ class LocalUpdateResult:
             "result viability kernel",
         ]
 
-        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection="3d")
+        fig, ax = plt.subplots(figsize=(9, 7)), plt.axes(projection="3d")
 
         def render_iteration(i: int):
             values = self.iterations[i].computed_values
@@ -527,7 +527,7 @@ class LocalUpdateResult:
             "truth kernel",
         ]
 
-        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection="3d")
+        fig, ax = plt.subplots(figsize=(9, 7)), plt.axes(projection="3d")
         ax.set(title="value function against truth")
 
         ax.plot_surface(
@@ -622,7 +622,7 @@ class LocalUpdateResult:
             "continued globally kernel",
         ]
 
-        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection="3d")
+        fig, ax = plt.subplots(figsize=(9, 7)), plt.axes(projection="3d")
         ax.set(title="result, then continued with vanilla hjr")
 
         ax.plot_surface(
@@ -670,7 +670,7 @@ class LocalUpdateResult:
             self.grid.coordinate_vectors[reference_slice.free_dim_2.dim],
         )
 
-        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection="3d")
+        fig, ax = plt.subplots(figsize=(9, 7)), plt.axes(projection="3d")
         ax.set(title="where changed")
 
         ax.contourf3D(
@@ -725,7 +725,7 @@ class LocalUpdateResult:
             "result viability kernel",
         ]
 
-        fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection="3d")
+        fig, ax = plt.subplots(figsize=(9, 7)), plt.axes(projection="3d")
         ax.set(title="value function")
 
         ax.plot_surface(x1, x2, reference_slice.get_sliced_array(values).T, cmap="Blues", edgecolor="none", alpha=0.5)
@@ -797,7 +797,7 @@ class LocalUpdateResult:
         self,
         iteration: int,
         reference_slice: ArraySlice2D,
-        vis_type: str = "before",
+        vis_type: str = "before",  # "before", "after", "change"
         ax: Optional[plt.Axes] = None,
         legend: bool = False,
         xlim: Optional[Tuple[float, float]] = None,
@@ -806,7 +806,7 @@ class LocalUpdateResult:
         plt.rcParams["text.usetex"] = True
 
         if ax is None:
-            fig, ax = plt.figure(figsize=(10, 10))
+            fig, ax = plt.subplots(figsize=(10, 10))
         else:
             fig = ax.figure
 
@@ -847,17 +847,7 @@ class LocalUpdateResult:
             ]
             legend_for_labels = [r"$L$, failure set", r"$V_{k} \approx 0$, unsafe boundary", r"$Q_k$, active set"]
 
-            # Hide X and Y axes label marks
-            ax.xaxis.set_tick_params(labelbottom=False)
-            ax.yaxis.set_tick_params(labelleft=False)
-
-            # Hide X and Y axes tick marks
-            ax.set_xticks([])
-            ax.set_yticks([])
-            ax.set_xlim([-np.pi, -1.0])
-            ax.set_ylim([3, 9])
-
-        if vis_type == "after":
+        elif vis_type == "after":
             # show active set Q_k and boundary V_k+1 after update
 
             ax.contourf(
@@ -917,7 +907,7 @@ class LocalUpdateResult:
                 r"$Q^k$, active set",
             ]
 
-        if vis_type == "change":
+        elif vis_type == "change":
             # show active set Q_k and neighbor cells on boundary and boundary V_k+1 after update
 
             ax.contourf(
@@ -1195,7 +1185,7 @@ class LocalUpdateResult:
     ):
         plt.rcParams["text.usetex"] = True
         if ax is None:
-            fig, ax = plt.figure(figsize=(9, 7)), plt.axes(projection="3d")
+            fig, ax = plt.subplots(figsize=(9, 7)), plt.axes(projection="3d")
         else:
             fig = ax.figure
 
