@@ -1,8 +1,10 @@
 from typing import List
+import attr
 
 import numpy as np
 
 import hj_reachability
+from refineNCBF.local_hjr_solver import SolverAccuracyEnum
 from refineNCBF.local_hjr_solver.breaker import (
     BreakCriteriaChecker,
     MaxIterations,
@@ -18,17 +20,41 @@ from refineNCBF.optimized_dp_interface.odp_dynamics import OdpDynamics
 from refineNCBF.utils.types import MaskNd, ArrayNd
 
 
+@attr.s(auto_attribs=True)
+class SolverSettings:
+    upwind_scheme: str
+    time_integrator: str
+
+    @classmethod
+    def with_accuracy(cls, accuracy: SolverAccuracyEnum):
+        if accuracy == SolverAccuracyEnum.LOW:
+            upwind_scheme = "ENO3"
+            time_integrator = "first"
+        elif accuracy == SolverAccuracyEnum.MEDIUM:
+            upwind_scheme = "ENO3"
+            time_integrator = "second"
+        elif accuracy == SolverAccuracyEnum.HIGH:
+            upwind_scheme = "ENO3"
+            time_integrator = "third"
+        elif accuracy == SolverAccuracyEnum.VERY_HIGH:
+            upwind_scheme = "ENO3"
+            time_integrator = "third"
+        elif accuracy == SolverAccuracyEnum.CUSTOMODP:
+            upwind_scheme = "ENO3"
+            time_integrator = "third"
+        return cls(upwind_scheme=upwind_scheme, time_integrator=time_integrator)
+
+
 def create_global_solver_odp(
     dynamics: OdpDynamics,
     grid: hj_reachability.Grid,
-    periodic_dims: List[int],
     avoid_set: MaskNd,
     reach_set: MaskNd,
     terminal_values: ArrayNd,
     solver_timestep: float = -0.1,
     hamiltonian_atol: float = 1e-3,
     hamiltonian_rtol: float = 1e-3,
-    integration_scheme: str = "first",
+    solver_accuracy=SolverAccuracyEnum.CUSTOMODP,
     change_fraction: float = 1,
     max_iterations: int = 100,
     solver_global_minimizing: bool = False,
@@ -36,11 +62,12 @@ def create_global_solver_odp(
 ) -> LocalHjrSolver:
     active_set_pre_filter = NoPreFilter.from_parts()
     neighbor_expander = SignedDistanceNeighbors.from_parts(distance=np.inf)
+    accuracy_settings = SolverSettings.with_accuracy(solver_accuracy)
     local_hjr_stepper = ClassicLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
-        periodic_dims=periodic_dims,
-        integration_scheme=integration_scheme,
+        periodic_dims=dynamics.periodic_state_dimensions,
+        integration_scheme=accuracy_settings.time_integrator,
         time_step=solver_timestep,
         global_minimizing=solver_global_minimizing,
     )
@@ -75,14 +102,13 @@ def create_global_solver_odp(
 def create_decrease_global_solver_odp(
     dynamics: OdpDynamics,
     grid: hj_reachability.Grid,
-    periodic_dims: List[int],
     avoid_set: MaskNd,
     reach_set: MaskNd,
     terminal_values: ArrayNd,
     solver_timestep: float = -0.1,
     hamiltonian_atol: float = 1e-3,
     hamiltonian_rtol: float = 1e-3,
-    integration_scheme: str = "first",
+    solver_accuracy=SolverAccuracyEnum.CUSTOMODP,
     change_fraction: float = 1,
     max_iterations: int = 100,
     solver_global_minimizing: bool = False,
@@ -90,11 +116,13 @@ def create_decrease_global_solver_odp(
 ) -> LocalHjrSolver:
     active_set_pre_filter = NoPreFilter.from_parts()
     neighbor_expander = SignedDistanceNeighbors.from_parts(distance=np.inf)
+    accuracy_settings = SolverSettings.with_accuracy(solver_accuracy)
+
     local_hjr_stepper = DecreaseLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
-        periodic_dims=periodic_dims,
-        integration_scheme=integration_scheme,
+        periodic_dims=dynamics.periodic_state_dimensions,
+        integration_scheme=accuracy_settings.time_integrator,
         time_step=solver_timestep,
         global_minimizing=solver_global_minimizing,
     )
@@ -128,13 +156,12 @@ def create_decrease_global_solver_odp(
 def create_local_solver_odp(
     dynamics: OdpDynamics,
     grid: hj_reachability.Grid,
-    periodic_dims: List[int],
     avoid_set: MaskNd,
     reach_set: MaskNd,
     terminal_values: ArrayNd,
     neighbor_distance: float = 2,
     solver_timestep: float = -0.1,
-    integration_scheme: str = "first",
+    solver_accuracy=SolverAccuracyEnum.CUSTOMODP,
     change_atol: float = 1e-3,
     change_rtol: float = 1e-3,
     max_iterations: int = 100,
@@ -143,11 +170,13 @@ def create_local_solver_odp(
 ) -> LocalHjrSolver:
     active_set_pre_filter = NoPreFilter()
     neighbor_expander = SignedDistanceNeighbors.from_parts(distance=neighbor_distance)
+    accuracy_settings = SolverSettings.with_accuracy(solver_accuracy)
+
     local_hjr_stepper = ClassicLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
-        periodic_dims=periodic_dims,
-        integration_scheme=integration_scheme,
+        periodic_dims=dynamics.periodic_state_dimensions,
+        integration_scheme=accuracy_settings.time_integrator,
         time_step=solver_timestep,
         global_minimizing=solver_global_minimizing,
     )
@@ -181,7 +210,6 @@ def create_local_solver_odp(
 def create_marching_solver_odp(
     dynamics: OdpDynamics,
     grid: hj_reachability.Grid,
-    periodic_dims: List[int],
     avoid_set: MaskNd,
     reach_set: MaskNd,
     terminal_values: ArrayNd,
@@ -190,7 +218,7 @@ def create_marching_solver_odp(
     neighbor_distance: int = 2,
     solver_timestep: float = -0.1,
     hamiltonian_atol: float = 1e-3,
-    integration_scheme: str = "first",
+    solver_accuracy=SolverAccuracyEnum.CUSTOMODP,
     change_fraction: float = 1,
     max_iterations: int = 100,
     solver_global_minimizing: bool = False,
@@ -214,11 +242,13 @@ def create_marching_solver_odp(
         boundary_distance_inner=boundary_distance_inner,
         boundary_distance_outer=boundary_distance_outer,
     )
+    accuracy_settings = SolverSettings.with_accuracy(solver_accuracy)
+
     local_hjr_stepper = DecreaseLocalHjrStepperOdp.from_parts(
         dynamics=dynamics,
         grid=grid,
-        periodic_dims=periodic_dims,
-        integration_scheme=integration_scheme,
+        periodic_dims=dynamics.periodic_state_dimensions,
+        integration_scheme=accuracy_settings.time_integrator,
         time_step=solver_timestep,
         global_minimizing=solver_global_minimizing,
     )

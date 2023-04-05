@@ -24,16 +24,15 @@ class QuadcopterPlanarParams:
     max_thrust: float
 
 
-default_quadcopter_vertical_params = QuadcopterPlanarParams(
-    drag_coefficient_v=.25,
+default_quadcopter_planar_params = QuadcopterPlanarParams(
+    drag_coefficient_v=0.25,
     gravity=9.81,
-    drag_coefficient_phi=.02255,
+    drag_coefficient_phi=0.02255,
     mass=2.5,
     length_between_copters=1.0,
     moment_of_inertia=1.0,
-
-    min_thrust=0.,
-    max_thrust=.75 * 9.81 * 2.5,  # default should be 18.39375
+    min_thrust=0.0,
+    max_thrust=0.75 * 9.81 * 2.5,  # default should be 18.39375
 )
 
 
@@ -57,9 +56,9 @@ class QuadcopterPlanar(QuadcopterVertical):
 
     @classmethod
     def from_specs(
-            cls,
-            params: QuadcopterPlanarParams,
-    ) -> 'QuadcopterPlanar':
+        cls,
+        params: QuadcopterPlanarParams,
+    ) -> "QuadcopterPlanar":
         control_lower_bounds = (params.min_thrust, params.min_thrust)
         control_upper_bounds = (params.max_thrust, params.max_thrust)
         return cls(
@@ -76,13 +75,13 @@ class QuadcopterPlanar(QuadcopterVertical):
     def open_loop_dynamics(self, state, time=0.0):
         f = np.zeros_like(state)
         f[..., 0] = state[..., 1]
-        f[..., 1] = - self.Cd_v / self.mass * state[..., 1]
+        f[..., 1] = -self.Cd_v / self.mass * state[..., 1]
         f[..., 2:] = super().open_loop_dynamics(state[..., 2:], time)
         return f
 
     def control_matrix(self, state: np.ndarray, time: float = 0) -> np.ndarray:
         B = np.repeat(np.zeros_like(state)[..., None], self.control_dims, axis=-1)
-        B[..., 1, :] = - 1 / self.mass * np.sin(state[..., 4])
+        B[..., 1, :] = -1 / self.mass * np.sin(state[..., 4])
         B[..., 2:, :] = super().control_matrix(state[..., 2:], time)
         return B
 
@@ -94,11 +93,10 @@ class QuadcopterPlanar(QuadcopterVertical):
         J[..., 2:, 2:] = super().state_jacobian(state[..., 2:], control, time)
         return J
 
-
     def compute_open_loop_dynamics(self, state: VectorBatch) -> VectorBatch:
         open_loop_dynamics = np.zeros_like(state)
         open_loop_dynamics[..., 2:] = super().compute_open_loop_dynamics(state[..., 2:])
-        
+
         open_loop_dynamics[..., 0] = state[..., 1]
         open_loop_dynamics[..., 1] = -self.drag_coefficient_v / self.mass * state[..., 1] - self.gravity
         open_loop_dynamics[..., 2] = state[..., 3]
@@ -110,7 +108,7 @@ class QuadcopterPlanar(QuadcopterVertical):
         control_matrix = np.repeat(np.zeros_like(state)[..., None], self.control_dimensions, axis=-1)
 
         control_matrix[..., 1, :] = np.cos(state[..., 2]) / self.mass
-        control_matrix[..., 3, 0] = - self.length_between_copters / self.moment_of_inertia
+        control_matrix[..., 3, 0] = -self.length_between_copters / self.moment_of_inertia
         control_matrix[..., 3, 1] = self.length_between_copters / self.moment_of_inertia
 
         return control_matrix
@@ -123,28 +121,34 @@ class QuadcopterPlanar(QuadcopterVertical):
 
 class QuadcopterPlanarJAX(QuadcopterPlanar):
     def compute_open_loop_dynamics(self, state: jax.Array, time: jax.Array = 0.0) -> jax.Array:
-        return jnp.array([
-            state[1],
-            -state[1] * self.drag_coefficient_v / self.mass - self.gravity,
-            state[3],
-            -state[3] * self.drag_coefficient_phi / self.moment_of_inertia
-        ])
+        return jnp.array(
+            [
+                state[1],
+                -state[1] * self.drag_coefficient_v / self.mass - self.gravity,
+                state[3],
+                -state[3] * self.drag_coefficient_phi / self.moment_of_inertia,
+            ]
+        )
 
     def compute_control_jacobian(self, state, time: jax.Array = 0.0):
-        return jnp.array([
-            [0, 0],
-            [jnp.cos(state[2]) / self.mass, jnp.cos(state[2]) / self.mass],
-            [0, 0],
-            [-self.length_between_copters / self.moment_of_inertia,
-             self.length_between_copters / self.moment_of_inertia]
-        ])
+        return jnp.array(
+            [
+                [0, 0],
+                [jnp.cos(state[2]) / self.mass, jnp.cos(state[2]) / self.mass],
+                [0, 0],
+                [
+                    -self.length_between_copters / self.moment_of_inertia,
+                    self.length_between_copters / self.moment_of_inertia,
+                ],
+            ]
+        )
 
     def compute_disturbance_jacobian(self, state: np.ndarray, time: jax.Array = 0.0) -> jax.Array:
         return jnp.expand_dims(jnp.zeros(4), axis=-1)
 
 
-quadcopter_vertical_jax_hj = HJControlAffineDynamics.from_parts(
-    control_affine_dynamic_system=QuadcopterPlanarJAX.from_specs(default_quadcopter_vertical_params),
+quadcopter_planar_jax_hj = HJControlAffineDynamics.from_parts(
+    control_affine_dynamic_system=QuadcopterPlanarJAX.from_specs(default_quadcopter_planar_params),
     control_mode=ActorModes.MAX,
     disturbance_mode=ActorModes.MIN,
 )

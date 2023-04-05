@@ -135,6 +135,7 @@ class LocalHjrSolver(Callable):
         postfilter: ActiveSetPostFilter,
         breaker: BreakCriteriaChecker,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         return cls(
             dynamics=dynamics,
@@ -171,6 +172,7 @@ class LocalHjrSolver(Callable):
         rtol: float = 1e-3,
         solver_accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -230,6 +232,7 @@ class LocalHjrSolver(Callable):
         rtol: float = 1e-3,
         solver_accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -290,6 +293,7 @@ class LocalHjrSolver(Callable):
         max_iterations: int = 100,
         solver_accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -351,6 +355,7 @@ class LocalHjrSolver(Callable):
         max_iterations: int = 100,
         solver_accuracy=hj_reachability.solver.SolverAccuracyEnum.VERY_HIGH,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -414,6 +419,7 @@ class LocalHjrSolver(Callable):
         solver_timestep: float = -0.1,
         max_iterations: int = 100,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -465,6 +471,7 @@ class LocalHjrSolver(Callable):
         value_change_rtol: float = 1e-3,
         max_iterations: int = 100,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -515,6 +522,7 @@ class LocalHjrSolver(Callable):
         solver_timestep: float = -0.1,
         max_iterations: int = 100,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -564,6 +572,7 @@ class LocalHjrSolver(Callable):
         value_change_rtol: float = 1e-3,
         max_iterations: int = 100,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -615,6 +624,7 @@ class LocalHjrSolver(Callable):
         solver_timestep: float = -0.1,
         max_iterations: int = 100,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         """
         NOTE: see readme for more details, info here may be inaccurate.
@@ -669,6 +679,7 @@ class LocalHjrSolver(Callable):
         solver_timestep: float = -0.1,
         max_iterations: int = 100,
         verbose: bool = False,
+        solver_global_minimizing: bool = False,
     ):
         assert solver_timestep < 0, "solver_timestep must be negative"
 
