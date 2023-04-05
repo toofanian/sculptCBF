@@ -2,11 +2,11 @@ import os
 import attr
 import hj_reachability
 import numpy as np
-from refineNCBF.neural_barrier_kinematic_model_interface import LearnedBarrierParams
+from refineNCBF.neural_barrier_interface import LearnedBarrierParams
 from refineNCBF.utils.tables import TabularizedDnn
 import stable_baselines3
 from gym import spaces
-from refineNCBF.neural_barrier_kinematic_model_interface.stable_baselines_interface import StableBaselinesCallable
+from refineNCBF.neural_barrier_interface.stable_baselines_interface import StableBaselinesCallable
 import torch
 from neural_barrier_kinematic_model.cbf_tanh_2_layer import CBFTanh2Layer
 from neural_barrier_kinematic_model.standardizer import Standardizer

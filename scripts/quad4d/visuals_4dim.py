@@ -1,39 +1,16 @@
 import os
 
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult
-from refineNCBF.utils.files import visuals_data_directory, generate_unique_filename
+from refineNCBF.utils.files import refineNCBF_dir
 from refineNCBF.utils.visuals import ArraySlice2D, DimName
 import matplotlib.lines as mlines
 import numpy as np
-
-
-def general_replay():
-    # result = LocalUpdateResult.load("data/local_update_results/wip_qv_cbf_march_odp_20230228_003139.dill")
-    result = LocalUpdateResult.load("data/quad4d/20230307_180336.dill")
-
-    ref_index = ArraySlice2D.from_reference_index(
-        reference_index=result.get_middle_index(),
-        # reference_index=(0, 15, 0, 26),
-        free_dim_1=DimName(0, "y"),
-        free_dim_2=DimName(2, "theta"),
-    )
-    # result.create_gif(
-    #     reference_slice=ref_index,
-    #     verbose=False,
-    #     save_path=os.path.join(
-    #         visuals_data_directory,
-    #         f'{generate_unique_filename("wip_qv_cbf_global_odp_20230228_025337", "gif")}')
-    # )
-
-    # result.render_iteration(iteration=-1, reference_slice=ref_index, verbose=False, save_fig=True)
-
-    # plt.pause(0)
+from refineNCBF.utils.files import construct_refine_ncbf_path
 
 
 def plot_algorithm():
     result = LocalUpdateResult.load("data/quad4d/20230307_180336.dill")
     result.iterations = result.iterations[::2]  # only plot every other iteration (larger visual effect)
-    print(len(result))
     ref_index = ArraySlice2D.from_reference_index(
         # reference_index=result.get_middle_index(),
         reference_index=(0, 18, 0, 25),
@@ -41,13 +18,27 @@ def plot_algorithm():
         free_dim_1=DimName(2, "theta"),
         free_dim_2=DimName(0, "y"),
     )
-    import time
 
-    for itr in range(len(result)):
-        print(itr)
-        result.plot_algorithm(iteration=itr, reference_slice=ref_index)
-        time.sleep(2)
-    # result.plot_algorithm(iteration=0, reference_slice=ref_index)
+    fig0, ax0 = result.plot_algorithm(iteration=0, reference_slice=ref_index, vis_type="before")
+    fig1, ax1 = result.plot_algorithm(iteration=6, reference_slice=ref_index, vis_type="before")
+    fig2, ax2 = result.plot_algorithm(iteration=9, reference_slice=ref_index, vis_type="before")
+
+    fig3, ax3 = result.plot_algorithm(
+        iteration=5, reference_slice=ref_index, vis_type="before", xlim=(-np.pi, -1.0), ylim=(3.0, 9.0)
+    )
+    fig4, ax4 = result.plot_algorithm(
+        iteration=5, reference_slice=ref_index, vis_type="after", xlim=(-np.pi, -1.0), ylim=(3.0, 9.0)
+    )
+    fig5, ax5 = result.plot_algorithm(
+        iteration=5, reference_slice=ref_index, vis_type="change", xlim=(-np.pi, -1.0), ylim=(3.0, 9.0)
+    )
+
+    fig0.savefig(construct_refine_ncbf_path("data/quad4d/conceptual_figure_a.pdf"))
+    fig1.savefig(construct_refine_ncbf_path("data/quad4d/conceptual_figure_b.pdf"))
+    fig2.savefig(construct_refine_ncbf_path("data/quad4d/conceptual_figure_c.pdf"))
+    fig3.savefig(construct_refine_ncbf_path("data/quad4d/conceptual_figure_d.pdf"))
+    fig4.savefig(construct_refine_ncbf_path("data/quad4d/conceptual_figure_e.pdf"))
+    fig5.savefig(construct_refine_ncbf_path("data/quad4d/conceptual_figure_f.pdf"))
 
 
 def plot_local_v_global_comparison():
@@ -132,7 +123,7 @@ def plot_local_v_global_comparison():
         ax=ax3,
     )
     fig.tight_layout()
-    fig.savefig(os.path.join(visuals_data_directory, f'{generate_unique_filename("4dim_full", "pdf")}'))
+    fig.savefig(os.path.join(refineNCBF_dir, "data/quad4d/vf_comparison.pdf"))
 
 
 def plot_rollouts():
@@ -144,7 +135,10 @@ def plot_rollouts():
     import os
     import pandas as pd
     from refineNCBF.utils.files import refineNCBF_dir
-    from scripts.validate_barrier.visualize_quad4d import (
+    import sys
+
+    sys.path.append(".")
+    from visualize_quad4d import (
         QuadVerticalDynamicsInstance,
         SafevUnsafeStateSpaceExperiment,
     )
@@ -153,7 +147,7 @@ def plot_rollouts():
 
     file_name = "230318_2346"
     # Get directory of this file
-    dir_path = os.path.join(refineNCBF_dir, "scripts/validate_barrier")
+    dir_path = os.path.join(refineNCBF_dir, "scripts/quad4d/files")
     df = pd.read_csv(os.path.join(dir_path, "{}.csv".format(file_name)))
 
     local_hjr_dict = {
@@ -184,8 +178,6 @@ def plot_rollouts():
 
     ref_index = ArraySlice2D.from_reference_index(
         reference_index=reference_index,
-        # reference_index=(0, 7, 0, 7, 30, 7),
-        # free_dim_1=DimName(0, 'x'),
         free_dim_2=DimName(0, "y"),
         free_dim_1=DimName(1, "ydot"),
     )
@@ -201,6 +193,7 @@ def plot_rollouts():
         if not ("odpneural" in exp or "neuralneural" in exp):
             continue
         df_new = df[df.controller == exp]
+        df_new = df_new[df_new.rollout <= 5]
         # Remove neural or lqr from end of string
         exp = exp[:-6]
 
@@ -288,89 +281,14 @@ def plot_rollouts():
         ncol=4,
     )
     fig.savefig(
-        os.path.join(visuals_data_directory, f'{generate_unique_filename("4dim_rollout", "png")}'),
+        os.path.join(refineNCBF_dir, "data/quad4d/rollout.png"),
         bbox_extra_artists=(lgd,),
         bbox_inches="tight",
         dpi=400,
     )
 
 
-def plot_safe_cells_over_time():
-    list_of_items = []
-    list_of_labels = []
-    local_hjr_dict = {
-        "global_jax": "_20230307_191036",
-        "local_jax": "20230307_025911",
-        "local_odp": "20230307_180336",
-        "global_odp": "_20230307_183541",
-    }
-    import matplotlib.pyplot as plt
-
-    fig = plt.figure(figsize=(10, 10))
-    for i, (key, value) in enumerate(local_hjr_dict.items()):
-        try:
-            patching_result = LocalUpdateResult.load("data/local_update_results/{}.dill".format(value))
-        except FileNotFoundError:
-            try:
-                patching_result = LocalUpdateResult.load("data/quad4d/{}.dill".format(value))
-            except FileNotFoundError:
-                try:
-                    patching_result = LocalUpdateResult.load("/data/quad4d/{}.dill".format(value))
-                except FileNotFoundError:
-                    patching_result = LocalUpdateResult.load("/data_extension/4dim/{}.dill".format(value))
-        current_boundary = patching_result.initial_values >= 0
-        results = []
-        for j, itr in enumerate(patching_result.iterations):
-            previous_boundary = current_boundary
-            current_boundary = itr.computed_values >= 0
-            new_share_unsafe = previous_boundary & ~current_boundary
-            res = np.count_nonzero(new_share_unsafe) / np.count_nonzero(previous_boundary)
-            results.append(res)
-        print("Converged at iteration {}".format(j))
-        total_hammies = patching_result.get_total_active_count(j)
-        print("Total hammies: {:.2e}".format(total_hammies))
-        print("Share safe: {:.2f}".format((np.count_nonzero(current_boundary) / current_boundary.size) * 100))
-        print(
-            "Initial share safe: {:.2f}".format(
-                (np.count_nonzero(patching_result.initial_values >= 0) / patching_result.initial_values.size) * 100
-            )
-        )
-
-        plt.plot(results, label=key)
-    plt.legend()
-    plt.savefig(os.path.join(visuals_data_directory, f'{generate_unique_filename("safe_cells_diff", "pdf")}'), dpi=400)
-
-
-def test():
-    global_qv_cbf_result = LocalUpdateResult.load("data/quad4d/_20230307_183541.dill")
-    march_qv_cbf_result = LocalUpdateResult.load("data/quad4d/20230307_180336.dill")
-    ref_index = ArraySlice2D.from_reference_index(
-        reference_index=global_qv_cbf_result.get_middle_index(),
-        # reference_index=(0, 10, 0, 30),
-        # reference_index=(0, 18, 0, 25),
-        free_dim_1=DimName(2, "Orientation [rad]"),
-        free_dim_2=DimName(0, "Height [m]"),
-    )
-    fig, ax = march_qv_cbf_result.plot_value_function_comparison(
-        reference_slice=ref_index,
-        title="Vertical Quadcopter, Final Values Comparison",
-        label="Vanilla Reachability",
-        iteration=-1,
-        comparison_result=global_qv_cbf_result,
-        comparison_iteration=-1,
-        comparison_label="Boundary March",
-        legend=False,
-        verbose=False,
-    )
-    fig.savefig(
-        os.path.join(visuals_data_directory, f'{generate_unique_filename("4dim_final_values", "pdf")}'), dpi=400
-    )
-
-
 if __name__ == "__main__":
-    # general_replay()
-    plot_algorithm()
+    # plot_algorithm()
     # plot_local_v_global_comparison()
-    # plot_rollouts()
-    # plot_safe_cells_over_time()
-    # test()
+    plot_rollouts()

@@ -1,13 +1,13 @@
 import numpy as np
-from refineNCBF.neural_barrier_kinematic_model_interface.load_interface import load_cbf
-from refineNCBF.neural_barrier_kinematic_model_interface.neural_cbf import NeuralControlAffineCBF
+from refineNCBF.neural_barrier_interface.load_interface import load_cbf
+from refineNCBF.neural_barrier_interface.neural_cbf import NeuralControlAffineCBF
 from refineNCBF.utils.emperical_validation import validate_cbf, test_nominal_controller
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult
 from refine_cbfs import TabularControlAffineCBF
 from cbf_opt import ControlAffineDynamics
 from cbf_opt import utils as cbf_utils
 from scripts.quad4d.learned_cbf import quad4d_learned_barrier_params
-from refineNCBF.neural_barrier_kinematic_model_interface.load_interface import load_policy_sac
+from refineNCBF.neural_barrier_interface.load_interface import load_policy_sac
 
 import logging
 

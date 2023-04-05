@@ -3,19 +3,24 @@ import hj_reachability
 import jax.numpy as jnp
 
 from odp.dynamics.quad4d import Quad4D
-from refineNCBF.dynamic_systems.quadcopter import quadcopter_vertical_jax_hj
 
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.local_hjr_solver import SolverAccuracyEnum
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_by_dilation
 
-from refineNCBF.neural_barrier_kinematic_model_interface.load_interface import load_cbf
-from refineNCBF.neural_barrier_kinematic_model_interface.certification import (
+from refineNCBF.neural_barrier_interface.load_interface import load_cbf
+from refineNCBF.neural_barrier_interface.certification import (
     load_certified_states,
     load_uncertified_states,
 )
-from scripts.quad4d.learned_cbf import quad4d_learned_barrier_params
 from refineNCBF.utils.tables import flag_states_on_grid, tabularize_dnn
+
+# Add current folder to path
+import sys
+
+sys.path.append(".")
+from dynamics import quadcopter_vertical_jax_hj
+from learned_cbf import quad4d_learned_barrier_params
 
 
 def main(args):
@@ -82,7 +87,7 @@ def main(args):
         solver_accuracy=SolverAccuracyEnum.CUSTOMODP,
         hamiltonian_atol=0.01,
         verbose=True,
-        solver_global_minimizing=False,
+        solver_global_minimizing=True,
     )
 
     initial_values = terminal_values.copy()

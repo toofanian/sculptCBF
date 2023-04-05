@@ -2,18 +2,23 @@ import hj_reachability
 import numpy as np
 from odp.dynamics.quad6d import Quad6D
 from refineNCBF.local_hjr_solver import SolverAccuracyEnum
-from refineNCBF.neural_barrier_kinematic_model_interface.certification import (
+from refineNCBF.neural_barrier_interface.certification import (
     load_certified_states,
     load_uncertified_states,
 )
 
-from refineNCBF.dynamic_systems.planar_quadcopter import quadcopter_planar_jax_hj
+
 from refineNCBF.utils.files import generate_unique_filename
 from refineNCBF.utils.sets import compute_signed_distance, get_mask_boundary_by_dilation
 from refineNCBF.utils.tables import flag_states_on_grid, tabularize_dnn
-from scripts.quad6d.learned_cbf import quad6d_learned_barrier_params
-from refineNCBF.neural_barrier_kinematic_model_interface.load_interface import load_cbf
+from refineNCBF.neural_barrier_interface.load_interface import load_cbf
 import jax.numpy as jnp
+
+import sys
+
+sys.path.append(".")
+from dynamics import quadcopter_planar_jax_hj
+from learned_cbf import quad6d_learned_barrier_params
 
 
 def main(args):

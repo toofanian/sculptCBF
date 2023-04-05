@@ -1,5 +1,5 @@
 import numpy as np
-from refineNCBF.neural_barrier_kinematic_model_interface.neural_cbf import NeuralControlAffineCBF
+from refineNCBF.neural_barrier_interface.neural_cbf import NeuralControlAffineCBF
 from refineNCBF.utils.emperical_validation import validate_cbf, test_nominal_controller
 from refineNCBF.local_hjr_solver.result import LocalUpdateResult
 from refineNCBF.utils.files import construct_refine_ncbf_path

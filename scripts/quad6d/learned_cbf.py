@@ -1,12 +1,17 @@
-from neural_barrier_kinematic_model import LearnedBarrierParams
+from refineNCBF.neural_barrier_interface import LearnedBarrierParams
 import numpy as np
-from refineNCBF.dynamic_systems.planar_quadcopter import default_quadcopter_planar_params, QuadcopterPlanar
+
+# Add the current directory to the path so that we can import the dynamics
+import sys
+
+sys.path.append(".")
+from dynamics import default_quadcopter_planar_params, QuadcopterPlanar
 
 
 dyn_sys = QuadcopterPlanar.from_specs(default_quadcopter_planar_params)
 
 
-quad4d_learned_barrier_params = LearnedBarrierParams(
+quad6d_learned_barrier_params = LearnedBarrierParams(
     input_dim=6,
     hidden_dim=1024,
     barrier_path="data/quad6d/learned_barrier",
